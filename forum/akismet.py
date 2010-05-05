@@ -57,7 +57,6 @@ Usage example::
 
 import os, sys
 from urllib import urlencode
-from django.conf import settings
 from forum import settings
 
 import socket
