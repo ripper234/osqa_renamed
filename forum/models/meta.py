@@ -34,7 +34,7 @@ class BadgeManager(models.Manager):
             return super(BadgeManager, self).get(*args, **kwargs)
 
         from forum.badges.base import BadgesMeta
-        badge = BadgesMeta.by_id.get(pk, None)
+        badge = BadgesMeta.by_id.get(int(pk), None)
         if not badge:
             return super(BadgeManager, self).get(*args, **kwargs)
         return badge.ondb

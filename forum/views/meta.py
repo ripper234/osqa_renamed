@@ -1,3 +1,4 @@
+from itertools import groupby
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
@@ -76,9 +77,14 @@ def badges(request):
 
 def badge(request, id, slug):
     badge = Badge.objects.get(id=id)
-    awards = Award.objects.filter(badge=badge).annotate(count=Count('user')).distinct('user').order_by('-count')
+    awards = list(Award.objects.filter(badge=badge).order_by('user', 'awarded_at'))
+    award_count = len(awards)
+    
+    awards = sorted([dict(count=len(list(g)), user=k) for k, g in groupby(awards, lambda a: a.user)],
+                    lambda c1, c2: c2['count'] - c1['count'])
 
     return render_to_response('badge.html', {
+        'award_count': award_count,
         'awards' : awards,
         'badge' : badge,
     }, context_instance=RequestContext(request))

@@ -23,7 +23,7 @@
     </p>
     <div>
         {% if badge.awarded_count %}
-        <p style="float:left"><span class="count">{{ awards|length|intcomma }}</span>
+        <p style="float:left"><span class="count">{{ award_count|intcomma }}</span>
         <strong>{% trans "The users have been awarded with badges:" %}</strong></p>
         {% endif %}
     </div>

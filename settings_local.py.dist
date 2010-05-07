@@ -38,8 +38,8 @@ DATABASE_ENGINE = ''  #mysql, etc
 DATABASE_HOST = ''
 DATABASE_PORT = ''
 
-#CACHE_BACKEND = 'file://%s' % os.path.join(os.path.dirname(__file__),'cache').replace('\\','/')
-CACHE_BACKEND = 'dummy://'
+CACHE_BACKEND = 'file://%s' % os.path.join(os.path.dirname(__file__),'cache').replace('\\','/')
+#CACHE_BACKEND = 'dummy://'
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 APP_URL = 'http://' #used by email notif system and RSS
