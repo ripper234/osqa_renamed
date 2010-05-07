@@ -187,6 +187,9 @@ class ActionProxy(Action):
     def friendly_ownername(self, owner, user):
         return (owner == user) and _('your') or user.username
 
+    def viewer_or_user_verb(self, viewer, user, viewer_verb, user_verb):
+        return (viewer == user) and viewer_verb or user_verb    
+
     def hyperlink(self, url, title, **attrs):
         return '<a href="%s" %s>%s</a>' % (url, " ".join('%s="%s"' % i for i in attrs.items()), title)
 
