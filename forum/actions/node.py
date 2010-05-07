@@ -5,7 +5,7 @@ from forum.models import Comment, Question, Answer, NodeRevision
 
 class NodeEditAction(ActionProxy):
     def create_revision_data(self, initial=False, **data):
-        revision_data = dict(summary=data.get('summary', (initial and _('Initial revision' or ''))), body=data['text'])
+        revision_data = dict(summary=data.get('summary', (initial and _('Initial revision') or '')), body=data['text'])
 
         if data.get('title', None):
             revision_data['title'] = strip_tags(data['title'].strip())
@@ -16,6 +16,8 @@ class NodeEditAction(ActionProxy):
         return revision_data
 
 class AskAction(NodeEditAction):
+    verb = _("asked")
+
     def process_data(self, **data):
         question = Question(author=self.user, **self.create_revision_data(True, **data))
         question.save()
@@ -28,6 +30,8 @@ class AskAction(NodeEditAction):
         }
 
 class AnswerAction(NodeEditAction):
+    verb = _("answered")
+
     def process_data(self, **data):
         answer = Answer(author=self.user, parent=data['question'], **self.create_revision_data(True, **data))
         answer.save()
@@ -45,6 +49,8 @@ class AnswerAction(NodeEditAction):
         }
 
 class CommentAction(ActionProxy):
+    verb = _("commented")
+
     def process_data(self, text='', parent=None):
         comment = Comment(author=self.user, parent=parent, body=text)
         comment.save()
@@ -57,6 +63,8 @@ class CommentAction(ActionProxy):
         }
 
 class ReviseAction(NodeEditAction):
+    verb = _("edited")
+
     def process_data(self, **data):
         revision_data = self.create_revision_data(**data)
         revision = self.node.create_revision(self.user, action=self, **revision_data)
@@ -68,7 +76,12 @@ class ReviseAction(NodeEditAction):
             'post_desc': self.describe_node(viewer, self.node)
         }
 
+    def get_absolute_url(self):
+        return self.node.get_revisions_url()
+
 class RetagAction(ActionProxy):
+    verb = _("retagged")
+
     def process_data(self, tagnames=''):
         active = self.node.active_revision
         revision_data = dict(summary=_('Retag'), title=active.title, tagnames=strip_tags(tagnames.strip()), body=active.body)
@@ -80,7 +93,12 @@ class RetagAction(ActionProxy):
             'post_desc': self.describe_node(viewer, self.node)
         }
 
+    def get_absolute_url(self):
+        return self.node.get_revisions_url()
+
 class RollbackAction(ActionProxy):
+    verb = _("reverted")
+
     def process_data(self, activate=None):
         previous = self.node.active_revision
         self.node.activate_revision(self.user, activate, self)
@@ -96,7 +114,12 @@ class RollbackAction(ActionProxy):
             'final': revisions[1].revision, 'final_sum': revisions[1].summary,
         }
 
+    def get_absolute_url(self):
+        return self.node.get_revisions_url()
+
 class CloseAction(ActionProxy):
+    verb = _("closed")
+
     def process_action(self):
         self.node.extra_action = self
         self.node.marked = True
