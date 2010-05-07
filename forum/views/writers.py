@@ -68,7 +68,7 @@ def upload(request):#ajax upload file to a question or answer
 
 
 def ask(request):
-    if request.method == "POST" and "text" in request.POST:
+    if request.POST and "text" in request.POST:
         form = AskForm(request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
@@ -86,6 +86,8 @@ def ask(request):
                 question = AskAction(user=request.user).save(data=form.cleaned_data).node
                 return HttpResponseRedirect(question.get_absolute_url())
             else:
+                request.session['temp_node_data'] = request.POST
+                request.session['temp_node_type'] = 'question'
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
     elif request.method == "POST" and "go" in request.POST:
         form = AskForm({'title': request.POST['q']})
@@ -195,7 +197,7 @@ def edit_answer(request, id):
 
 def answer(request, id):
     question = get_object_or_404(Question, id=id)
-    if request.method == "POST":
+    if request.POST:
         form = AnswerForm(question, request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
@@ -213,6 +215,9 @@ def answer(request, id):
                 answer = AnswerAction(user=request.user).save(dict(question=question, **form.cleaned_data)).node
                 return HttpResponseRedirect(answer.get_absolute_url())
             else:
+                request.session['temp_node_data'] = request.POST
+                request.session['temp_node_type'] = 'answer'
+                request.session['temp_question_id'] = id
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
 
     return HttpResponseRedirect(question.get_absolute_url())

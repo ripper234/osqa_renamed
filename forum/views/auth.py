@@ -339,6 +339,17 @@ def login_and_forward(request,  user, forward=None, message=None):
     login(request,  user)
 
     #user_logged_in.send(user=user,old_session=old_session,sender=None)
+    temp_data = request.session.pop('temp_node_data', None)
+    if temp_data:
+        request.POST = temp_data
+        node_type = request.session.pop('temp_node_type')
+
+        if node_type == "question":
+            from forum.views.writers import ask
+            return ask(request)
+        elif node_type == "answer":
+            from forum.views.writers import answer
+            return answer(request, request.session.pop('temp_question_id'))
 
     if not forward:
         signin_action = request.session.get('on_signin_action', None)
