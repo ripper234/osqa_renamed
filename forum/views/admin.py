@@ -158,12 +158,12 @@ def go_defaults(request):
 def recalculate_denormalized(request):
     for n in Node.objects.all():
         n = n.leaf
-        n.vote_up_count = n.votes.filter(canceled=False, vote=1).count()
-        n.vote_down_count = n.votes.filter(canceled=False, vote=-1).count()
+        n.score = n.votes.aggregate(score=Sum('value'))['score']
+        if not n.score: n.score = 0
         n.save()
 
     for u in User.objects.all():
-        u.reputation = u.reputes.filter(canceled=False).aggregate(reputation=Sum('value'))['reputation']
+        u.reputation = u.reputes.aggregate(reputation=Sum('value'))['reputation']
         u.save()
 
     request.user.message_set.create(message=_('All values recalculated'))
