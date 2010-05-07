@@ -8,6 +8,7 @@ ROBOTS_FILE = Setting('ROBOTS_FILE',
 User-Agent: *
 Disallow: /accounts/
 Disallow: /users/
+Disallow: /revisions/
 """, ROBOTS_SET, dict(
 label = "Robots.txt file",
 help_text = """
