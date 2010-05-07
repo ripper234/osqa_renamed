@@ -4,12 +4,12 @@ from django import forms
 from models import *
 from const import *
 from django.utils.translation import ugettext as _
+from django.contrib.humanize.templatetags.humanize import apnumber
 from forum.models import User
-from django.contrib.contenttypes.models import ContentType
+
 from django.utils.safestring import mark_safe
 from forum.utils.forms import NextUrlField, UserNameField, SetPasswordForm
 from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
 import logging
 
 class TitleField(forms.CharField):
@@ -38,7 +38,7 @@ class EditorField(forms.CharField):
         self.initial = ''
 
     def clean(self, value):
-        if len(value) < settings.FORM_MIN_QUESTION_BODY and not settings.FORM_EMPTEY_QUESTION_BODY:
+        if len(value) < settings.FORM_MIN_QUESTION_BODY and not settings.FORM_EMPTY_QUESTION_BODY:
             raise forms.ValidationError(_('question content must be must be at least %s characters' % settings.FORM_MIN_QUESTION_BODY))
 
         return value
@@ -51,7 +51,9 @@ class TagNamesField(forms.CharField):
         self.max_length = 255
         self.label  = _('tags')
         #self.help_text = _('please use space to separate tags (this enables autocomplete feature)')
-        self.help_text = _('Tags are short keywords, with no spaces within. Up to five tags can be used.')
+        self.help_text = _('Tags are short keywords, with no spaces within. At least one %(min)s and up to %(max)s tags can be used.') % {
+            'min': apnumber(settings.FORM_MIN_NUMBER_OF_TAGS), 'max': apnumber(settings.FORM_MAX_NUMBER_OF_TAGS)    
+        }
         self.initial = ''
 
     def clean(self, value):
@@ -63,8 +65,10 @@ class TagNamesField(forms.CharField):
         split_re = re.compile(r'[ ,]+')
         list = split_re.split(data)
         list_temp = []
-        if len(list) > 5:
-            raise forms.ValidationError(_('please use 5 tags or less'))
+        if len(list) > settings.FORM_MAX_NUMBER_OF_TAGS or len(list) < settings.FORM_MIN_NUMBER_OF_TAGS:
+            raise forms.ValidationError(_('please use betwen %(min)s and %(max)s tags') % {
+            'min': apnumber(settings.FORM_MIN_NUMBER_OF_TAGS), 'max': apnumber(settings.FORM_MAX_NUMBER_OF_TAGS)
+        })
 
         tagname_re = re.compile(r'[a-z0-9]+')
         for tag in list:
