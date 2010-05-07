@@ -13,4 +13,4 @@ def recent_tags():
 
 @register.inclusion_tag('sidebar/recent_awards.html')
 def recent_awards():
-    return {'awards': Award.objects.get_recent_awards()[:RECENT_AWARD_SIZE]}
+    return {'awards': Award.objects.order_by('-awarded_at')[:RECENT_AWARD_SIZE]}

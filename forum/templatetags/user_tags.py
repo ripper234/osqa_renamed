@@ -1,5 +1,6 @@
 from django import template
 from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
 from forum import const
 
 register = template.Library()
@@ -30,42 +31,32 @@ def user_signature(parser, token):
 class ActivityNode(template.Node):
     template = template.loader.get_template('users/activity.html')
 
-    def __init__(self, activity):
+    def __init__(self, activity, viewer):
         self.activity = template.Variable(activity)
+        self.viewer = template.Variable(viewer)
 
     def render(self, context):
         try:
-            activity = self.activity.resolve(context)
-
-            context = {
-                'active_at': activity.active_at,
-                'description': activity.type_as_string,
-                'type': activity.activity_type,
-            }
-
-            if activity.activity_type == const.TYPE_ACTIVITY_PRIZE:
-                context['badge'] = True
-                context['title'] = activity.content_object.badge.name
-                context['url'] = activity.content_object.badge.get_absolute_url()
-                context['badge_type'] = activity.content_object.badge.type
-            else:
-                context['title'] = activity.node.headline
-                context['url'] = activity.node.get_absolute_url()
-
-            if activity.activity_type in (const.TYPE_ACTIVITY_UPDATE_ANSWER, const.TYPE_ACTIVITY_UPDATE_QUESTION):
-                context['revision'] = True
-                context['summary'] = activity.content_object.summary or \
-                        _('Revision n. %(rev_number)d') % {'rev_number': activity.content_object.revision}
-
-            return self.template.render(template.Context(context))
+            action = self.activity.resolve(context).leaf()
+            viewer = self.viewer.resolve(context)
+            describe = mark_safe(action.describe(viewer))
+            return self.template.render(template.Context(dict(action=action, describe=describe)))
         except Exception, e:
-            return ''
+            #import sys, traceback
+            #traceback.print_exc(file=sys.stdout)
+            pass
 
 @register.tag
 def activity_item(parser, token):
     try:
-        tag_name, activity = token.split_contents()
+        tag_name, activity, viewer = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, "%r tag requires exactly one arguments" % token.contents.split()[0]
+        raise template.TemplateSyntaxError, "%r tag requires exactly two arguments" % token.contents.split()[0]
 
-    return ActivityNode(activity)
+    return ActivityNode(activity, viewer)
+
+
+@register.inclusion_tag('users/moderation.html')
+def user_moderation(moderator, user):
+    
+    return dict(user=user)

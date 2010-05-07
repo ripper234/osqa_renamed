@@ -1,26 +1,20 @@
 from datetime import datetime, timedelta
 
-from forum.models import Question, FavoriteQuestion
+from forum.models import Question, Action
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django import template
-from django.conf import settings
+from forum.actions import *
+from forum import settings
 
 register = template.Library()
 
 @register.inclusion_tag('node/vote_buttons.html')
 def vote_buttons(post, user):
-    context = {
-        'post': post,
-        'user_vote': 'none'
-    }
+    context = dict(post=post, user_vote='none')
 
     if user.is_authenticated():
-        try:
-            vote = post.votes.get(user=user)
-            context['user_vote'] = vote.is_upvote() and 'up' or 'down'
-        except:
-            pass
+        context['user_vote'] = {1: 'up', -1: 'down', None: 'none'}[VoteAction.get_for(user, post)]
 
     return context
 
@@ -35,17 +29,15 @@ def accept_button(answer, user):
 @register.inclusion_tag('node/favorite_mark.html')
 def favorite_mark(question, user):
     try:
-        FavoriteQuestion.objects.get(question=question, user=user)
+        FavoriteAction.objects.get(node=question, user=user)
         favorited = True
     except:
         favorited = False
 
-    favorite_count = question.favorited_by.count()
+    return {'favorited': favorited, 'favorite_count': question.favorite_count, 'question': question}
 
-    return {'favorited': favorited, 'favorite_count': favorite_count, 'question': question}
-
-def post_control(text, url, command=False, title=""):
-    return {'text': text, 'url': url, 'command': command, 'title': title}
+def post_control(text, url, command=False, withprompt=False, title=""):
+    return {'text': text, 'url': url, 'command': command, 'withprompt': withprompt ,'title': title}
 
 @register.inclusion_tag('node/post_controls.html')
 def post_controls(post, user):
@@ -65,28 +57,32 @@ def post_controls(post, user):
 
         if post_type == 'question':
             if post.closed and user.can_reopen_question(post):
-                controls.append(post_control(_('reopen'), reverse('reopen', kwargs={'id': post.id})))
+                controls.append(post_control(_('reopen'), reverse('reopen', kwargs={'id': post.id}), command=True))
             elif not post.closed and user.can_close_question(post):
-                controls.append(post_control(_('close'), reverse('close', kwargs={'id': post.id})))
+                controls.append(post_control(_('close'), reverse('close', kwargs={'id': post.id}), command=True, withprompt=True))
 
         if user.can_flag_offensive(post):
-            label = _('flag')
+            label = _('report')
             
             if user.can_view_offensive_flags(post):
-                label =  "%s (%d)" % (label, post.flaggeditems.count())
+                label =  "%s (%d)" % (label, post.flag_count)
 
             controls.append(post_control(label, reverse('flag_post', kwargs={'id': post.id}),
-                    command=True, title=_("report as offensive (i.e containing spam, advertising, malicious text, etc.)")))
+                    command=True, withprompt=True, title=_("report as offensive (i.e containing spam, advertising, malicious text, etc.)")))
 
         if user.can_delete_post(post):
-            controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
-                    command=True))
+            if post.deleted:
+                controls.append(post_control(_('undelete'), reverse('delete_post', kwargs={'id': post.id}),
+                        command=True))
+            else:
+                controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
+                        command=True))
 
     return {'controls': controls}
 
 @register.inclusion_tag('node/comments.html')
 def comments(post, user):
-    all_comments = post.comments.filter(deleted=False).order_by('added_at')
+    all_comments = post.comments.filter(deleted=None).order_by('added_at')
 
     if len(all_comments) <= 5:
         top_scorers = all_comments
@@ -107,13 +103,10 @@ def comments(post, user):
             showing += 1
         
         if context['can_like']:
-            try:
-                c.votes.get(user=user)
-                context['likes'] = True
-            except:
-                context['likes'] = False
+            context['likes'] = VoteAction.get_for(user, c) == 1
 
         context['user'] = c.user
+        context['comment'] = c.comment
         context.update(dict(c.__dict__))
         comments.append(context)
 
@@ -122,6 +115,9 @@ def comments(post, user):
         'post': post,
         'can_comment': user.can_comment(post),
         'max_length': settings.FORM_MAX_COMMENT_BODY,
+        'min_length': settings.FORM_MIN_COMMENT_BODY,
+        'show_gravatar': settings.FORM_GRAVATAR_IN_COMMENTS,
         'showing': showing,
         'total': len(all_comments),
+        'user': user,
     }

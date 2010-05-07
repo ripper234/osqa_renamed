@@ -18,6 +18,7 @@ from upload import *
 from about import *
 from faq import *
 from form import *
+from moderation import *
 
 BADGES_SET = SettingSet('badges', _('Badges config'), _("Configure badges on your OSQA site."), 500)
 

@@ -1,4 +1,8 @@
 var response_commands = {
+    refresh_page: function() {
+        window.location.reload(true)
+    },
+    
     update_post_score: function(id, inc) {
         var $score_board = $('#post-' + id + '-score');
         var current = parseInt($score_board.html())
@@ -68,7 +72,7 @@ var response_commands = {
         });
     },
 
-    insert_comment: function(post_id, comment_id, comment, username, profile_url, delete_url) {
+    insert_comment: function(post_id, comment_id, comment, username, profile_url, delete_url, edit_url) {
         var $container = $('#comments-container-' + post_id);
         var skeleton = $('#new-comment-skeleton-' + post_id).html().toString();
 
@@ -76,7 +80,8 @@ var response_commands = {
                 .replace(new RegExp('%COMMENT%', 'g'), comment)
                 .replace(new RegExp('%USERNAME%', 'g'), username)
                 .replace(new RegExp('%PROFILE_URL%', 'g'), profile_url)
-                .replace(new RegExp('%DELETE_URL%', 'g'), delete_url);
+                .replace(new RegExp('%DELETE_URL%', 'g'), delete_url)
+                .replace(new RegExp('%EDIT_URL%', 'g'), edit_url);
 
         $container.append(skeleton);
 
@@ -100,6 +105,16 @@ var response_commands = {
         }
     },
 
+    unmark_deleted: function(post_type, post_id) {
+        if (post_type == 'answer') {
+            var $answer = $('#answer-container-' + post_id);
+            $answer.removeClass('deleted');
+        } else {
+            var $container = $('#question-table');
+            $container.removeClass('deleted');
+        }
+    },
+
     set_subscription_button: function(text) {
         $('.subscription_switch').html(text);
     },
@@ -109,38 +124,127 @@ var response_commands = {
     }
 }
 
-function show_message(object, msg) {
+function show_message(object, msg, callback) {
     var div = $('<div class="vote-notification"><h3>' + msg + '</h3>(' +
     'click to close' + ')</div>');
 
     div.click(function(event) {
-        $(".vote-notification").fadeOut("fast", function() { $(this).remove(); });
+        $(".vote-notification").fadeOut("fast", function() {
+            $(this).remove();
+            if (callback) {
+                callback();
+            }
+        });
     });
 
     object.parent().append(div);
     div.fadeIn("fast");
 }
 
-function process_ajax_response(data, el) {
+function load_prompt(object, url) {
+    var $box = $('<div class="vote-notification">' +
+            '<img src="/m/default/media/images/indicator.gif" />' +
+            '</div>');
+
+
+    object.parent().append($box);
+    $box.fadeIn("fast");
+
+    $box.load(url, function() {
+        $box.find('.prompt-cancel').click(function() {
+            $box.fadeOut('fast', function() {
+                $box.remove();
+            });
+            return false;
+        });
+
+        $box.find('.prompt-submit').click(function() {
+            start_command();
+            $.post(url, {prompt: $box.find('textarea').val()}, function(data) {
+                $box.fadeOut('fast', function() {
+                    $box.remove();
+                });
+                process_ajax_response(data, object);
+            }, 'json');
+            return false;
+        });
+    });
+}
+
+function show_prompt(object, msg, callback) {
+    var div = $('<div class="vote-notification">' + msg + '<br />' +
+            '<textarea class="command-prompt"></textarea><br />' +
+            '<button class="prompt-cancel">Cancel</button>' +
+            '<button class="prompt-ok">OK</button>' +
+            '</div>');
+
+    function fade_out() {
+        div.fadeOut("fast", function() { div.remove(); });
+    }
+
+    div.find('.prompt-cancel').click(fade_out);
+
+    div.find('.prompt-ok').click(function(event) {
+        callback(div.find('.command-prompt').val());
+        fade_out();
+    });
+
+    object.parent().append(div);
+    div.fadeIn("fast");    
+}
+
+function process_ajax_response(data, el, callback) {
     if (!data.success && data['error_message'] != undefined) {
-        show_message(el, data.error_message)
+        show_message(el, data.error_message, function() {if (callback) callback(true);});
+        end_command(false);
     } else if (typeof data['commands'] != undefined){
         for (var command in data.commands) {
             response_commands[command].apply(null, data.commands[command])
         }
 
         if (data['message'] != undefined) {
-            show_message(el, data.message)
+            show_message(el, data.message, function() {if (callback) callback(false);})
+        } else {
+            if (callback) callback(false);
         }
+        end_command(true);
+    }
+}
+
+var running = false;
+
+function start_command() {
+    $('body').append($('<div id="command-loader"></div>'));
+    running = true;
+}
+
+function end_command(success) {
+    if (success) {
+        $('#command-loader').addClass('success');
+        $('#command-loader').fadeOut("slow", function() {
+            $('#command-loader').remove();
+            running = false;
+        });
+    } else {
+        $('#command-loader').remove();
+        running = false;
     }
 }
 
 $(function() {
     $('a.ajax-command').live('click', function() {
+        if (running) return false;
+
         var el = $(this);
-        $.getJSON(el.attr('href'), function(data) {
-            process_ajax_response(data, el);
-        });
+
+        if (el.is('.withprompt')) {
+            load_prompt(el, el.attr('href'));
+        } else {
+            start_command();
+            $.getJSON(el.attr('href'), function(data) {
+                process_ajax_response(data, el);
+            });
+        }
 
         return false
     });
@@ -149,50 +253,105 @@ $(function() {
         var $container = $(this);
         var $form = $container.find('form');
         var $textarea = $container.find('textarea');
-        var $button = $container.find('input[type="submit"]');
-        var $chars_left_message = $('.comment-chars-left');
+        var textarea = $textarea.get(0);
+        var $button = $container.find('.comment-submit');
+        var $cancel = $container.find('.comment-cancel');
+        var $chars_left_message = $container.find('.comments-chars-left-msg');
+        var $chars_togo_message = $container.find('.comments-chars-togo-msg');
         var $chars_counter = $container.find('.comments-char-left-count');
 
         var $comment_tools = $container.parent().find('.comment-tools');
         var $add_comment_link = $comment_tools.find('.add-comment-link');
         var $comments_container = $container.parent().find('.comments-container');
 
-        var max_length = parseInt($chars_counter.html());
+        var chars_limits = $chars_counter.html().split('|');
+
+        var min_length = parseInt(chars_limits[0]);
+        var max_length = parseInt(chars_limits[1]);
+        
+        var warn_length = max_length - 30;
+        var current_length = 0;
         var comment_in_form = false;
+        var interval = null;
+
+        var hcheck = !($.browser.msie || $.browser.opera);
+
+        $textarea.css("padding-top", 0).css("padding-bottom", 0).css("resize", "none");
+        textarea.style.overflow = 'hidden';
+        
 
         function cleanup_form() {
             $textarea.val('');
+            $textarea.css('height', 80);
             $chars_counter.html(max_length);
             $chars_left_message.removeClass('warn');
             comment_in_form = false;
+            current_length = 0;
+
+            $chars_left_message.hide();
+            $chars_togo_message.show();
+            
+            $chars_counter.removeClass('warn');
+            $chars_counter.html(min_length);
+            $button.attr("disabled","disabled");
+            
+            interval = null;
         }
 
         cleanup_form();
 
-        function calculate_chars_left() {
+        function process_form_changes() {
             var length = $textarea.val().length;
-            var allow = true;
 
-            if (length < max_length) {
-                if (length < max_length * 0.75) {
-                    $chars_left_message.removeClass('warn');
-                } else {
-                    $chars_left_message.addClass('warn');
-                }
-            } else {
-                allow = false;
+            if (current_length == length)
+                return;
+
+            if (length < warn_length && current_length >= warn_length) {
+                $chars_counter.removeClass('warn');
+            } else if (current_length < warn_length && length >= warn_length){
+                $chars_counter.addClass('warn');
             }
 
-            $chars_counter.html(max_length - length);
-            return allow;
+            if (length < min_length) {
+                $chars_left_message.hide();
+                $chars_togo_message.show();
+                $chars_counter.html(min_length - length);
+            } else {
+                $chars_togo_message.hide();
+                $chars_left_message.show();
+                $chars_counter.html(max_length - length);
+            }
+
+            if (length > max_length || length < min_length) {
+                $button.attr("disabled","disabled");
+            } else {
+                $button.removeAttr("disabled");
+            }
+
+            var current_height = textarea.style.height;
+            if (hcheck)
+                textarea.style.height = "0px";
+
+            var h = Math.max(80, textarea.scrollHeight);
+            textarea.style.height = current_height;
+            $textarea.animate({height: h + 'px'}, 50);
+
+            current_length = length;
         }
 
         function show_comment_form() {
             $container.slideDown('slow');
             $add_comment_link.fadeOut('slow');
+            window.setInterval(function() {
+                process_form_changes();
+            }, 200);
         }
 
         function hide_comment_form() {
+            if (interval != null) {
+                window.clearInterval(interval);
+                interval = null;
+            }
             $container.slideUp('slow');
             $add_comment_link.fadeIn('slow');
         }
@@ -213,37 +372,48 @@ $(function() {
         $('#' + $comments_container.attr('id') + ' .comment-edit').live('click', function() {
             var $link = $(this);
             var comment_id = /comment-(\d+)-edit/.exec($link.attr('id'))[1];
-            var $comment = $link.parents('.comment');
-            var comment_text = $comment.find('.comment-text').text().trim();
+            var $comment = $('#comment-' + comment_id);
 
             comment_in_form = comment_id;
-            $textarea.val(comment_text);
-            calculate_chars_left();
+
+            $.get($link.attr('href'), function(data) {
+                $textarea.val(data);
+            });
+            
             $comment.slideUp('slow');
             show_comment_form();
             return false;
         });
 
-        $textarea.keyup(calculate_chars_left);
-
         $button.click(function() {
-            if ($textarea.val().length > max_length) {
-                show_message($button, "Your comment exceeds the max number of characters allowed.");
-            } else {
-                var post_data = {
-                    comment: $textarea.val()
-                }
+            if (running) return false;
 
-                if (comment_in_form) {
-                    post_data['id'] = comment_in_form;
-                }
-
-                $.post($form.attr('action'), post_data, function(data) {
-                    process_ajax_response(data, $button);
-                    cleanup_form();
-                }, "json")
+            var post_data = {
+                comment: $textarea.val()
             }
 
+            if (comment_in_form) {
+                post_data['id'] = comment_in_form;
+            }
+
+            start_command();
+            $.post($form.attr('action'), post_data, function(data) {
+                process_ajax_response(data, $button, function(error) {
+                    if (!error) {
+                        cleanup_form();
+                        hide_comment_form();
+                    }
+                });
+
+            }, "json");
+            
+            return false;
+        });
+
+        $cancel.click(function() {
+            if (comment_in_form) {
+                $comment = $('#comment-' + comment_in_form).slideDown('slow');
+            }
             hide_comment_form();
             return false;
         });

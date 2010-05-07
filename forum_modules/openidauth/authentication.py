@@ -56,7 +56,7 @@ class MyOpenIdAuthContext(ConsumerTemplateContext):
     }
     weight = 200
     human_name = 'MyOpenID'
-    icon = '/media/images/openid/myopenid.ico'
+    icon = '/media/images/openid/myopenid.png'
 
 
 class FlickrAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -72,7 +72,7 @@ class FlickrAuthContext(ConsumerTemplateContext):
     }
     weight = 250
     human_name = 'Flickr'
-    icon = '/media/images/openid/flickr.ico'
+    icon = '/media/images/openid/flickr.png'
 
 
 class TechnoratiAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -88,7 +88,7 @@ class TechnoratiAuthContext(ConsumerTemplateContext):
     }
     weight = 260
     human_name = 'Technorati'
-    icon = '/media/images/openid/technorati.ico'
+    icon = '/media/images/openid/technorati.png'
 
 
 class WordpressAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -104,7 +104,7 @@ class WordpressAuthContext(ConsumerTemplateContext):
     }
     weight = 270
     human_name = 'Wordpress'
-    icon = '/media/images/openid/wordpress.ico'
+    icon = '/media/images/openid/wordpress.png'
 
 
 class BloggerAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -120,7 +120,7 @@ class BloggerAuthContext(ConsumerTemplateContext):
     }
     weight = 300
     human_name = 'Blogger'
-    icon = '/media/images/openid/blogger.ico'
+    icon = '/media/images/openid/blogger.png'
 
 
 class LiveJournalAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -136,7 +136,7 @@ class LiveJournalAuthContext(ConsumerTemplateContext):
     }
     weight = 310
     human_name = 'LiveJournal'
-    icon = '/media/images/openid/livejournal.ico'
+    icon = '/media/images/openid/livejournal.png'
 
 
 class ClaimIdAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -152,22 +152,7 @@ class ClaimIdAuthContext(ConsumerTemplateContext):
     }
     weight = 320
     human_name = 'ClaimID'
-    icon = '/media/images/openid/claimid.ico'
-
-class VidoopAuthConsumer(OpenIdAbstractAuthConsumer):
-    def get_user_url(self, request):
-        blog_name = request.POST['input_field']
-        return "http://%s.myvidoop.com/" % blog_name
-
-class VidoopAuthContext(ConsumerTemplateContext):
-    mode = 'SMALLICON'
-    type = 'SIMPLE_FORM'
-    simple_form_context = {
-        'your_what': 'Vidoop user name'
-    }
-    weight = 330
-    human_name = 'Vidoop'
-    icon = '/media/images/openid/vidoop.ico'
+    icon = '/media/images/openid/claimid.png'
 
 class VerisignAuthConsumer(OpenIdAbstractAuthConsumer):
     def get_user_url(self, request):
@@ -182,7 +167,7 @@ class VerisignAuthContext(ConsumerTemplateContext):
     }
     weight = 340
     human_name = 'Verisign'
-    icon = '/media/images/openid/verisign.ico'
+    icon = '/media/images/openid/verisign.png'
 
     
 class OpenIdUrlAuthConsumer(OpenIdAbstractAuthConsumer):

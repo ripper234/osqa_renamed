@@ -1,11 +1,11 @@
-from question import Question ,QuestionRevision, FavoriteQuestion, QuestionSubscription
+from question import Question ,QuestionRevision, QuestionSubscription
 from answer import Answer, AnswerRevision
 from tag import Tag, MarkedTag
-from meta import Vote, FlaggedItem
-from user import User, Activity, ValidationHash, AuthKeyUserAssociation, SubscriptionSettings
-from repute import Badge, Award, Repute
-from node import Node, NodeRevision, NodeMetaClass, AnonymousNode
+from user import User, ValidationHash, AuthKeyUserAssociation, SubscriptionSettings
+from node import Node, NodeRevision, NodeMetaClass
 from comment import Comment
+from action import Action, ActionRepute
+from meta import Vote, Flag, Badge, Award
 from utils import KeyValue
 
 try:
@@ -16,20 +16,13 @@ except:
 
 from base import *
 
-def is_new(sender, instance, **kwargs):
-    try:
-        instance._is_new = not bool(instance.id)
-    except:
-        pass
-
-pre_save.connect(is_new)
-
 __all__ = [
-        'Node', 'NodeRevision', 'AnonymousNode', 
-        'Question', 'FavoriteQuestion', 'QuestionSubscription', 'QuestionRevision',
+        'Node', 'NodeRevision',  
+        'Question', 'QuestionSubscription', 'QuestionRevision',
         'Answer', 'AnswerRevision',
-        'Tag', 'Comment', 'Vote', 'FlaggedItem', 'MarkedTag', 'Badge', 'Award', 'Repute',
-        'Activity', 'ValidationHash', 'AuthKeyUserAssociation', 'SubscriptionSettings', 'KeyValue', 'User',
+        'Tag', 'Comment', 'MarkedTag', 'Badge', 'Award',
+        'ValidationHash', 'AuthKeyUserAssociation', 'SubscriptionSettings', 'KeyValue', 'User',
+        'Action', 'ActionRepute', 'Vote', 'Flag'
         ]
 
 
@@ -41,3 +34,4 @@ for k, v in get_modules_script_classes('models', models.Model).items():
         exec "%s = v" % k
 
 NodeMetaClass.setup_relations()
+BaseMetaClass.setup_denormalizes()

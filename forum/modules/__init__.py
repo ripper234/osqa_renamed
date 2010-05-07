@@ -7,7 +7,7 @@ from django.conf import settings
 
 MODULES_PACKAGE = 'forum_modules'
 
-MODULES_FOLDER = os.path.join(os.path.dirname(__file__), '../' + MODULES_PACKAGE)
+MODULES_FOLDER = os.path.join(os.path.dirname(__file__), '../../' + MODULES_PACKAGE)
 
 DISABLED_MODULES = getattr(settings, 'DISABLED_MODULES', [])
 

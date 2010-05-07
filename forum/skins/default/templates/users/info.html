@@ -4,6 +4,7 @@
 {% load humanize %}
 {% load smart_if %}
 {% load i18n %}
+{% load user_tags %}
 <div id="subheader" class="headUser">
     {{view_user.username}}
 </div>
@@ -28,12 +29,8 @@
             <table class="user-details">
                 {% if view_user != request.user and request.user.is_superuser %}
                 <tr>
-                    <td class="admin" align="left" colspan="2">
-                        <h3>{% trans "Moderate this user" %}</h3>
-                        <form id="moderate_user_form" method="post">
-                            {{moderate_user_form.as_p}}
-                        </form>
-                        <p id="action_status"></p>
+                    <td class="moderation" align="left" colspan="2">
+                        {% comment %}{% user_moderation request.user view_user %}{% endcomment %}
                     </td>
                 </tr>
                 {% endif %}
@@ -83,8 +80,8 @@
                 <tr>
 					<!--todo  - redo this with blocktrans -->
                     {% if view_user.date_of_birth.year != 1900%}
-                        <td>{% trans "age" %}</td>
-                        <td>{% get_age view_user.date_of_birth %} {% trans "age unit" %}</td>
+                    <td>{% trans "age" %}</td>
+                    <td>{% get_age view_user.date_of_birth %} {% trans "age unit" %}</td>
                     {% endif %}
                 </tr>
                 {% endif %}

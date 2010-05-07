@@ -1,8 +1,16 @@
 import os
 from django import forms
-from base import Setting, StringSetting, IntegerSetting, BoolSetting, FloatSetting
+from base import Setting
 from django.utils.translation import ugettext as _
 from django.core.files.storage import FileSystemStorage
+
+class DummySetting:
+    pass
+
+class UnfilteredField(forms.CharField):
+    def clean(self, value):
+            return value
+
 
 class SettingsSetForm(forms.Form):
     def __init__(self, set, data=None, *args, **kwargs):
@@ -12,16 +20,16 @@ class SettingsSetForm(forms.Form):
         super(SettingsSetForm, self).__init__(data, *args, **kwargs)
 
         for setting in set:
-            if isinstance(setting, StringSetting):
+            if isinstance(setting, Setting.emulators.get(str, DummySetting)):
                 field = forms.CharField(**setting.field_context)
-            elif isinstance(setting, FloatSetting):
+            elif isinstance(setting, Setting.emulators.get(float, DummySetting)):
                 field = forms.FloatField(**setting.field_context)
-            elif isinstance(setting, IntegerSetting):
+            elif isinstance(setting, Setting.emulators.get(int, DummySetting)):
                 field = forms.IntegerField(**setting.field_context)
-            elif isinstance(setting, BoolSetting):
+            elif isinstance(setting, Setting.emulators.get(bool, DummySetting)):
                 field = forms.BooleanField(**setting.field_context)
             else:
-                field = forms.CharField(**setting.field_context)
+                field = UnfilteredField(**setting.field_context)
 
             self.fields[setting.name] = field
 
@@ -59,5 +67,29 @@ class ImageFormWidget(forms.Widget):
                 return data["%s_old" % name]
             elif name in data:
                 return data[name]
+
+class StringListWidget(forms.Widget):
+    def render(self, name, value, attrs=None):
+        ret = ""
+        for s in value:
+            ret += """
+            <div>
+                <input type="text" name="%(name)s" value="%(value)s" />
+                <button class="string_list_widget_button">-</button>
+            </div>
+            """  % {'name': name, 'value': s}
+
+        return """
+            <div class="string_list_widgets">
+                %(ret)s
+                <div><button name="%(name)s" class="string_list_widget_button add">+</button></div>
+            </div>
+            """ % dict(name=name, ret=ret)
+
+    def value_from_datadict(self, data, files, name):
+        if 'submit' in data:
+            return data.getlist(name)
+        else:
+            return data[name]
 
 

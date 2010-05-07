@@ -1,8 +1,9 @@
-from akismet import *
+from forum.akismet import *
 from base import *
 from tag import Tag
 
 import markdown
+from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
@@ -19,7 +20,10 @@ class NodeContent(models.Model):
 
     @property
     def html(self):
-        return mark_safe(sanitize_html(markdown.markdown(self.body)))
+        return self.as_markdown()
+
+    def as_markdown(self, *extensions):
+        return mark_safe(sanitize_html(markdown.markdown(self.body, extensions=extensions)))
 
     @property
     def headline(self):
@@ -38,14 +42,14 @@ class NodeContent(models.Model):
         abstract = True
         app_label = 'forum'
 
-class NodeMetaClass(models.Model.__metaclass__):
+class NodeMetaClass(BaseMetaClass):
     types = {}
 
     def __new__(cls, *args, **kwargs):
         new_cls = super(NodeMetaClass, cls).__new__(cls, *args, **kwargs)
 
         if not new_cls._meta.abstract and new_cls.__name__ is not 'Node':
-            NodeMetaClass.types[new_cls.__name__.lower()] = new_cls
+            NodeMetaClass.types[new_cls.get_type()] = new_cls
 
         return new_cls
 
@@ -59,10 +63,7 @@ class NodeMetaClass(models.Model.__metaclass__):
         name = node_cls.__name__.lower()
 
         def children(self):
-            if node_cls._meta.proxy:
-                return node_cls.objects.filter(node_type=name, parent=self)
-            else:
-                return node_cls.objects.filter(parent=self)
+            return node_cls.objects.filter(parent=self)
 
         def parent(self):
             p = self.__dict__.get('_%s_cache' % name, None)
@@ -77,35 +78,82 @@ class NodeMetaClass(models.Model.__metaclass__):
         Node.add_to_class(name, property(parent))
 
 
-node_create = django.dispatch.Signal(providing_args=['instance'])
-node_edit = django.dispatch.Signal(providing_args=['instance'])
+class NodeManager(CachedManager):
+    use_for_related_fields = True
 
-class Node(BaseModel, NodeContent, DeletableContent):
+    def get_query_set(self):
+        qs = super(NodeManager, self).get_query_set()
+
+        if self.model is not Node:
+            return qs.filter(node_type=self.model.get_type())
+        else:
+            return qs
+
+    def get(self, *args, **kwargs):
+        node = super(NodeManager, self).get(*args, **kwargs)
+        cls = NodeMetaClass.types.get(node.node_type, None)
+
+        if cls and node.__class__ is not cls:
+            return node.leaf
+        return node
+
+    def get_for_types(self, types, *args, **kwargs):
+        kwargs['node_type__in'] = [t.get_type() for t in types]
+        return self.get(*args, **kwargs)
+
+
+class Node(BaseModel, NodeContent):
     __metaclass__ = NodeMetaClass
 
-    node_type             = models.CharField(max_length=16, default='node')
-    parent                = models.ForeignKey('Node', related_name='children', null=True)
-    abs_parent            = models.ForeignKey('Node', related_name='all_children', null=True)
+    node_type            = models.CharField(max_length=16, default='node')
+    parent               = models.ForeignKey('Node', related_name='children', null=True)
+    abs_parent           = models.ForeignKey('Node', related_name='all_children', null=True)
 
-    added_at              = models.DateTimeField(default=datetime.datetime.now)
+    added_at             = models.DateTimeField(default=datetime.datetime.now)
+    score                 = models.IntegerField(default=0)
 
-    tags                  = models.ManyToManyField('Tag', related_name='%(class)ss')
+    deleted               = models.ForeignKey('Action', null=True, unique=True, related_name="deleted_node")
+    in_moderation         = models.ForeignKey('Action', null=True, unique=True, related_name="moderated_node")
+    last_edited           = models.ForeignKey('Action', null=True, unique=True, related_name="edited_node")
 
-    score                 = DenormalizedField(default=0)
-    vote_up_count         = DenormalizedField(default=0)
-    vote_down_count       = models.IntegerField(default=0)
+    last_activity_by       = models.ForeignKey(User, null=True)
+    last_activity_at       = models.DateTimeField(null=True, blank=True)
 
-    comment_count         = DenormalizedField(default=0)
-    offensive_flag_count  = DenormalizedField(default=0)
-
-    last_edited_at        = models.DateTimeField(null=True, blank=True)
-    last_edited_by        = models.ForeignKey(User, null=True, blank=True, related_name='last_edited_%(class)ss')
-
+    tags                 = models.ManyToManyField('Tag', related_name='%(class)ss')
     active_revision       = models.OneToOneField('NodeRevision', related_name='active', null=True)
+
+    extra_ref = models.ForeignKey('Node', null=True)
+    extra_count = models.IntegerField(default=0)
+    extra_action = models.ForeignKey('Action', null=True, related_name="extra_node")
+    
+    marked = models.BooleanField(default=False)
+    wiki = models.BooleanField(default=False)
+
+    comment_count = DenormalizedField("children", node_type="comment", canceled=False)
+    flag_count = DenormalizedField("flags")
+
+    friendly_name = _("post")
+
+    objects = NodeManager()
+
+    @classmethod
+    def cache_key(cls, pk):
+        return '%s.node:%s' % (settings.APP_URL, pk)
+
+    @classmethod
+    def get_type(cls):
+        return cls.__name__.lower()
 
     @property
     def leaf(self):
-        return NodeMetaClass.types[self.node_type].objects.get(id=self.id)
+        leaf_cls = NodeMetaClass.types.get(self.node_type, None)
+
+        if leaf_cls is None:
+            return self
+
+        leaf = leaf_cls()
+        leaf.__dict__ = self.__dict__
+        return leaf
 
     @property    
     def absolute_parent(self):
@@ -118,40 +166,40 @@ class Node(BaseModel, NodeContent, DeletableContent):
     def summary(self):
         return strip_tags(self.html)[:300]
 
-    def create_revision(self, user, **kwargs):
-        revision = NodeRevision(author=user, **kwargs)
-        
-        if not self.id:
-            self.author = user
-            self.save()
-            revision.revision = 1
-        else:
-            revision.revision = self.revisions.aggregate(last=models.Max('revision'))['last'] + 1
+    def update_last_activity(self, user):
+        self.last_activity_by = user
+        self.last_activity_at = datetime.datetime.now()
 
-        revision.node_id = self.id
+        if self.parent:
+            self.parent.update_last_activity(user)
+
+    def _create_revision(self, user, number, **kwargs):
+        revision = NodeRevision(author=user, revision=number, node=self, **kwargs)
         revision.save()
-        self.activate_revision(user, revision)
+        return revision
 
-    def activate_revision(self, user, revision):
+    def create_revision(self, user, action=None, **kwargs):
+        number = self.revisions.aggregate(last=models.Max('revision'))['last'] + 1
+        revision = self._create_revision(user, number, **kwargs)
+        self.activate_revision(user, revision, action)
+        return revision
+
+    def activate_revision(self, user, revision, action=None):
         self.title = revision.title
         self.tagnames = revision.tagnames
         self.body = revision.body
 
-        old_revision = self.active_revision
         self.active_revision = revision
+        self.update_last_activity(user)
 
-        if not old_revision:
-            signal = node_create
-        else:
-            self.last_edited_at = datetime.datetime.now()
-            self.last_edited_by = user
-            signal = node_edit
+        if action:
+            self.last_edited = action
 
         self.save()
-        signal.send(sender=self.__class__, instance=self)
 
     def get_tag_list_if_changed(self):
         dirty = self.get_dirty_fields()
+        active_user = self.last_edited and self.last_edited.by or self.author
 
         if 'tagnames' in dirty:
             new_tags = self.tagname_list()
@@ -168,7 +216,7 @@ class Node(BaseModel, NodeContent, DeletableContent):
                 try:
                     tag = Tag.objects.get(name=name)
                 except:
-                    tag = Tag.objects.create(name=name, created_by=self.last_edited_by or self.author)
+                    tag = Tag.objects.create(name=name, created_by=active_user or self.author)
 
                 tag_list.append(tag)
 
@@ -182,7 +230,7 @@ class Node(BaseModel, NodeContent, DeletableContent):
                 tag = Tag.objects.get(name=name)
                 tag.used_count = tag.used_count - 1
                 if tag.used_count == 0:
-                    tag.mark_deleted(self.last_edited_by or self.author)
+                    tag.mark_deleted(active_user)
                 tag.save()
 
             return tag_list
@@ -191,13 +239,14 @@ class Node(BaseModel, NodeContent, DeletableContent):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            self.node_type = self.__class__.__name__.lower()
+            self.node_type = self.get_type()
+            super(BaseModel, self).save(*args, **kwargs)
+            self.active_revision = self._create_revision(self.author, 1, title=self.title, tagnames=self.tagnames, body=self.body)
+            self.update_last_activity(self.author)
 
         if self.parent_id and not self.abs_parent_id:
             self.abs_parent = self.parent.absolute_parent
-
-        self.__dict__['score'] = self.__dict__['vote_up_count'] - self.__dict__['vote_down_count']
-            
+        
         tags = self.get_tag_list_if_changed()
         super(Node, self).save(*args, **kwargs)
         if tags is not None: self.tags = tags
@@ -205,8 +254,9 @@ class Node(BaseModel, NodeContent, DeletableContent):
     @staticmethod
     def isSpam(comment, data):
         api = Akismet()
-        if api.key is None:
-            print "problem" # raise APIKeyError
+
+        if not api.key:
+            return False
         else:
             if api.comment_check(comment, data):
                 return True
@@ -229,11 +279,3 @@ class NodeRevision(BaseModel, NodeContent):
         app_label = 'forum'
 
 
-from user import ValidationHash
-
-class AnonymousNode(Node):
-    validation_hash = models.ForeignKey(Node, related_name='anonymous_content')
-    convertible_to = models.CharField(max_length=16, default='node')
-
-    class Meta:
-        app_label = 'forum'

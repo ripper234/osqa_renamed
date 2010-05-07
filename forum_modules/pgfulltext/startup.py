@@ -1,20 +1,11 @@
 import os
 from forum.models import KeyValue
 from django.db import connection, transaction
+import settings
 
-KEY = 'PG_FTSTRIGGERS_VERSION'
-VERSION = 3
-install = False
+VERSION = 4
 
-try:
-    version = KeyValue.objects.get(key=KEY).value
-    if version < VERSION:
-        install = True
-except:
-    install = True
-
-
-if install:
+if int(settings.PG_FTSTRIGGERS_VERSION) < VERSION:
     f = open(os.path.join(os.path.dirname(__file__), 'pg_fts_install.sql'), 'r')
 
     try:
@@ -22,13 +13,7 @@ if install:
         cursor.execute(f.read())
         transaction.commit_unless_managed()
 
-        try:
-            kv = KeyValue.objects.get(key=KEY)
-        except:
-            kv = KeyValue(key=KEY)
-
-        kv.value = VERSION
-        kv.save()
+        settings.PG_FTSTRIGGERS_VERSION.set_value(VERSION)
         
     except Exception, e:
         #import sys, traceback
@@ -38,3 +23,5 @@ if install:
         cursor.close()
 
     f.close()
+
+import handlers

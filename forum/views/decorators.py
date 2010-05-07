@@ -3,6 +3,8 @@ from django.utils import simplejson
 from django.core.paginator import Paginator
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.utils.translation import ungettext, ugettext as _
+import logging
 
 def render(template=None, tab=None):
     def decorator(func):
@@ -28,7 +30,7 @@ def list(paginate, default_page_size):
             paginator = Paginator(big_list, pagesize)
 
             page_obj = paginator.page(page)
-            context[paginate] = page_obj.object_list
+            context[paginate] = page_obj.object_list.lazy()
 
             base_path = context.get('base_path', None) or request.path
             sort = request.utils.sort_method('')
@@ -55,19 +57,34 @@ def list(paginate, default_page_size):
     return decorator
 
 
+class CommandException(Exception):
+    pass
+
+
 def command(func):
     def decorated(request, *args, **kwargs):
         try:
             response = func(request, *args, **kwargs)
+
+            if isinstance(response, HttpResponse):
+                return response
+
             response['success'] = True
         except Exception, e:
-            #import sys, traceback
-            #traceback.print_exc(file=sys.stdout)
+            import sys, traceback
+            traceback.print_exc(file=sys.stdout)
 
-            response = {
-                'success': False,
-                'error_message': str(e)
-            }
+            if isinstance(e, CommandException):
+                response = {
+                    'success': False,
+                    'error_message': str(e)
+                }
+            else:
+                logging.error("%s: %s" % (func.__name__, str(e)))
+                response = {
+                    'success': False,
+                    'error_message': _("We're sorry, but an unknown error ocurred.<br />Please try again in a while.")
+                }
 
         if request.is_ajax():
             return HttpResponse(simplejson.dumps(response), mimetype="application/json")

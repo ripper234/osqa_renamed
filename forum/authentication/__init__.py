@@ -34,7 +34,6 @@ AUTH_PROVIDERS = dict([
 
 #todo: probably this don't belong here, also this post_stored routine needs a lot of work
 user_logged_in = django.dispatch.Signal(providing_args=["user", "old_session"])
-user_updated = django.dispatch.Signal(providing_args=["instance", "updated_by"])
 
 #def post_stored_anonymous_content(user,old_session,**kwargs):
 #    from forum.models import AnonymousQuestion, AnonymousAnswer

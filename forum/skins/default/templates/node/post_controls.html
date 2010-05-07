@@ -1,7 +1,7 @@
 {% spaceless %}
 {% for control in controls %}
     <span class="action-link">
-        <a title="{{ control.title }}" {% if control.command %}class="ajax-command"{% endif %}
+        <a title="{{ control.title }}" class="{% if control.command %}ajax-command{% endif %}{% if control.withprompt %} withprompt{% endif %}"
             href="{{ control.url }}">{{ control.text }}</a>
     </span>
     {% ifnotequal controls|last control %}

@@ -6,6 +6,7 @@ from django.utils.translation import ugettext as _
 from forms import ClassicRegisterForm
 from forum.authentication.forms import SimpleEmailSubscribeForm
 from forum.views.auth import login_and_forward, send_validation_email
+from forum.actions import UserJoinsAction
 
 def register(request):
     if request.method == 'POST':
@@ -24,6 +25,7 @@ def register(request):
                 user_.is_superuser = True
 
             user_.save()
+            UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
             
             send_validation_email(user_)
             if email_feeds_form.cleaned_data['subscribe'] == 'n':

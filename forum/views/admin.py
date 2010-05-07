@@ -10,7 +10,7 @@ from django.db.models import Sum
 from forum.settings.base import Setting
 from forum.settings.forms import SettingsSetForm
 
-from forum.models import Activity, Question, Answer, User, Node
+from forum.models import Question, Answer, User, Node, Action
 from forum import const
 from forum import settings
 
@@ -61,19 +61,16 @@ def get_all_sets():
     return sorted(Setting.sets.values(), lambda s1, s2: s1.weight - s2.weight)
 
 def get_recent_activity():
-    return Activity.objects.filter(activity_type__in=(
-            const.TYPE_ACTIVITY_ASK_QUESTION, const.TYPE_ACTIVITY_ANSWER,
-            const.TYPE_ACTIVITY_COMMENT_QUESTION, const.TYPE_ACTIVITY_COMMENT_ANSWER,
-            const.TYPE_ACTIVITY_MARK_ANSWER)).order_by('-active_at')[0:10]
+    return Action.objects.order_by('-action_date')[0:30]
 
 def get_statistics():
     return {
         'total_users': User.objects.all().count(),
         'users_last_24': User.objects.filter(date_joined__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_questions': Question.objects.filter(deleted=False).count(),
-        'questions_last_24': Question.objects.filter(deleted=False, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_answers': Answer.objects.filter(deleted=False).count(),
-        'answers_last_24': Answer.objects.filter(deleted=False, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+        'total_questions': Question.objects.filter(deleted=None).count(),
+        'questions_last_24': Question.objects.filter(deleted=None, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+        'total_answers': Answer.objects.filter(deleted=None).count(),
+        'answers_last_24': Answer.objects.filter(deleted=None, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
     }
 
 @super_user_required      

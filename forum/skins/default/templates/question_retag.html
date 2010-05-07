@@ -59,7 +59,7 @@
     <div id="askform">
         <form id="fmretag" action="{% url edit_question question.id %}" method="post" >
             <h3>
-                {{ question.get_question_title }}
+                {{ question.headline }}
             </h3>
             <div id="description" class="edit-content-html">
                 {{ question.html|safe }}

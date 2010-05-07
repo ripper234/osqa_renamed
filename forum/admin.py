@@ -6,7 +6,7 @@ from models import *
 class AnonymousQuestionAdmin(admin.ModelAdmin):
     """AnonymousQuestion admin class"""
 
-class QuestionAdmin(admin.ModelAdmin):
+class NodeAdmin(admin.ModelAdmin):
     """Question admin class"""
 
 class TagAdmin(admin.ModelAdmin):
@@ -42,7 +42,7 @@ class BadgeAdmin(admin.ModelAdmin):
 class ReputeAdmin(admin.ModelAdmin):
     """  admin class"""
 
-class ActivityAdmin(admin.ModelAdmin):
+class ActionAdmin(admin.ModelAdmin):
     """  admin class"""
     
 #class BookAdmin(admin.ModelAdmin):
@@ -54,19 +54,13 @@ class ActivityAdmin(admin.ModelAdmin):
 #class BookAuthorRssAdmin(admin.ModelAdmin):
 #    """  admin class"""
     
-admin.site.register(Question, QuestionAdmin)
+admin.site.register(Node, NodeAdmin)
 admin.site.register(Tag, TagAdmin)
-admin.site.register(Answer, Answerdmin)
-admin.site.register(Comment, CommentAdmin)
-admin.site.register(Vote, VoteAdmin)
-admin.site.register(FlaggedItem, FlaggedItemAdmin)
-admin.site.register(FavoriteQuestion, FavoriteQuestionAdmin)
 admin.site.register(QuestionRevision, QuestionRevisionAdmin)
 admin.site.register(AnswerRevision, AnswerRevisionAdmin)
 admin.site.register(Badge, BadgeAdmin)
 admin.site.register(Award, AwardAdmin)
-admin.site.register(Repute, ReputeAdmin)
-admin.site.register(Activity, ActivityAdmin)
+admin.site.register(Action, ActionAdmin)
 #admin.site.register(Book, BookAdmin)
 #admin.site.register(BookAuthorInfo, BookAuthorInfoAdmin)
 #admin.site.register(BookAuthorRss, BookAuthorRssAdmin)

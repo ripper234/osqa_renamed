@@ -34,7 +34,7 @@ class RssLastestQuestionsFeed(Feed):
         return item.added_at
 
     def items(self, item):
-       return Question.objects.filter(deleted=False).order_by('-last_activity_at')[:30]
+       return Question.objects.filter(deleted=None).order_by('-last_activity_at')[:30]
 
 def main():
     pass

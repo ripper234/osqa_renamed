@@ -20,15 +20,43 @@ import logging
 
 from forum.const import *
 
+class LazyQueryList(object):
+    def __init__(self, model, items):
+        self.model = model
+        self.items = items
+
+    def __getitem__(self, k):
+        return self.model.objects.get(id=self.items[k])
+
+    def __iter__(self):
+        for id in self.items:
+            yield self.model.objects.get(id=id)
+
+    def __len__(self):
+        return len(self.items)
+
+class CachedQuerySet(models.query.QuerySet):
+    def lazy(self):
+        if len(self.query.extra) == 0:
+            return LazyQueryList(self.model, list(self.values_list('id', flat=True)))
+        else:
+            return self
+
+from action import Action
+
 class CachedManager(models.Manager):
     use_for_related_fields = True
     int_cache_re = re.compile('^_[\w_]+cache$')
 
+    def get_query_set(self):
+        return CachedQuerySet(self.model)
+
     def cache_obj(self, obj):
         int_cache_keys = [k for k in obj.__dict__.keys() if self.int_cache_re.match(k)]
-
+        d = obj.__dict__
         for k in int_cache_keys:
-            del obj.__dict__[k]
+            if not isinstance(obj.__dict__[k], Action):
+                del obj.__dict__[k]
 
         cache.set(self.model.cache_key(obj.id), obj, 60 * 60)
 
@@ -59,19 +87,54 @@ class CachedManager(models.Manager):
         except:
             return super(CachedManager, self).get_or_create(*args, **kwargs)
 
-denorm_update = django.dispatch.Signal(providing_args=["instance", "field", "old", "new"])
 
-class DenormalizedField(models.IntegerField):
-    __metaclass__ = models.SubfieldBase
+class DenormalizedField(object):
+    def __init__(self, manager, **kwargs):
+        self.manager = manager
+        self.filter = kwargs
 
-    def contribute_to_class(self, cls, name):
-        super (DenormalizedField, self).contribute_to_class(cls, name)
-        if not hasattr(cls, '_denormalizad_fields'):
-            cls._denormalizad_fields = []
+    def setup_class(self, cls, name):
+        dict_name = '_%s_cache_' % name
 
-        cls._denormalizad_fields.append(name)
+        def getter(inst):
+            val = inst.__dict__.get(dict_name, None)
+
+            if val is None:
+                val = getattr(inst, self.manager).filter(**self.filter).count()
+                inst.__dict__[dict_name] = val
+                inst.__class__.objects.cache_obj(inst)
+
+            return val
+
+        def reset_cache(inst):
+            inst.__dict__.pop(dict_name, None)
+            inst.__class__.objects.cache_obj(inst)
+
+        cls.add_to_class(name, property(getter))
+        cls.add_to_class("reset_%s_cache" % name, reset_cache)
+
+
+class BaseMetaClass(models.Model.__metaclass__):
+    to_denormalize = []
+
+    def __new__(cls, *args, **kwargs):
+        new_cls = super(BaseMetaClass, cls).__new__(cls, *args, **kwargs)
+
+        BaseMetaClass.to_denormalize.extend(
+            [(new_cls, name, field) for name, field in new_cls.__dict__.items() if isinstance(field, DenormalizedField)]
+        )
+
+        return new_cls
+
+    @classmethod
+    def setup_denormalizes(cls):
+        for new_cls, name, field in BaseMetaClass.to_denormalize:
+            field.setup_class(new_cls, name)
+
 
 class BaseModel(models.Model):
+    __metaclass__ = BaseMetaClass
+
     objects = CachedManager()
 
     class Meta:
@@ -92,35 +155,29 @@ class BaseModel(models.Model):
                  if self._original_state.get(k, missing) == missing or self._original_state[k] != v])
 
     def save(self, *args, **kwargs):
-        put_back = None
-
-        if hasattr(self.__class__, '_denormalizad_fields'):
-            dirty = self.get_dirty_fields()
-            put_back = [f for f in self.__class__._denormalizad_fields if f in dirty]
-
-            if put_back:
-                for n in put_back:
-                    self.__dict__[n] = models.F(n) + (self.__dict__[n] - dirty[n])
-
-        super(BaseModel, self).save(*args, **kwargs)
+        put_back = [k for k, v in self.__dict__.items() if isinstance(v, models.expressions.ExpressionNode)]
+        super(BaseModel, self).save()
 
         if put_back:
             try:
                 self.__dict__.update(
                     self.__class__.objects.filter(id=self.id).values(*put_back)[0]
                 )
-                for f in put_back:
-                    denorm_update.send(sender=self.__class__, instance=self, field=f,
-                                       old=self._original_state[f], new=self.__dict__[f])
             except:
-                #todo: log this properly
-                pass
+                logging.error("Unable to read %s from %s" % (", ".join(put_back), self.__class__.__name__))
+                self.uncache()
 
         self._original_state = dict(self.__dict__)
+        self.cache()
+
+    def cache(self):
         self.__class__.objects.cache_obj(self)
 
-    def delete(self):
+    def uncache(self):
         cache.delete(self.cache_key(self.pk))
+
+    def delete(self):
+        self.uncache()
         super(BaseModel, self).delete()
 
 
@@ -170,8 +227,6 @@ class UserContent(models.Model):
         app_label = 'forum'
 
 
-marked_deleted = django.dispatch.Signal(providing_args=["instance", "deleted_by"])
-
 class DeletableContent(models.Model):
     deleted     = models.BooleanField(default=False)
     deleted_at  = models.DateTimeField(null=True, blank=True)
@@ -189,7 +244,6 @@ class DeletableContent(models.Model):
             self.deleted_at = datetime.datetime.now()
             self.deleted_by = user
             self.save()
-            marked_deleted.send(sender=self.__class__, instance=self, deleted_by=user)
             return True
         else:
             return False
@@ -223,19 +277,6 @@ class CancelableContent(models.Model):
 
 from node import Node, NodeRevision
 
-class QandA(Node):
-    wiki                 = models.BooleanField(default=False)
-    wikified_at          = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
-    def wikify(self):
-        if not self.wiki:
-            self.wiki = True
-            self.wikified_at = datetime.datetime.now()
-            self.save()
 
 
 

@@ -5,15 +5,14 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.conf import settings
 from forum.forms import FeedbackForm
 from django.core.urlresolvers import reverse
-from django.core.mail import mail_admins
 from django.utils.translation import ugettext as _
+from django.db.models import Count
 from forum.utils.forms import get_next_url
 from forum.models import Badge, Award, User
-from forum.badges import ALL_BADGES
+from forum.badges.base import BadgesMeta
 from forum import settings
 from forum.utils.mail import send_email
-from forum.settings.settingsmarkdown import *
-
+from forum.settings.settingsmarkdown import SettingsExtension, markdown
 import re
 
 def favicon(request):
@@ -36,7 +35,6 @@ def feedback(request):
 
             if not request.user.is_authenticated:
                 context['email'] = form.cleaned_data.get('email',None)
-            
             context['message'] = form.cleaned_data['message']
             context['name'] = form.cleaned_data.get('name',None)
 
@@ -62,20 +60,13 @@ def logout(request):
         'next' : get_next_url(request),
     }, context_instance=RequestContext(request))
 
-def badges(request):#user status/reputation system
-    badges = Badge.objects.all().order_by('name')
-
-    badges_dict = dict([(badge.badge, badge.description) for badge in ALL_BADGES])
-
-    for badge in badges:
-        if badge.description != badges_dict.get(badge.slug, badge.description):
-            badge.description = badges_dict[badge.slug]
-            badge.save()
+def badges(request):
+    badges = [b.ondb for b in sorted(BadgesMeta.by_id.values(), lambda b1, b2: cmp(b1.name, b2.name))]
     
-    my_badges = []
     if request.user.is_authenticated():
-        my_badges = Award.objects.filter(user=request.user).values('badge_id')
-        #my_badges.query.group_by = ['badge_id']
+        my_badges = Award.objects.filter(user=request.user).values('badge_id').distinct()
+    else:
+        my_badges = []
 
     return render_to_response('badges.html', {
         'badges' : badges,
@@ -83,19 +74,9 @@ def badges(request):#user status/reputation system
         'feedback_faq_url' : reverse('feedback'),
     }, context_instance=RequestContext(request))
 
-def badge(request, id):
-    badge = get_object_or_404(Badge, id=id)
-    awards = Award.objects.extra(
-        select={'id': 'auth_user.id', 
-                'name': 'auth_user.username', 
-                'rep':'forum_user.reputation',
-                'gold': 'forum_user.gold',
-                'silver': 'forum_user.silver',
-                'bronze': 'forum_user.bronze'},
-        tables=['award', 'auth_user', 'forum_user'],
-        where=['badge_id=%s AND user_id=auth_user.id AND forum_user.user_ptr_id = auth_user.id'],
-        params=[id]
-    ).distinct('id')
+def badge(request, id, slug):
+    badge = Badge.objects.get(id=id)
+    awards = Award.objects.filter(badge=badge).annotate(count=Count('user')).distinct('user').order_by('-count')
 
     return render_to_response('badge.html', {
         'awards' : awards,

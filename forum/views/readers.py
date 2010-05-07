@@ -26,7 +26,8 @@ from forum.forms import *
 from forum.models import *
 from forum.const import *
 from forum.utils.forms import get_next_url
-from forum.models.question import question_view
+from forum.actions import QuestionViewAction
+from forum.modules.decorators import decoratable
 import decorators
 
 # used in index page
@@ -41,26 +42,13 @@ QUESTIONS_PAGE_SIZE = 30
 # used in answers
 ANSWERS_PAGE_SIZE = 10
 
-#system to display main content
-def _get_tags_cache_json():#service routine used by views requiring tag list in the javascript space
-    """returns list of all tags in json format
-    no caching yet, actually
-    """
-    tags = Tag.objects.filter(deleted=False).all()
-    tags_list = []
-    for tag in tags:
-        dic = {'n': tag.name, 'c': tag.used_count}
-        tags_list.append(dic)
-    tags = simplejson.dumps(tags_list)
-    return tags
-
 @decorators.render('index.html')
 def index(request):
     return question_list(request, Question.objects.all(), sort='active', base_path=reverse('questions'))
 
 @decorators.render('questions.html', 'unanswered')
 def unanswered(request):
-    return question_list(request, Question.objects.filter(accepted_answer=None),
+    return question_list(request, Question.objects.filter(extra_ref=None),
                          _('Open questions without an accepted answer'))
 
 @decorators.render('questions.html', 'questions')
@@ -74,10 +62,7 @@ def tag(request, tag):
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None):
-    pagesize = request.utils.page_size(QUESTIONS_PAGE_SIZE)
-    page = int(request.GET.get('page', 1))
-
-    questions = initial.filter(deleted=False)
+    questions = initial.filter(deleted=None, in_moderation=None)
 
     if request.user.is_authenticated():
         questions = questions.filter(
@@ -89,7 +74,7 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
         else:
             request.utils.set_sort_method(sort)
 
-        view_dic = {"latest":"-added_at", "active":"-last_activity_at", "hottest":"-answer_count", "mostvoted":"-score" }
+        view_dic = {"latest":"-added_at", "active":"-last_activity_at", "hottest":"-extra_count", "mostvoted":"-score" }
 
         questions=questions.order_by(view_dic.get(sort, '-added_at'))
 
@@ -118,15 +103,13 @@ def search(request):
     else:
         return render_to_response("search.html", context_instance=RequestContext(request))
 
+@decoratable
+def do_question_search(keywords):
+    return Question.objects.filter(Q(title__icontains=keywords) | Q(body__icontains=keywords))
+
 @decorators.render('questions.html')
 def question_search(request, keywords):
-    def question_search(keywords):
-        return Question.objects.filter(Q(title__icontains=keywords) | Q(body__icontains=keywords))
-
-    from forum.modules import get_handler
-
-    question_search = get_handler('question_search', question_search)
-    initial = question_search(keywords)
+    initial = do_question_search(keywords)
 
     return question_list(request, initial, _("questions matching '%(keywords)s'") % {'keywords': keywords},
             base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)
@@ -193,7 +176,7 @@ def update_question_view_times(request, question):
     last_seen = request.session['last_seen_in_question'].get(question.id,None)
 
     if (not last_seen) or last_seen < question.last_activity_at:
-        question_view.send(sender=update_question_view_times, instance=question, user=request.user)
+        QuestionViewAction(question, request.user).save()
         request.session['last_seen_in_question'][question.id] = datetime.datetime.now()
 
     request.session['last_seen_in_question'][question.id] = datetime.datetime.now()
@@ -231,7 +214,7 @@ def question(request, id, slug):
     answers = request.user.get_visible_answers(question)
 
     if answers is not None:
-        answers = [a for a in answers.order_by("-accepted", order_by)
+        answers = [a for a in answers.order_by("-marked", order_by)
                    if not a.deleted or a.author == request.user]
 
     objects_list = Paginator(answers, ANSWERS_PAGE_SIZE)
@@ -251,7 +234,6 @@ def question(request, id, slug):
         "question" : question,
         "answer" : answer_form,
         "answers" : page_objects.object_list,
-        "tags" : question.tags.all(),
         "tab_id" : view_id,
         "similar_questions" : question.get_related_questions(),
         "subscription": subscription,

@@ -36,7 +36,10 @@
         <h3 class="or_label">{% trans 'Or...' %}</h3>
     {% endif %}
     <div style="width:600px;float:left;margin-bottom:5px;">
-        {% trans "Click to sign in through any of these services." %}
+    {% blocktrans %}
+        External login services use <b><a href="http://openid.net/">OpenID</a></b> technology, where your password always stays confidential between
+        you and your login provider and you don't have to remember another one.
+    {% endblocktrans %}
     </div>
     {% if request.user.is_anonymous %}
         <div style="width:600px;float:left;margin-bottom:5px;">
@@ -47,34 +50,38 @@
     <div id="bigicon_providers">
         {% for provider in bigicon_providers %}
             <div class="provider_logo big" name="{{ provider.id }}">
-                {% ifequal provider.type "DIRECT" %}
-                    <a class="provider_direct" href="{% url auth_provider_signin provider=provider.id %}">
-                        <img src="{% media provider.icon %}" />
-                    </a>
-                {% endifequal %}
-                {% ifequal provider.type "CUSTOM" %}
-                    {% include provider.code_template %}
-                {% endifequal %}
-                {% ifequal provider.type "SIMPLE_FORM" %}
-                    <img alt="{{ provider.simple_form_context.your_what }}" class="simple_form_provider" src="{% media provider.icon %}" />
-                {% endifequal %}
+                <div class="inner">
+                    {% ifequal provider.type "DIRECT" %}
+                        <a class="provider_direct" href="{% url auth_provider_signin provider=provider.id %}">
+                            <img src="{% media provider.icon %}" />
+                        </a>
+                    {% endifequal %}
+                    {% ifequal provider.type "CUSTOM" %}
+                        {% include provider.code_template %}
+                    {% endifequal %}
+                    {% ifequal provider.type "SIMPLE_FORM" %}
+                        <img alt="{{ provider.simple_form_context.your_what }}" class="simple_form_provider" src="{% media provider.icon %}" />
+                    {% endifequal %}
+                </div>
             </div>
         {% endfor %}
     </div>
     <div id="smallicon_providers">
         {% for provider in smallicon_providers %}
             <div class="provider_logo small" name="{{ provider.id }}">
-                {% ifequal provider.type "DIRECT" %}
-                    <a class="provider_direct" href="{% url auth_provider_signin provider=provider.id %}">
-                        <img src="{% media provider.icon %}" />
-                    </a>
-                {% endifequal %}
-                {% ifequal provider.type "CUSTOM" %}
-                    {% include provider.code_template %}
-                {% endifequal %}
-                {% ifequal provider.type "SIMPLE_FORM" %}
-                    <img alt="{{ provider.simple_form_context.your_what }}" class="simple_form_provider" src="{% media provider.icon %}" />
-                {% endifequal %}
+                <div class="inner">
+                    {% ifequal provider.type "DIRECT" %}
+                        <a class="provider_direct" href="{% url auth_provider_signin provider=provider.id %}">
+                            <img src="{% media provider.icon %}" />
+                        </a>
+                    {% endifequal %}
+                    {% ifequal provider.type "CUSTOM" %}
+                        {% include provider.code_template %}
+                    {% endifequal %}
+                    {% ifequal provider.type "SIMPLE_FORM" %}
+                        <img alt="{{ provider.simple_form_context.your_what }}" class="simple_form_provider" src="{% media provider.icon %}" />
+                    {% endifequal %}
+                </div>
             </div>
         {% endfor %}
     </div>
@@ -90,9 +97,11 @@
         </form>
     {% endfor %}
     <h3 class="or_label">{% trans 'Or...' %}</h3>
-    <fieldset>
-        {% trans 'Click' %} <a href="{% url auth_request_tempsignin %}">here</a> {% trans "if you're having troubles signing in." %}
-    </fieldset>
+    <form name="signin_form" id="dummy_form_unused" class="signin_form" method="POST" action="">
+        <fieldset>
+            {% trans 'Click' %} <a href="{% url auth_request_tempsignin %}">here</a> {% trans "if you're having troubles signing in." %}
+        </fieldset>
+    </form>
     <script type="text/html" id="simple_form_template">
         <fieldset id="slot_form">
               <p id="provider_name_slot">{% trans 'Enter your ' %}%%YOUR_WHAT%%</p>

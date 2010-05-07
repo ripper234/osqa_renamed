@@ -5,6 +5,7 @@
 
 {% block forejs %}
     <link rel="stylesheet" type="text/css" media="screen" href="{% media "/media/style/admin.css" %}"/>
+    <script type="text/javascript" src="{% media "/media/js/osqa.admin.js" %}"></script>
     {% block adminjs %}{% endblock %}
 {% endblock %}
 
@@ -23,12 +24,12 @@
 
 {% block sidebar %}
     <div class="boxC">
-      <h3 class="subtitle">{% trans "Administration menu" %}</h3>
-      <ul>
-      {% for set in sets %}
-          <li><a href="{% url admin_set set.name %}">{{ set.title }}</a></li>
-      {% endfor %}
-      </ul>
+        <h3 class="subtitle">{% trans "Administration menu" %}</h3>
+        <ul>
+        {% for set in sets %}
+            <li><a href="{% url admin_set set.name %}">{{ set.title }}</a></li>
+        {% endfor %}
+        </ul>
     </div>
     {% if markdown %}
 
@@ -65,5 +66,4 @@
     {% endif %}
 {% endblock %}
 
-
-
+                

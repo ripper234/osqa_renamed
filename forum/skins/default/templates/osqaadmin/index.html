@@ -65,7 +65,7 @@
                 <h3>{% trans "Recent activity" %}</h3>
                 <table width="100%">
                 {% for activity in recent_activity %}
-                    {% activity_item activity %}
+                    {% activity_item activity request.user %}
                 {% endfor %}
                 </table>
             </td>

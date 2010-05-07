@@ -11,7 +11,7 @@
             <div style="clear:both;line-height:20px" >
                 <div style="width:150px;float:left">{% diff_date vote.voted_at 3 %}</div>
                 <div style="width:30px;float:left">
-                {% ifequal vote.vote 1 %}
+                {% ifequal vote.value 1 %}
                     <img src="{% media  "/media/images/vote-arrow-up-on.png" %}" title="{% trans "upvote" %}">
                 {% else %}
                     <img src="{% media  "/media/images/vote-arrow-down-on.png" %}" title="{% trans "downvote" %}">

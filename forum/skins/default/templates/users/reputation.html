@@ -34,7 +34,7 @@
                         <div style="float:left;width:20px;color:red">{{ rep.negative }}</div>
                         
                     </div>
-                    <a href="{{ rep.question.get_absolute_url }}">{{ rep.question.title }}</a> <span class="small">({{ rep.reputed_at }})</span>
+                    <a href="{{ rep.action.node.get_absolute_url }}">{{ rep.action.node.headline }}</a> <span class="small">({{ rep.date }})</span>
                 </p>
                 {% endfor %}
             </div>

@@ -4,8 +4,8 @@
 {% load question_list_tags %}
 {% block usercontent %}
 <div class="user-stats-table">
-    {% for question in questions %}
-        {% question_list_item question favorite_count=yes signature_type=badges %}
+    {% for favorite in favorites %}
+        {% question_list_item favorite.node favorite_count=yes signature_type=badges %}
     {% endfor %}
 </div>
 {% endblock %}

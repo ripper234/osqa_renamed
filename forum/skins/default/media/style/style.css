@@ -663,8 +663,6 @@ ul.errorlist li {
     margin-top: 5px;
 }
 
-div.comments-container { padding: 0; }
-
 .answer {
 	border-bottom: 1px solid #CCCCCE;
 	padding-top: 10px;
@@ -677,12 +675,12 @@ div.comments-container { padding: 0; }
 	min-height: 80px;
 }
 
+.answered-by-owner { background: none repeat scroll 0 0 #E9E9FF; }
+
 .accepted-answer {
 	background-color: #EBFFE6;
 	border-bottom-color: #9BD59B;
 }
-
-.accepted-answer .comments-container { background-color: #CCFFBF; }
 
 .answered {
 	background: none repeat scroll 0 0 #E5EBF8;
@@ -698,9 +696,6 @@ div.comments-container { padding: 0; }
 	background: none repeat scroll 0 0 #F3E3E1;
 	color: #6B2B28;
 }
-
-.answered-by-owner { background: none repeat scroll 0 0 #E9E9FF; }
-.answered-by-owner .comments-container { background-color: #E6ECFF; }
 
 .tagsList {
 	list-style-type: none;
@@ -1111,7 +1106,6 @@ ul.form-horizontal-rows li input {
 }
 
 .post-controls {
-	float: left;
 	font-size: 11px;
 	line-height: 12px;
 	margin-bottom: 5px;
@@ -1119,11 +1113,6 @@ ul.form-horizontal-rows li input {
 }
 
 #question-controls .tags { margin: 0 0 3px; }
-
-.post-update-info-container {
-	float: right;
-	min-width: 190px;
-}
 
 .post-update-info {
 	display: inline-block;
@@ -1143,21 +1132,6 @@ ul.form-horizontal-rows li input {
 	float: left;
 	margin: 4px 8px 0 0;
 	width: 32px;
-}
-
-.comments-container { clear: both; }
-
-.admin {
-	background-color: #FFF380;
-	border: 1px solid darkred;
-	padding: 0 5px;
-}
-
-.admin p { margin-bottom: 3px; }
-
-.admin #action_status {
-	font-weight: bold;
-	text-align: center;
 }
 
 #tagSelector { padding-bottom: 2px; }
@@ -1192,10 +1166,10 @@ a.post-vote.down.on,a.post-vote.down:hover { background: url("../images/vote-arr
 a.accept-answer { background: url("../images/vote-accepted.png") no-repeat scroll center center transparent; }
 a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accepted-on.png") no-repeat scroll center center transparent; }
 
-.post-score {
+.post-score, .comments-char-left-count {
 	color: #777777;
 	font-family: Arial;
-	font-size: 140%;
+	font-size: 165%;
 	font-weight: bold;
 	padding: 0 0 3px;
 }
@@ -1211,10 +1185,15 @@ a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accep
 	padding: 0;
 }
 
+.comments-container { clear: both; }
+.comments-container { padding: 0; }
+.answered-by-owner .comments-container { background-color: #E6ECFF; }
+.accepted-answer .comments-container { background-color: #CCFFBF; }
+
 .comment {
 	border-top: 1px dotted #CCCCCE;
 	margin: 0;
-	width: 100%;
+    position: relative;
 }
 
 .comment.not_top_scorer { display: none; }
@@ -1226,27 +1205,39 @@ a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accep
 	font-weight: bold;
 	padding-top: 3px;
 	vertical-align: top;
+    float: left;
 	width: 22px;
+    height: 100%;
+    text-align: center;
 }
 
 .comment-text {
 	color: #444444;
-	font-size: 11px;
+	font-size: 12px;
 	margin: 0 0 0 22px;
 	padding: 0;
 }
 
+.comment-text p {
+    font-size: 12px;
+}
+
 .comment-info {
 	font-size: 11px;
-	margin: 0;
-	text-align: right;
+	margin: 0 0 4px 0;
+    text-align: right;
+    height: 18px;
+    vertical-align: middle;
+}
+
+.comment-info * {
+    float: right;
+	height: 18px;
+	margin-left: 4px;
 }
 
 a.comment-like,a.comment-delete,a.comment-edit {
-	float: right;
-	height: 18px;
 	margin-left: 2px;
-	position: relative;
 	width: 18px;
 }
 
@@ -1265,8 +1256,9 @@ a.comment-edit:hover { background: url("../images/comment-edit-hover.png") no-re
 .comment-form-widgets-container input { vertical-align: top; }
 
 .comment-form-widgets-container textarea {
-	height: 6em;
+	height: 80px;
 	width: 80%;
+    float: left;
 }
 
 span.comment-chars-left {
@@ -1312,3 +1304,69 @@ div.comment-tools a:hover {
 }
 
 .action-link-separator { color: #CCCCCC; }
+
+.deleted {background-color: #F4E7E7;}
+
+#command-loader {
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    width: 24px;
+    height: 24px;
+    background: url('/m/default/media/images/indicator.gif')
+}
+
+#command-loader.success {
+    background: url('/m/default/media/images/vote-accepted-on.png')
+}
+
+.user-prompt {
+    width: 300px;
+}
+
+.user-prompt select, .user-prompt textarea {
+    width: 100%;
+    padding: 0;
+    border: 0;
+}
+
+.user-prompt .prompt-buttons {
+    text-align: right;
+}
+
+.comment-form-buttons {
+    width: 18%;
+    height: 100%;
+    float: right;
+}
+
+.comment-form-buttons input, .user-prompt .prompt-buttons button {
+    height: 16px;
+    line-height: 12px;
+    font-size: 110%;
+    border: 1px solid #999;
+}
+
+.comment-form-buttons input {
+    width: 100%;
+    height: 22px;
+    vertical-align: center;
+    margin-top: 6px;
+}
+
+.comments-char-left-count.warn {
+    color: orange;    
+}
+
+.moderation {
+	background-color: #FFF380;
+	border: 1px solid darkred;
+	padding: 0 5px;
+}
+
+.moderation p { margin-bottom: 3px; }
+
+.moderation #action_status {
+	font-weight: bold;
+	text-align: center;
+}

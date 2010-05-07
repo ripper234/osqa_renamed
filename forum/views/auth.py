@@ -17,9 +17,10 @@ from forum.authentication.forms import SimpleRegistrationForm, SimpleEmailSubscr
 from forum.utils.mail import send_email
 
 from forum.authentication.base import InvalidAuthentication
-from forum.authentication import AUTH_PROVIDERS, user_logged_in
+from forum.authentication import AUTH_PROVIDERS
 
 from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answer
+from forum.actions import UserJoinsAction
 
 def signin_page(request, action=None):
     if action is None:
@@ -146,6 +147,7 @@ def external_register(request):
                 user_.is_superuser = True
             
             user_.save()
+            UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
 
             if not user_.email_isvalid:
                 send_validation_email(user_)
@@ -157,7 +159,7 @@ def external_register(request):
                 request.session['auth_error'] = _("Oops, something went wrong in the middle of this process. Please try again.")
                 return HttpResponseRedirect(request.session.get('on_signin_url', reverse('auth_signin'))) 
 
-            uassoc = AuthKeyUserAssociation(user=user_, key=request.session['assoc_key'], provider=request.session['auth_provider'])
+            uassoc = AuthKeyUserAssociation(user=user_, key=assoc_key, provider=auth_provider)
             uassoc.save()
 
             if email_feeds_form.cleaned_data['subscribe'] == 'n':
@@ -336,7 +338,7 @@ def login_and_forward(request,  user, forward=None, message=None):
     user.backend = "django.contrib.auth.backends.ModelBackend"
     login(request,  user)
 
-    user_logged_in.send(user=user,old_session=old_session,sender=None)
+    #user_logged_in.send(user=user,old_session=old_session,sender=None)
 
     if not forward:
         signin_action = request.session.get('on_signin_action', None)

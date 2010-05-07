@@ -8,13 +8,15 @@ from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext
 from forum.models import *
 from forum.forms import CloseForm
+from forum.actions import *
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
-from decorators import command
+from decorators import command, CommandException
+from forum import settings
 import logging
 
-class NotEnoughRepPointsException(Exception):
+class NotEnoughRepPointsException(CommandException):
     def __init__(self, action):
         super(NotEnoughRepPointsException, self).__init__(
             _("""
@@ -23,7 +25,7 @@ class NotEnoughRepPointsException(Exception):
             """ % {'action': action, 'faq_url': reverse('faq')})
         )
 
-class CannotDoOnOwnException(Exception):
+class CannotDoOnOwnException(CommandException):
     def __init__(self, action):
         super(CannotDoOnOwnException, self).__init__(
             _("""
@@ -32,7 +34,7 @@ class CannotDoOnOwnException(Exception):
             """ % {'action': action, 'faq_url': reverse('faq')})
         )
 
-class AnonymousNotAllowedException(Exception):
+class AnonymousNotAllowedException(CommandException):
     def __init__(self, action):
         super(AnonymousNotAllowedException, self).__init__(
             _("""
@@ -41,13 +43,13 @@ class AnonymousNotAllowedException(Exception):
             """ % {'action': action, 'signin_url': reverse('auth_signin')})
         )
 
-class SpamNotAllowedException(Exception):
+class SpamNotAllowedException(CommandException):
     def __init__(self, action = "comment"):
         super(SpamNotAllowedException, self).__init__(
             _("""Your %s has been marked as spam.""" % action)
         )
 
-class NotEnoughLeftException(Exception):
+class NotEnoughLeftException(CommandException):
     def __init__(self, action, limit):
         super(NotEnoughLeftException, self).__init__(
             _("""
@@ -57,7 +59,7 @@ class NotEnoughLeftException(Exception):
             """ % {'action': action, 'limit': limit, 'faq_url': reverse('faq')})
         )
 
-class CannotDoubleActionException(Exception):
+class CannotDoubleActionException(CommandException):
     def __init__(self, action):
         super(CannotDoubleActionException, self).__init__(
             _("""
@@ -70,7 +72,6 @@ class CannotDoubleActionException(Exception):
 @command
 def vote_post(request, id, vote_type):
     post = get_object_or_404(Node, id=id).leaf
-    vote_score = vote_type == 'up' and 1 or -1
     user = request.user
 
     if not user.is_authenticated():
@@ -87,30 +88,37 @@ def vote_post(request, id, vote_type):
     if user_vote_count_today >= int(settings.MAX_VOTES_PER_DAY):
         raise NotEnoughLeftException(_('votes'), str(settings.MAX_VOTES_PER_DAY))
 
-    try:
-        vote = post.votes.get(canceled=False, user=user)
+    new_vote_cls = (vote_type == 'up') and VoteUpAction or VoteDownAction
+    score_inc = 0
 
-        if vote.voted_at < datetime.datetime.now() - datetime.timedelta(days=int(settings.DENY_UNVOTE_DAYS)):
-            raise Exception(
+    try:
+        old_vote = Action.objects.get_for_types((VoteUpAction, VoteDownAction), node=post, user=user)
+
+        if old_vote.action_date < datetime.datetime.now() - datetime.timedelta(days=int(settings.DENY_UNVOTE_DAYS)):
+            raise CommandException(
                     _("Sorry but you cannot cancel a vote after %(ndays)d %(tdays)s from the original vote") %
                     {'ndays': int(settings.DENY_UNVOTE_DAYS), 'tdays': ungettext('day', 'days', int(settings.DENY_UNVOTE_DAYS))}
             )
 
-        vote.cancel()
-        vote_type = 'none'
+        old_vote.cancel(ip=request.META['REMOTE_ADDR'])
+        score_inc += (old_vote.__class__ == VoteDownAction) and 1 or -1
     except ObjectDoesNotExist:
-        #there is no vote yet
-        vote = Vote(user=user, node=post, vote=vote_score)
-        vote.save()
+        old_vote = None
+
+    if old_vote.__class__ != new_vote_cls:
+        new_vote_cls(user=user, node=post, ip=request.META['REMOTE_ADDR']).save()
+        score_inc += (new_vote_cls == VoteUpAction) and 1 or -1
+    else:
+        vote_type = "none"
 
     response = {
         'commands': {
-            'update_post_score': [id, vote.vote * (vote_type == 'none' and -1 or 1)],
+            'update_post_score': [id, score_inc],
             'update_user_post_vote': [id, vote_type]
         }
     }
 
-    votes_left = int(settings.MAX_VOTES_PER_DAY) - user_vote_count_today + (vote_type == 'none' and -1 or 1)
+    votes_left = (int(settings.MAX_VOTES_PER_DAY) - user_vote_count_today) + (vote_type == 'none' and -1 or 1)
 
     if int(settings.START_WARN_VOTES_LEFT) >= votes_left:
         response['message'] = _("You have %(nvotes)s %(tvotes)s left today.") % \
@@ -120,6 +128,9 @@ def vote_post(request, id, vote_type):
 
 @command
 def flag_post(request, id):
+    if not request.POST:
+        return render_to_response('node/report.html', {'types': settings.FLAG_TYPES})
+
     post = get_object_or_404(Node, id=id)
     user = request.user
 
@@ -138,13 +149,17 @@ def flag_post(request, id):
         raise NotEnoughLeftException(_('flags'), str(settings.MAX_FLAGS_PER_DAY))
 
     try:
-        post.flaggeditems.get(user=user)
-        raise CannotDoubleActionException(_('flag'))
+        current = FlagAction.objects.get(user=user, node=post)
+        raise CommandException(_("You already flagged this post with the following reason: %(reason)s") % {'reason': current.extra})
     except ObjectDoesNotExist:
-        flag = FlaggedItem(user=user, content_object=post)
-        flag.save()
+        reason = request.POST.get('prompt', '').strip()
 
-    return {}
+        if not len(reason):
+            raise CommandException(_("Reason is empty"))
+
+        FlagAction(user=user, node=post, extra=reason, ip=request.META['REMOTE_ADDR']).save()
+
+    return {'message': _("Thank you for your report. A moderator will review your submission shortly.")}
         
 @command
 def like_comment(request, id):
@@ -161,18 +176,17 @@ def like_comment(request, id):
         raise NotEnoughRepPointsException( _('like comments'))    
 
     try:
-        like = LikedComment.active.get(comment=comment, user=user)
-        like.cancel()
+        like = VoteUpCommentAction.objects.get(node=comment, user=user)
+        like.cancel(ip=request.META['REMOTE_ADDR'])
         likes = False
     except ObjectDoesNotExist:
-        like = LikedComment(comment=comment, user=user)
-        like.save()
+        VoteUpCommentAction(node=comment, user=user, ip=request.META['REMOTE_ADDR']).save()
         likes = True
 
     return {
         'commands': {
-            'update_comment_score': [comment.id, likes and 1 or -1],
-            'update_likes_comment_mark': [comment.id, likes and 'on' or 'off']
+            'update_post_score': [comment.id, likes and 1 or -1],
+            'update_user_post_vote': [comment.id, likes and 'up' or 'none']
         }
     }
 
@@ -187,7 +201,8 @@ def delete_comment(request, id):
     if not user.can_delete_comment(comment):
         raise NotEnoughRepPointsException( _('delete comments'))
 
-    comment.mark_deleted(user)
+    if not comment.deleted:
+        DeleteAction(node=comment, user=user, ip=request.META['REMOTE_ADDR']).save()
 
     return {
         'commands': {
@@ -203,12 +218,11 @@ def mark_favorite(request, id):
         raise AnonymousNotAllowedException(_('mark a question as favorite'))
 
     try:
-        favorite = FavoriteQuestion.objects.get(question=question, user=request.user)
-        favorite.delete()
+        favorite = FavoriteAction.objects.get(node=question, user=request.user)
+        favorite.cancel(ip=request.META['REMOTE_ADDR'])
         added = False
     except ObjectDoesNotExist:
-        favorite = FavoriteQuestion(question=question, user=request.user)
-        favorite.save()
+        FavoriteAction(node=question, user=request.user, ip=request.META['REMOTE_ADDR']).save()
         added = True
 
     return {
@@ -227,33 +241,23 @@ def comment(request, id):
         raise AnonymousNotAllowedException(_('comment'))
 
     if not request.method == 'POST':
-        raise Exception(_("Invalid request"))
-
-    if 'id' in request.POST:
-        comment = get_object_or_404(Comment, id=request.POST['id'])
-
-        if not user.can_edit_comment(comment):
-            raise NotEnoughRepPointsException( _('edit comments'))
-    else:
-        if not user.can_comment(post):
-            raise NotEnoughRepPointsException( _('comment'))
-
-        comment = Comment(parent=post)
+        raise CommandException(_("Invalid request"))
 
     comment_text = request.POST.get('comment', '').strip()
 
     if not len(comment_text):
-        raise Exception(_("Comment is empty"))
+        raise CommandException(_("Comment is empty"))
 
-    if not len(comment_text) > settings.FORM_MIN_COMMENT_BODY:
-        raise Exception(_("Comment must be at least %s characters" % settings.FORM_MIN_COMMENT_BODY))
+    if len(comment_text) < settings.FORM_MIN_COMMENT_BODY:
+        raise CommandException(_("At least %d characters required on comment body.") % settings.FORM_MIN_COMMENT_BODY)
 
-    comment.create_revision(user, body=comment_text)
+    if len(comment_text) > settings.FORM_MAX_COMMENT_BODY:
+        raise CommandException(_("No more than %d characters on comment body.") % settings.FORM_MAX_COMMENT_BODY)
 
     data = {
         "user_ip":request.META["REMOTE_ADDR"],
         "user_agent":request.environ['HTTP_USER_AGENT'],
-        "comment_author":request.user.real_name,
+        "comment_author":request.user.username,
         "comment_author_email":request.user.email,
         "comment_author_url":request.user.website,
         "comment":comment_text
@@ -261,11 +265,25 @@ def comment(request, id):
     if Node.isSpam(comment_text, data):
         raise SpamNotAllowedException()
 
+    if 'id' in request.POST:
+        comment = get_object_or_404(Comment, id=request.POST['id'])
+
+        if not user.can_edit_comment(comment):
+            raise NotEnoughRepPointsException( _('edit comments'))
+
+        comment = ReviseAction(user=user, node=comment, ip=request.META['REMOTE_ADDR']).save(data=dict(text=comment_text)).node
+    else:
+        if not user.can_comment(post):
+            raise NotEnoughRepPointsException( _('comment'))
+
+        comment = CommentAction(user=user, ip=request.META['REMOTE_ADDR']).save(data=dict(text=comment_text, parent=post)).node
+
     if comment.active_revision.revision == 1:
         return {
             'commands': {
                 'insert_comment': [
-                    id, comment.id, comment_text, user.username, user.get_profile_url(), reverse('delete_comment', kwargs={'id': comment.id})
+                    id, comment.id, comment.comment, user.username, user.get_profile_url(),
+                        reverse('delete_comment', kwargs={'id': comment.id}), reverse('node_markdown', kwargs={'id': comment.id})
                 ]
             }
         }
@@ -275,6 +293,16 @@ def comment(request, id):
                 'update_comment': [comment.id, comment.comment]
             }
         }
+
+@command
+def node_markdown(request, id):
+    user = request.user
+
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_('accept answers'))
+
+    node = get_object_or_404(Node, id=id)
+    return HttpResponse(node.body, mimetype="text/plain")
 
 
 @command
@@ -288,20 +316,20 @@ def accept_answer(request, id):
     question = answer.question
 
     if not user.can_accept_answer(answer):
-        raise Exception(_("Sorry but only the question author can accept an answer"))
+        raise CommandException(_("Sorry but only the question author can accept an answer"))
 
     commands = {}
 
     if answer.accepted:
-        answer.unmark_accepted(user)
+        answer.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
         commands['unmark_accepted'] = [answer.id]
     else:
-        if question.accepted_answer is not None:
+        if question.answer_accepted:
             accepted = question.accepted_answer
-            accepted.unmark_accepted(user)
+            accepted.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
             commands['unmark_accepted'] = [accepted.id]
 
-        answer.mark_accepted(user)
+        AcceptAnswerAction(node=answer, user=user, ip=request.META['REMOTE_ADDR']).save()
         commands['mark_accepted'] = [answer.id]
 
     return {'commands': commands}
@@ -317,12 +345,49 @@ def delete_post(request, id):
     if not (user.can_delete_post(post)):
         raise NotEnoughRepPointsException(_('delete posts'))
 
-    post.mark_deleted(user)
+    ret = {'commands': {}}
+
+    if post.deleted:
+        post.deleted.cancel(user, ip=request.META['REMOTE_ADDR'])
+        ret['commands']['unmark_deleted'] = [post.node_type, id]
+    else:
+        DeleteAction(node=post, user=user, ip=request.META['REMOTE_ADDR']).save()
+
+        ret['commands']['mark_deleted'] = [post.node_type, id]
+
+    return ret
+
+@command
+def close(request, id, close):
+    if close and not request.POST:
+        return render_to_response('node/report.html', {'types': settings.CLOSE_TYPES})
+
+    question = get_object_or_404(Question, id=id)
+    user = request.user
+
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_('close questions'))
+
+    if question.extra_action:
+        if not user.can_reopen_question(question):
+            raise NotEnoughRepPointsException(_('reopen questions'))
+
+        question.extra_action.cancel(user, ip=request.META['REMOTE_ADDR'])
+    else:
+        if not request.user.can_close_question(question):
+            raise NotEnoughRepPointsException(_('close questions'))
+
+        reason = request.POST.get('prompt', '').strip()
+
+        if not len(reason):
+            raise CommandException(_("Reason is empty"))
+
+        CloseAction(node=question, user=user, extra=reason, ip=request.META['REMOTE_ADDR']).save()
 
     return {
         'commands': {
-                'mark_deleted': [post.node_type, id]
-            }
+            'refresh_page': []
+        }
     }
 
 @command
@@ -368,7 +433,7 @@ def mark_tag(request, tag=None, **kwargs):#tagging system
 
 def matching_tags(request):
     if len(request.GET['q']) == 0:
-       raise Exception(_("Invalid request"))
+       raise CommandException(_("Invalid request"))
 
     possible_tags = Tag.objects.filter(name__istartswith = request.GET['q'])
     tag_output = ''
@@ -377,72 +442,9 @@ def matching_tags(request):
         
     return HttpResponse(tag_output, mimetype="text/plain")
 
-@ajax_login_required
-def ajax_toggle_ignored_questions(request):#ajax tagging and tag-filtering system
-    if request.user.hide_ignored_questions:
-        new_hide_setting = False
-    else:
-        new_hide_setting = True
-    request.user.hide_ignored_questions = new_hide_setting
-    request.user.save()
 
-@ajax_method
-def ajax_command(request):#refactor? view processing ajax commands - note "vote" and view others do it too
-    if 'command' not in request.POST:
-        return HttpResponseForbidden(mimetype="application/json")
-    if request.POST['command'] == 'toggle-ignored-questions':
-        return ajax_toggle_ignored_questions(request)
 
-@login_required
-def close(request, id):#close question
-    """view to initiate and process 
-    question close
-    """
-    question = get_object_or_404(Question, id=id)
-    if not request.user.can_close_question(question):
-        return HttpResponseForbidden()
-    if request.method == 'POST':
-        form = CloseForm(request.POST)
-        if form.is_valid():
-            reason = form.cleaned_data['reason']
-            question.closed = True
-            question.closed_by = request.user
-            question.closed_at = datetime.datetime.now()
-            question.close_reason = reason
-            question.save()
-        return HttpResponseRedirect(question.get_absolute_url())
-    else:
-        form = CloseForm()
-        return render_to_response('close.html', {
-            'form' : form,
-            'question' : question,
-            }, context_instance=RequestContext(request))
 
-@login_required
-def reopen(request, id):#re-open question
-    """view to initiate and process 
-    question close
-    """
-    question = get_object_or_404(Question, id=id)
-    # open question
-    if not request.user.can_reopen_question(question):
-        return HttpResponseForbidden()
-    if request.method == 'POST' :
-        Question.objects.filter(id=question.id).update(closed=False,
-            closed_by=None, closed_at=None, close_reason=None)
-        return HttpResponseRedirect(question.get_absolute_url())
-    else:
-        return render_to_response('reopen.html', {
-            'question' : question,
-            }, context_instance=RequestContext(request))
 
-#osqa-user communication system
-def read_message(request):#marks message a read
-    if request.method == "POST":
-        if request.POST['formdata'] == 'required':
-            request.session['message_silent'] = 1
-            if request.user.is_authenticated():
-                request.user.delete_messages()
-    return HttpResponse('')
 
 

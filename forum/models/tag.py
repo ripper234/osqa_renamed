@@ -18,7 +18,6 @@ class Tag(BaseModel, DeletableContent):
     active = ActiveTagManager()
 
     class Meta(DeletableContent.Meta):
-        db_table = u'tag'
         ordering = ('-used_count', 'name')
 
     def __unicode__(self):

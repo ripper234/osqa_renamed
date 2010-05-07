@@ -233,6 +233,9 @@ def convert2tagname_list(question):
 
 @register.simple_tag
 def diff_date(date, limen=2):
+    if not date:
+        return _('unknown')
+        
     now = datetime.datetime.now()#datetime(*time.localtime()[0:6])#???
     diff = now - date
     days = diff.days

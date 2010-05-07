@@ -15,9 +15,9 @@ from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from forum.forms import *
 from forum.utils.html import sanitize_html
-from forum.authentication import user_updated
 from datetime import date
 import decorators
+from forum.actions import EditProfileAction, FavoriteAction
 
 import time
 
@@ -71,26 +71,6 @@ def users(request):
 
                                 }, context_instance=RequestContext(request))
 
-@login_required
-def moderate_user(request, id):
-    """ajax handler of user moderation
-    """
-    if not request.user.is_superuser or request.method != 'POST':
-        raise Http404
-    if not request.is_ajax():
-        return HttpResponseForbidden(mimetype="application/json")
-
-    user = get_object_or_404(User, id=id)
-    form = ModerateUserForm(request.POST, instance=user)
-
-    if form.is_valid():
-        form.save()
-        logging.debug('data saved')
-        response = HttpResponse(simplejson.dumps(''), mimetype="application/json")
-    else:
-        response = HttpResponseForbidden(mimetype="application/json")
-    return response
-
 def set_new_email(user, new_email, nomessage=False):
     if new_email != user.email:
         user.email = new_email
@@ -121,10 +101,8 @@ def edit_user(request, id):
             user.about = sanitize_html(form.cleaned_data['about'])
 
             user.save()
-            # send user updated signal if full fields have been updated
-            if user.email and user.real_name and user.website and user.location and \
-                user.date_of_birth and user.about:
-                user_updated.send(sender=user.__class__, instance=user, updated_by=user)
+            EditProfileAction(user=user, ip=request.META['REMOTE_ADDR']).save()
+
             return HttpResponseRedirect(user.get_profile_url())
     else:
         form = EditUserForm(user)
@@ -154,25 +132,21 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
 
 @user_view('users/stats.html', 'stats', _('user profile'), _('user profile overview'))
 def user_stats(request, user):
-    questions = Question.objects.filter(author=user, deleted=False).order_by('-added_at')
-    answers = Answer.objects.filter(author=user, deleted=False).order_by('-added_at')
+    questions = Question.objects.filter(author=user, deleted=None).order_by('-added_at')
+    answers = Answer.objects.filter(author=user, deleted=None).order_by('-added_at')
 
-    up_votes = user.get_up_vote_count()
-    down_votes = user.get_down_vote_count()
+    up_votes = user.vote_up_count
+    down_votes = user.vote_down_count
     votes_today = user.get_vote_count_today()
     votes_total = int(settings.MAX_VOTES_PER_DAY)
 
     user_tags = Tag.objects.filter(Q(nodes__author=user) | Q(nodes__children__author=user)) \
         .annotate(user_tag_usage_count=Count('name')).order_by('-user_tag_usage_count')
 
-    awards = Badge.objects.filter(award_badge__user=user).annotate(count=Count('name')).order_by('-count')
+    awards = [(Badge.objects.get(id=b['id']), b['count']) for b in
+            Badge.objects.filter(awards__user=user).values('id').annotate(count=Count('cls')).order_by('-count')]
 
-    if request.user.is_superuser:
-        moderate_user_form = ModerateUserForm(instance=user)
-    else:
-        moderate_user_form = None
-
-    return {'moderate_user_form': moderate_user_form,
+    return {
             "view_user" : user,
             "questions" : questions,
             "answers" : answers,
@@ -183,42 +157,41 @@ def user_stats(request, user):
             "votes_total_per_day": votes_total,
             "user_tags" : user_tags[:50],
             "awards": awards,
-            "total_awards" : awards.count(),
+            "total_awards" : len(awards),
         }
 
 @user_view('users/recent.html', 'recent', _('recent user activity'), _('profile - recent activity'))
 def user_recent(request, user):
-    activities = Activity.objects.filter(activity_type__in=(TYPE_ACTIVITY_PRIZE,
-            TYPE_ACTIVITY_ASK_QUESTION, TYPE_ACTIVITY_ANSWER,
-            TYPE_ACTIVITY_COMMENT_QUESTION, TYPE_ACTIVITY_COMMENT_ANSWER,
-            TYPE_ACTIVITY_MARK_ANSWER), user=user).order_by('-active_at')[:USERS_PAGE_SIZE]
+    activities = user.actions.exclude(action_type__in=("voteup", "votedown", "voteupcomment", "flag")).order_by('-action_date')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "activities" : activities}
 
 
 @user_view('users/votes.html', 'votes', _('user vote record'), _('profile - votes'), True)
 def user_votes(request, user):
-    votes = user.votes.exclude(node__deleted=True).order_by('-voted_at')[:USERS_PAGE_SIZE]
+    votes = user.votes.filter(node__deleted=None).order_by('-voted_at')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "votes" : votes}
 
 
 @user_view('users/reputation.html', 'reputation', _('user reputation in the community'), _('profile - user reputation'))
 def user_reputation(request, user):
-    reputation = user.reputes.order_by('-reputed_at')
+    rep = list(user.reputes.order_by('date'))
+    values = [r.value for r in rep]
+    redux = lambda x, y: x+y     
 
     graph_data = simplejson.dumps([
-            (time.mktime(rep.reputed_at.timetuple()) * 1000, rep.reputation)
-            for rep in reputation
+            (time.mktime(rep[i].date.timetuple()) * 1000, reduce(redux, values[:i], 0))
+            for i in range(len(values))
     ])
 
-    return {"view_user": user, "reputation": reputation, "graph_data": graph_data}
+    return {"view_user": user, "reputation": reversed(rep), "graph_data": graph_data}
 
-@user_view('users/questions.html', 'favorites', _('favorite questions'),  _('profile - favorite questions'), True)
+@user_view('users/questions.html', 'favorites', _('favorite questions'),  _('profile - favorite questions'))
 def user_favorites(request, user):
-    questions = user.favorite_questions.filter(deleted=False)
+    favorites = FavoriteAction.objects.filter(user=user)
 
-    return {"questions" : questions, "view_user" : user}
+    return {"favorites" : favorites, "view_user" : user}
 
 @user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('profile - subscriptions'), True)
 def user_subscriptions(request, user):

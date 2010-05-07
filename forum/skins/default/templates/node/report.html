@@ -1,0 +1,19 @@
+{% load i18n %}
+
+<div class="user-prompt">
+    {% trans "Please select a reason bellow or use the text box to input your own reason." %}
+    <select class="prompt-examples">
+        {% for type in types %}
+            <option value="{{ type }}">{{ type }}</option>
+        {% endfor %}
+    </select>
+    <textarea>{{ types|first }}</textarea>
+    <div class="prompt-buttons">
+        <button class="prompt-cancel">{% trans "Cancel" %}</button><button class="prompt-submit">{% trans "Send" %}</button>
+    </div>
+</div>
+<script>
+$('.user-prompt .prompt-examples').change(function() {
+    $('.user-prompt textarea').val($(this).val())            
+})
+</script>

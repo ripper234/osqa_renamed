@@ -101,18 +101,6 @@ class SummaryField(forms.CharField):
         self.label  = _('update summary:')
         self.help_text = _('enter a brief summary of your revision (e.g. fixed spelling, grammar, improved style, this field is optional)')
 
-class ModerateUserForm(forms.ModelForm):
-    is_approved = forms.BooleanField(label=_("Automatically accept user's contributions for the email updates"),
-                                     required=False)
-
-    def clean_is_approved(self):
-        if 'is_approved' not in self.cleaned_data:
-            self.cleaned_data['is_approved'] = False
-        return self.cleaned_data['is_approved']
-
-    class Meta:
-        model = User
-        fields = ('is_approved',)
 
 class FeedbackForm(forms.Form):
     name = forms.CharField(label=_('Your name:'), required=False)

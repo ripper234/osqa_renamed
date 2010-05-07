@@ -119,8 +119,8 @@ class Akismet(object):
         if agent is None:
             agent = DEFAULTAGENT % __version__
         self.user_agent = user_agent % (agent, __version__)
-        self.key = settings.WORDPRESS_API_KEY
-        self.blog_url = settings.WORDPRESS_BLOG_URL
+        self.key = str(settings.WORDPRESS_API_KEY)
+        self.blog_url = str(settings.WORDPRESS_BLOG_URL)
 
 
     def _getURL(self):

@@ -2,7 +2,7 @@ from base import Setting, SettingSet
 from django.utils.translation import ugettext_lazy as _
 from django.forms.widgets import PasswordInput
 
-EMAIL_SET = SettingSet('email', _('Email Settings'), _("Email server and other email related settings."), 50)
+EMAIL_SET = SettingSet('email', _('Email settings'), _("Email server and other email related settings."), 50)
 
 EMAIL_HOST = Setting('EMAIL_HOST', '', EMAIL_SET, dict(
 label = _("Email Server"),

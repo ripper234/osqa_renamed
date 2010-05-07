@@ -13,23 +13,13 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
+from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction
 from forum.forms import *
 from forum.models import *
 from forum.const import *
 from forum.utils.forms import get_next_url
-from forum.views.readers import _get_tags_cache_json
 from forum.views.commands import SpamNotAllowedException
 
-# used in index page
-INDEX_PAGE_SIZE = 20
-INDEX_AWARD_SIZE = 15
-INDEX_TAGS_SIZE = 100
-# used in tags list
-DEFAULT_PAGE_SIZE = 60
-# used in questions
-QUESTIONS_PAGE_SIZE = 10
-# used in answers
-ANSWERS_PAGE_SIZE = 10
 
 def upload(request):#ajax upload file to a question or answer
     class FileTypeNotAllow(Exception):
@@ -77,29 +67,6 @@ def upload(request):#ajax upload file to a question or answer
     return HttpResponse(result, mimetype="application/xml")
 
 
-def _create_post(request, post_cls, form, parent=None):
-    post = post_cls()
-
-    if parent is not None:
-        post.parent = parent
-
-    revision_data = dict(summary=_('Initial revision'), body=form.cleaned_data['text'])
-
-    if form.cleaned_data.get('title', None):
-        revision_data['title'] = strip_tags(form.cleaned_data['title'].strip())
-
-    if form.cleaned_data.get('tags', None):
-        revision_data['tagnames'] = form.cleaned_data['tags'].strip()
-
-    post.create_revision(request.user, **revision_data)
-
-    if form.cleaned_data['wiki']:
-        post.wikify()
-
-    return HttpResponseRedirect(post.get_absolute_url())
-
-
-
 def ask(request):
     if request.method == "POST" and "text" in request.POST:
         form = AskForm(request.POST)
@@ -108,7 +75,7 @@ def ask(request):
                 data = {
                     "user_ip":request.META["REMOTE_ADDR"],
                     "user_agent":request.environ['HTTP_USER_AGENT'],
-                    "comment_author":request.user.real_name,
+                    "comment_author":request.user.username,
                     "comment_author_email":request.user.email,
                     "comment_author_url":request.user.website,
                     "comment":request.POST['text']
@@ -116,7 +83,8 @@ def ask(request):
                 if Node.isSpam(request.POST['text'], data):
                     raise SpamNotAllowedException("question")
 
-                return _create_post(request, Question, form)
+                question = AskAction(user=request.user).save(data=form.cleaned_data).node
+                return HttpResponseRedirect(question.get_absolute_url())
             else:
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
     elif request.method == "POST" and "go" in request.POST:
@@ -148,15 +116,7 @@ def _retag_question(request, question):
         form = RetagQuestionForm(question, request.POST)
         if form.is_valid():
             if form.has_changed():
-                active = question.active_revision
-
-                question.create_revision(
-                    request.user,
-                    summary          = _('Retag'),
-                    title            = active.title,
-                    tagnames         = form.cleaned_data['tags'],
-                    body             = active.body,
-                )
+                RetagAction(user=request.user, node=question).save(data=dict(tagnames=form.cleaned_data['tags']))
 
             return HttpResponseRedirect(question.get_absolute_url())
     else:
@@ -180,20 +140,10 @@ def _edit_question(request, question):
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                question.create_revision(
-                    request.user,
-                    summary          = form.cleaned_data['summary'],
-                    title            = strip_tags(form.cleaned_data['title'].strip()),
-                    tagnames         = form.cleaned_data['tags'].strip(),
-                    body             = form.cleaned_data['text'],
-                )
-
-                if form.cleaned_data.get('wiki', False):
-                    question.wikify()
-
+                ReviseAction(user=request.user, node=question).save(data=form.cleaned_data)
             else:
                 if not revision == question.active_revision:
-                    question.activate_revision(request.user, revision)
+                    RollbackAction(user=request.user, node=question).save(data=dict(activate=revision))
 
             return HttpResponseRedirect(question.get_absolute_url())
     else:
@@ -227,18 +177,10 @@ def edit_answer(request, id):
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                answer.create_revision(
-                    request.user,
-                    summary          = form.cleaned_data['summary'],
-                    body             = form.cleaned_data['text'],
-                )
-
-                if form.cleaned_data.get('wiki', False):
-                    answer.wikify()
-
+                ReviseAction(user=request.user, node=answer).save(data=form.cleaned_data)
             else:
                 if not revision == answer.active_revision:
-                    answer.activate_revision(request.user, revision)
+                    RollbackAction(user=request.user, node=answer).save(data=dict(activate=revision))
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -260,7 +202,7 @@ def answer(request, id):
                 data = {
                     "user_ip":request.META["REMOTE_ADDR"],
                     "user_agent":request.environ['HTTP_USER_AGENT'],
-                    "comment_author":request.user.real_name,
+                    "comment_author":request.user.username,
                     "comment_author_email":request.user.email,
                     "comment_author_url":request.user.website,
                     "comment":request.POST['text']
@@ -268,7 +210,8 @@ def answer(request, id):
                 if Node.isSpam(request.POST['text'], data):
                     raise SpamNotAllowedException("answer")
 
-                return _create_post(request, Answer, form, question)
+                answer = AnswerAction(user=request.user).save(dict(question=question, **form.cleaned_data)).node
+                return HttpResponseRedirect(answer.get_absolute_url())
             else:
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
 

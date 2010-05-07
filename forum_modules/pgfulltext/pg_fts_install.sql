@@ -29,10 +29,10 @@
      SELECT active_revision_id INTO rev_id FROM forum_node WHERE id = node_id;
      SELECT tsv INTO v FROM forum_noderevision WHERE id = rev_id;
 
-    SELECT  count(*) INTO child_count FROM forum_node WHERE abs_parent_id = node_id AND NOT deleted;
+    SELECT  count(*) INTO child_count FROM forum_node WHERE abs_parent_id = node_id AND deleted_id IS NULL;
 
     IF child_count > 0 THEN
-       FOR r in SELECT * FROM forum_node WHERE abs_parent_id = node_id  AND NOT deleted LOOP
+       FOR r in SELECT * FROM forum_node WHERE abs_parent_id = node_id  AND deleted_id IS NULL LOOP
            SELECT tsv INTO cv FROM forum_noderevision WHERE id = r.active_revision_id;
            v :=(v || cv);
        END LOOP;
