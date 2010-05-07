@@ -3,6 +3,7 @@
 {% load general_sidebar_tags %}
 {% load question_list_tags %}
 {% load i18n %}
+{% block title %}{% spaceless %}{% trans "Home" %}{% endspaceless %}{% endblock %}
 {% block sidebar %}
     {% if not request.user.is_authenticated %}
     <div class="boxA">
