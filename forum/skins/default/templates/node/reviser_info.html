@@ -1,0 +1,9 @@
+{% load extra_tags %}
+<div class='post-update-info'>
+    <p style="line-height:12px;">
+        <strong>{% diff_date revision.revised_at %}</strong>
+    </p>
+    {% gravatar revision.author 32 %}
+    <p><a href="{{ revised_at.author.get_profile_url }}">{{ revision.author.username }}</a><br/>
+    {% get_score_badge revision.author %}</p>
+</div>

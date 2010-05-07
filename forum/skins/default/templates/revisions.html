@@ -1,5 +1,5 @@
 {% extends "base_content.html" %}
-
+{% load node_tags %}
 {% load extra_tags %}
 {% load i18n %}
 {% load extra_filters %}
@@ -52,7 +52,7 @@
                     </td>
                     <td align="right">
                         <div class="revision-mark" >
-                            {% post_contributor_info revision.inst %}
+                            {% reviser_info revision.inst %}
                         </div>
                     </td>
                 </tr>

@@ -51,7 +51,7 @@ urlpatterns += patterns('',
     url(r'^%s$' % _('privacy/'), app.meta.privacy, name='privacy'),
     url(r'^%s$' % _('logout/'), app.meta.logout, name='logout'),
     url(r'^%s(?P<id>\d+)/%s$' % (_('answers/'), _('edit/')), app.writers.edit_answer, name='edit_answer'),
-    url(r'^%s(?P<id>\d+)/%s$' % (_('answers/'), _('revisions/')), app.readers.revisions, name='answer_revisions'),
+    url(r'^%s(?P<id>\d+)/$' % _('revisions/'), app.readers.revisions, name='revisions'),
     url(r'^%s$' % _('questions/'), app.readers.questions, name='questions'),
     url(r'^%s%s$' % (_('questions/'), _('ask/')), app.writers.ask, name='ask'),
     url(r'^%s%s$' % (_('questions/'), _('unanswered/')), app.readers.unanswered, name='unanswered'),
@@ -71,8 +71,6 @@ urlpatterns += patterns('',
     url(r'^%s(?P<id>\d+)/$' % _('subscribe/'), app.commands.subscribe, name="subscribe"),
     url(r'^%s' % _('matching_tags/'), app.commands.matching_tags, name='matching_tags'),
     url(r'^%s(?P<id>\d+)/' % _('node_markdown/'), app.commands.node_markdown, name='node_markdown'),
-
-    url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('revisions/')), app.readers.revisions, name='question_revisions'),
 
     #place general question item in the end of other operations
     url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('question/'), app.readers.question, name='question'),

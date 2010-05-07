@@ -65,8 +65,18 @@ class Action(models.Model):
     def cancel_action(self):
         pass
 
+    @property
+    def verb(self):
+        return ""
+
     def describe(self, viewer=None):
         return ""
+
+    def get_absolute_url(self):
+        if self.node:
+            return self.node.get_absolute_url()
+        else:
+            return self.user.get_profile_url()
 
     def repute(self, user, value):
         repute = ActionRepute(action=self, user=user, value=value)

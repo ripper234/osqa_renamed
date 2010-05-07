@@ -276,7 +276,7 @@ def revisions(request, id):
         else:
             rev_ctx[i]['summary'] = revision.summary
             
-    return render_to_response('revisions_question.html', {
+    return render_to_response('revisions.html', {
                               'post': post,
                               'revisions': rev_ctx,
                               }, context_instance=RequestContext(request))

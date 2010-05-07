@@ -121,3 +121,18 @@ def comments(post, user):
         'total': len(all_comments),
         'user': user,
     }
+
+
+@register.inclusion_tag("node/contributors_info.html")
+def contributors_info(node):
+    return {
+        'node_verb': (node.node_type == "question") and _("asked") or (
+                    (node.node_type == "answer") and _("answered") or _("posted")),
+        'node': node,
+    }
+
+
+@register.inclusion_tag("node/reviser_info.html")
+def reviser_info(revision):
+    return {'revision': revision}
+

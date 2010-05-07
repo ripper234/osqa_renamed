@@ -64,7 +64,15 @@ class Badge(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('badge', [], {'id': self.id, 'slug': slugify(self.name)})        
+        return ('badge', [], {'id': self.id, 'slug': slugify(self.name)})
+
+    def save(self, *args, **kwargs):
+        if isinstance(self.awarded_count, models.expressions.ExpressionNode):
+            super(Badge, self).save(*args, **kwargs)
+            self.awarded_count = self.__class__.objects.filter(id=self.id).values_list('awarded_count', flat=True)[0]
+        else:
+            super(Badge, self).save(*args, **kwargs)
+
 
     class Meta:
         app_label = 'forum'

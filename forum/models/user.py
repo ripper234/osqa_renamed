@@ -133,8 +133,9 @@ class User(BaseModel, DjangoUser):
     def delete_messages(self):
         self.message_set.all().delete()
 
+    @models.permalink
     def get_profile_url(self):
-        return "/%s%d/%s" % (_('users/'), self.id, slugify(self.username))
+        return ('user_profile', (), {'id': self.id, 'slug': slugify(self.username)})
 
     def get_profile_link(self):
         profile_link = u'<a href="%s">%s</a>' % (self.get_profile_url(),self.username)

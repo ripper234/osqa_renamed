@@ -166,6 +166,10 @@ class Node(BaseModel, NodeContent):
     def summary(self):
         return strip_tags(self.html)[:300]
 
+    @models.permalink
+    def get_revisions_url(self):
+        return ('revisions', (), {'id': self.id})
+
     def update_last_activity(self, user, save=False):
         self.last_activity_by = user
         self.last_activity_at = datetime.datetime.now()
@@ -181,22 +185,19 @@ class Node(BaseModel, NodeContent):
         revision.save()
         return revision
 
-    def create_revision(self, user, action=None, **kwargs):
+    def create_revision(self, user, **kwargs):
         number = self.revisions.aggregate(last=models.Max('revision'))['last'] + 1
         revision = self._create_revision(user, number, **kwargs)
-        self.activate_revision(user, revision, action)
+        self.activate_revision(user, revision)
         return revision
 
-    def activate_revision(self, user, revision, action=None):
+    def activate_revision(self, user, revision):
         self.title = revision.title
         self.tagnames = revision.tagnames
         self.body = revision.body
 
         self.active_revision = revision
         self.update_last_activity(user)
-
-        if action:
-            self.last_edited = action
 
         self.save()
 

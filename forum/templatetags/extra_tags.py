@@ -123,23 +123,7 @@ def cnprog_pagesize(context):
             "is_paginated": context["is_paginated"]
         }
 
-@register.inclusion_tag("post_contributor_info.html")
-def post_contributor_info(post,contributor_type='original_author'):
-    """contributor_type: original_author|last_updater
-    """
-    if isinstance(post,Question):
-        post_type = 'question'
-    elif isinstance(post,Answer):
-        post_type = 'answer'
-    elif isinstance(post,(AnswerRevision, QuestionRevision, NodeRevision)):
-        post_type = 'revision'
-    return {
-        'post':post,
-        'post_type':post_type,
-        'wiki_on':settings.WIKI_ON,
-        'contributor_type':contributor_type
-    }
-        
+   
 @register.simple_tag
 def get_score_badge(user):
     BADGE_TEMPLATE = '<span class="score" title="%(reputation)s %(reputationword)s">%(reputation)s</span>'

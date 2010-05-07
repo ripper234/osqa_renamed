@@ -67,8 +67,12 @@ class ReviseAction(NodeEditAction):
 
     def process_data(self, **data):
         revision_data = self.create_revision_data(**data)
-        revision = self.node.create_revision(self.user, action=self, **revision_data)
+        revision = self.node.create_revision(self.user, **revision_data)
         self.extra = revision.revision
+
+    def process_action(self):
+        self.node.last_edited = self
+        self.node.save()
 
     def describe(self, viewer=None):
         return _("%(user)s edited %(post_desc)s") % {
@@ -85,7 +89,12 @@ class RetagAction(ActionProxy):
     def process_data(self, tagnames=''):
         active = self.node.active_revision
         revision_data = dict(summary=_('Retag'), title=active.title, tagnames=strip_tags(tagnames.strip()), body=active.body)
-        self.node.create_revision(self.user, action=self, **revision_data)
+        revision = self.node.create_revision(self.user, **revision_data)
+        self.extra = revision.revision
+
+    def process_action(self):
+        self.node.last_edited = self
+        self.node.save()
 
     def describe(self, viewer=None):
         return _("%(user)s retagged %(post_desc)s") % {
@@ -101,8 +110,12 @@ class RollbackAction(ActionProxy):
 
     def process_data(self, activate=None):
         previous = self.node.active_revision
-        self.node.activate_revision(self.user, activate, self)
+        self.node.activate_revision(self.user, activate)
         self.extra = "%d:%d" % (previous.revision, activate.revision)
+
+    def process_action(self):
+        self.node.last_edited = self
+        self.node.save()
 
     def describe(self, viewer=None):
         revisions = [NodeRevision.objects.get(node=self.node, revision=int(n)) for n in self.extra.split(':')]
@@ -123,12 +136,12 @@ class CloseAction(ActionProxy):
     def process_action(self):
         self.node.extra_action = self
         self.node.marked = True
-        self.node.save()
+        self.node.update_last_activity(self.user, save=True)
 
     def cancel_action(self):
         self.node.extra_action = None
         self.node.marked = False
-        self.node.save()
+        self.node.update_last_activity(self.user, save=True)
 
     def describe(self, viewer=None):
         return _("%(user)s closed %(post_desc)s: %(reason)s") % {

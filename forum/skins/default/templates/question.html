@@ -71,8 +71,7 @@
                                 {% post_controls question request.user %}
                             </div>
                             <div class="post-update-info-container">
-                                    {% post_contributor_info question "original_author" %}
-                                    {% post_contributor_info question "last_updater" %}
+                                    {% contributors_info question %}
                             </div>
                             {% comments question request.user %}
                         </div>
@@ -133,8 +132,7 @@
                                             {% post_controls answer request.user %}
                                         </div>
                                         <div class="post-update-info-container">
-                                                {% post_contributor_info answer "original_author" %}
-                                                {% post_contributor_info answer "last_updater" %}
+                                            {% contributors_info answer %}
                                         </div>
                                         {% comments answer request.user %}
                                     </div>
