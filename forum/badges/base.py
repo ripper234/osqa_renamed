@@ -60,10 +60,10 @@ class AbstractBadge(object):
     def award(cls, user, action, once=False):
         if once:
             node = None
+            awarded = AwardAction.get_for(user, cls.ondb)
         else:
             node = action.node
-
-        awarded = AwardAction.get_for(user, node, cls.ondb)
+            awarded = AwardAction.get_for(user, cls.ondb, node)
 
         if not awarded:
             AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=action))

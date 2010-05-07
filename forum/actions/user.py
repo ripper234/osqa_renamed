@@ -39,10 +39,12 @@ class AwardAction(ActionProxy):
         award.delete()
 
     @classmethod
-    def get_for(cls, user, node, badge):
+    def get_for(cls, user, badge, node=False):
         try:
-            award = Award.objects.get(user=user, node=node, badge=badge)
-            return award.action
+            if node is False:
+                return Award.objects.get(user=user, badge=badge).action
+            else:
+                return Award.objects.get(user=user, node=node, badge=badge).action
         except:
             return None
 
