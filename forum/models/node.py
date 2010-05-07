@@ -166,12 +166,15 @@ class Node(BaseModel, NodeContent):
     def summary(self):
         return strip_tags(self.html)[:300]
 
-    def update_last_activity(self, user):
+    def update_last_activity(self, user, save=False):
         self.last_activity_by = user
         self.last_activity_at = datetime.datetime.now()
 
         if self.parent:
-            self.parent.update_last_activity(user)
+            self.parent.update_last_activity(user, save=True)
+
+        if save:
+            self.save()
 
     def _create_revision(self, user, number, **kwargs):
         revision = NodeRevision(author=user, revision=number, node=self, **kwargs)
