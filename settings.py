@@ -85,10 +85,11 @@ try:
 except:
     pass
 
-try:
-    import rosetta
-    INSTALLED_APPS.append('rosetta')
-except:
-    pass
+if not DEBUG:
+    try:
+        import rosetta
+        INSTALLED_APPS.append('rosetta')
+    except:
+        pass
 
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',]

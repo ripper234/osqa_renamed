@@ -15,10 +15,8 @@ from django.utils.safestring import mark_safe
 from django.contrib.sitemaps import ping_google
 import django.dispatch
 from django.conf import settings
-from forum import const
 import logging
 
-from forum.const import *
 
 class LazyQueryList(object):
     def __init__(self, model, items):

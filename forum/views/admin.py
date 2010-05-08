@@ -11,7 +11,6 @@ from forum.settings.base import Setting
 from forum.settings.forms import SettingsSetForm
 
 from forum.models import Question, Answer, User, Node, Action
-from forum import const
 from forum import settings
 
 def super_user_required(fn):
@@ -27,7 +26,7 @@ def super_user_required(fn):
 def index(request):
     return render_to_response('osqaadmin/index.html', {
         'sets': get_all_sets(),
-        'settings_pack': str(settings.SETTINGS_PACK),
+        'settings_pack': unicode(settings.SETTINGS_PACK),
         'statistics': get_statistics(),
         'recent_activity': get_recent_activity(),
     }, context_instance=RequestContext(request))

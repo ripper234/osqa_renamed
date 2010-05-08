@@ -8,7 +8,6 @@ import logging
 from django import template
 from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
-from forum.const import *
 from forum.models import Question, Answer, QuestionRevision, AnswerRevision, NodeRevision
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext

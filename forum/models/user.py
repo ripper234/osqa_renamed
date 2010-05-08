@@ -1,5 +1,4 @@
 from base import *
-from forum import const
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User as DjangoUser, AnonymousUser as DjangoAnonymousUser
 from django.db.models import Q
@@ -151,12 +150,9 @@ class User(BaseModel, DjangoUser):
 
     def get_reputation_by_upvoted_today(self):
         today = datetime.datetime.now()
-        sum = self.reputes.filter(
-                models.Q(reputation_type=TYPE_REPUTATION_GAIN_BY_UPVOTED) |
-                models.Q(reputation_type=TYPE_REPUTATION_LOST_BY_UPVOTE_CANCELED),
-                reputed_at__range=(today - datetime.timedelta(days=1), today)).aggregate(models.Sum('value'))
-
-        if sum.get('value__sum', None) is not None: return sum['value__sum']
+        sum = self.reputes.filter(reputed_at__range=(today - datetime.timedelta(days=1), today)).aggregate(models.Sum('value'))
+        #todo: redo this, maybe transform in the daily cap
+        #if sum.get('value__sum', None) is not None: return sum['value__sum']
         return 0
 
     def get_flagged_items_count_today(self):
@@ -248,10 +244,10 @@ class SubscriptionSettings(models.Model):
     enable_notifications = models.BooleanField(default=True)
 
     #notify if
-    member_joins = models.CharField(max_length=1, default='n', choices=const.NOTIFICATION_CHOICES)
-    new_question = models.CharField(max_length=1, default='d', choices=const.NOTIFICATION_CHOICES)
-    new_question_watched_tags = models.CharField(max_length=1, default='i', choices=const.NOTIFICATION_CHOICES)
-    subscribed_questions = models.CharField(max_length=1, default='i', choices=const.NOTIFICATION_CHOICES)
+    member_joins = models.CharField(max_length=1, default='n')
+    new_question = models.CharField(max_length=1, default='d')
+    new_question_watched_tags = models.CharField(max_length=1, default='i')
+    subscribed_questions = models.CharField(max_length=1, default='i')
     
     #auto_subscribe_to
     all_questions = models.BooleanField(default=False)

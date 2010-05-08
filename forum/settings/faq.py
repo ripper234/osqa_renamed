@@ -4,7 +4,7 @@ from django.forms.widgets import Textarea
 FAQ_SET = SettingSet('faq', 'FAQ page', "Define the text in the about page. You can use markdown and some basic html tags.", 2000, True)
 
 FAQ_PAGE_TEXT = Setting('FAQ_PAGE_TEXT',
-"""
+u"""
 **Please customize this text in the administration area**
 
 **Frequently Asked Questions (FAQ)**

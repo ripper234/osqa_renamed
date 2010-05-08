@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext
 from forum.models import *
-from forum.forms import CloseForm
 from forum.actions import *
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required

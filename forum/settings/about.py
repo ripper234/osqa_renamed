@@ -4,7 +4,7 @@ from django.forms.widgets import Textarea
 PAGES_SET = SettingSet('about', 'About page', "Define the text in the about page. You can use markdown and some basic html tags.", 2000, True)
 
 ABOUT_PAGE_TEXT = Setting('ABOUT_PAGE_TEXT',
-"""
+u"""
 **Please customize this text in the administration area**
 
 Here you can **ask** and **answer** questions, **comment**

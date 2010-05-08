@@ -2,7 +2,6 @@ import re
 from datetime import date
 from django import forms
 from models import *
-from const import *
 from django.utils.translation import ugettext as _
 from django.contrib.humanize.templatetags.humanize import apnumber
 from forum.models import User
@@ -130,9 +129,6 @@ class AnswerForm(forms.Form):
             self.fields['wiki'].initial = True
 
 
-class CloseForm(forms.Form):
-    reason = forms.ChoiceField(choices=CLOSE_REASONS)
-
 class RetagQuestionForm(forms.Form):
     tags   = TagNamesField()
     # initialize the default values
@@ -233,6 +229,12 @@ class EditUserForm(forms.Form):
                     raise forms.ValidationError(_('this email has already been registered, please use another one'))
         return self.cleaned_data['email']
 
+NOTIFICATION_CHOICES = (
+    ('i', _('Instantly')),
+    ('d', _('Daily')),
+    ('w', _('Weekly')),
+    ('n', _('No notifications')),
+)
 
 class SubscriptionSettingsForm(forms.Form):
     member_joins = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)

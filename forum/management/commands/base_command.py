@@ -19,7 +19,6 @@ from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 
 from forum.models import *
-from forum.const import *
 
 class BaseCommand(NoArgsCommand):
     def update_activities_auditted(self, cursor, activity_ids):

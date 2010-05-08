@@ -16,7 +16,6 @@ from django.core.exceptions import PermissionDenied
 from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction
 from forum.forms import *
 from forum.models import *
-from forum.const import *
 from forum.utils.forms import get_next_url
 from forum.views.commands import SpamNotAllowedException
 
@@ -29,7 +28,6 @@ def upload(request):#ajax upload file to a question or answer
     class UploadPermissionNotAuthorized(Exception):
         pass
 
-    #<result><msg><![CDATA[%s]]></msg><error><![CDATA[%s]]></error><file_url>%s</file_url></result>
     xml_template = "<result><msg><![CDATA[%s]]></msg><error><![CDATA[%s]]></error><file_url>%s</file_url></result>"
 
     try:

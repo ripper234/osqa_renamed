@@ -1,7 +1,6 @@
 from django import template
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
-from forum import const
 
 register = template.Library()
 

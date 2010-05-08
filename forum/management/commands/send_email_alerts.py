@@ -6,7 +6,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from forum.models import KeyValue, Activity, User, QuestionSubscription
 from forum.utils.mail import send_email
-from forum import const
 
 class QuestionRecord:
     def __init__(self, question):
