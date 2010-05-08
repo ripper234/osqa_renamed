@@ -5,7 +5,7 @@
 {% load i18n %}
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}</title>
+        <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
         {% spaceless %}
         {% block meta %}{% endblock %}
         {% endspaceless %}
