@@ -257,16 +257,18 @@ class Node(BaseModel, NodeContent):
 
     @staticmethod
     def isSpam(comment, data):
-        api = Akismet()
+        #api = Akismet()
 
-        if not api.key:
-            return False
-        else:
-            if api.comment_check(comment, data):
-                return True
-            else:
-                return False
-        return data
+        #if not api.key:
+        #    return False
+        #else:
+        #    if api.comment_check(comment, data):
+        #        return True
+        #    else:
+        #        return False
+        # return data
+        return False
+
 
     class Meta:
         app_label = 'forum'
