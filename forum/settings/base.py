@@ -29,9 +29,6 @@ class BaseSetting(object):
 
             Setting.sets[set.name].append(self)
 
-    def __str__(self):
-        return str(self.value)
-
     def __unicode__(self):
         return unicode(self.value)
 
