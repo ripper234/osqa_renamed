@@ -4,7 +4,7 @@ from string import lower
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 
-from forum.models import Badge, Node
+from forum.models import Badge, Node, Action
 from forum.actions import AwardAction
 
 import logging
@@ -65,5 +65,7 @@ class AbstractBadge(object):
             node = action.node
             awarded = AwardAction.get_for(user, cls.ondb, node)
 
+        trigger = isinstance(action, Action) and action or None
+
         if not awarded:
-            AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=action))
+            AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=trigger))
