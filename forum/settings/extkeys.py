@@ -13,16 +13,7 @@ label = _("Google analytics key"),
 help_text = _("Your Google analytics key. You can get one at the <a href='http://www.google.com/analytics/'>Google analytics official website</a>"),
 required=False))
 
-#WORDPRESS_API_KEY = Setting('WORDPRESS_API_KEY', '', EXT_KEYS_SET, dict(
-#label = _("Wordpress API key"),
-#help_text = _("Your Wordpress API key. You can get one at <a href='http://wordpress.com/'>http://wordpress.com/</a>"),
-#required=False))
-
-#WORDPRESS_BLOG_URL = Setting('WORDPRESS_BLOG_URL', '', EXT_KEYS_SET, dict(
-#label = _("Wordpress blog url"),
-#help_text = _("Your Wordpress blog url. You can get one at <a href='http://wordpress.com/'>http://wordpress.com/</a>"),
-#required=False))
-
-
-
-
+WORDPRESS_API_KEY = Setting('WORDPRESS_API_KEY', '', EXT_KEYS_SET, dict(
+label = _("Wordpress API key"),
+help_text = _("Your Wordpress API key. You can get one at <a href='http://wordpress.com/'>http://wordpress.com/</a>"),
+required=False))
