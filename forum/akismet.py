@@ -159,7 +159,7 @@ class Akismet(object):
             except IndexError:
                 raise APIKeyError("Your 'apikey.txt' is invalid.")
         else:
-            self.key = settings.WORDPRESS_API_KEY
+            self.key = key
             self.blog_url = blog_url
 
 
