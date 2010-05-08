@@ -6,3 +6,8 @@ urlpatterns = patterns('',
     (r'^%s' % settings.FORUM_SCRIPT_ALIAS, include('forum.urls')),
 )
 
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        url(r'^rosetta/', include('rosetta.urls')),
+    )
+
