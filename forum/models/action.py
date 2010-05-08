@@ -230,6 +230,9 @@ class DummyActionProxy(object):
 
     hooks = []
 
+    def __init__(self, ip=None):
+        self.ip = ip
+
     def process_data(self, **data):
         pass
 

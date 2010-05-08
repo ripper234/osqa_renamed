@@ -198,9 +198,10 @@ class DeleteAction(ActionProxy):
 
 
 class QuestionViewAction(DummyActionProxy):
-    def __init__(self, node, user):
+    def __init__(self, node, user, ip=None):
         self.viewuser = user
         self.node = node
+        super(QuestionViewAction, self).__init__(ip)
 
     def process_action(self):
         self.node.extra_count = F('extra_count') + 1

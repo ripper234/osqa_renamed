@@ -175,7 +175,7 @@ def update_question_view_times(request, question):
     last_seen = request.session['last_seen_in_question'].get(question.id,None)
 
     if (not last_seen) or last_seen < question.last_activity_at:
-        QuestionViewAction(question, request.user).save()
+        QuestionViewAction(question, request.user, ip=request.META['REMOTE_ADDR']).save()
         request.session['last_seen_in_question'][question.id] = datetime.datetime.now()
 
     request.session['last_seen_in_question'][question.id] = datetime.datetime.now()
