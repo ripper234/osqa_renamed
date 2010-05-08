@@ -66,7 +66,10 @@ class BaseSetting(object):
         self.set_value(self.default)
 
     def _parse(self, value):
-        return value
+        try:
+            return self.base_type(value)
+        except:
+            return value
 
 
 class Setting(object):
@@ -80,6 +83,7 @@ class Setting(object):
             emul = Setting.emulators[deftype]
         else:
             emul = type(deftype.__name__ + cls.__name__, (BaseSetting,), {})
+            emul.base_type = deftype
             fns = [n for n, f in [(p, getattr(deftype, p)) for p in dir(deftype) if not p in dir(cls)] if callable(f)]
 
             for n in fns:

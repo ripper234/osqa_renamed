@@ -156,12 +156,12 @@ def question_viewed(action, new):
         return
 
     try:
-        subscription = QuestionSubscription.objects.get(question=action.question, user=action.viewuser)
+        subscription = QuestionSubscription.objects.get(question=action.node, user=action.viewuser)
         subscription.last_view = datetime.datetime.now()
         subscription.save()
     except:
         if action.viewuser.subscription_settings.questions_viewed:
-            subscription = QuestionSubscription(question=action.question, user=action.viewuser)
+            subscription = QuestionSubscription(question=action.node, user=action.viewuser)
             subscription.save()
 
 QuestionViewAction.hook(question_viewed)

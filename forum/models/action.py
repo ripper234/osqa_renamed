@@ -219,8 +219,14 @@ class ActionProxy(Action):
     class Meta:
         proxy = True
 
-class DummyActionProxy(Action):
-    __metaclass__ = ActionProxyMetaClass
+class DummyActionProxyMetaClass(type):
+    def __new__(cls, *args, **kwargs):
+        new_cls = super(DummyActionProxyMetaClass, cls).__new__(cls, *args, **kwargs)
+        ActionProxyMetaClass.types[new_cls.get_type()] = new_cls
+        return new_cls
+
+class DummyActionProxy(object):
+    __metaclass__ = DummyActionProxyMetaClass
 
     hooks = []
 

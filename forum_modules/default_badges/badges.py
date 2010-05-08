@@ -16,8 +16,8 @@ class QuestionViewBadge(AbstractBadge):
         return _('Asked a question with %s views') % str(self.nviews)
 
     def award_to(self, action):
-        if action.question.extra_count == int(self.nviews):
-            return action.question.author
+        if action.node.extra_count == int(self.nviews):
+            return action.node.author
 
 
 class PopularQuestion(QuestionViewBadge):
