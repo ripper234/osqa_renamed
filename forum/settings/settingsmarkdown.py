@@ -43,6 +43,7 @@ class SettingsPre(Preprocessor):
             line = line.replace('REP_TO_CLOSE_OTHERS', '%d' % settings.REP_TO_CLOSE_OTHERS)
             line = line.replace('REP_TO_DELETE_COMMENTS', '%d' % settings.REP_TO_DELETE_COMMENTS)
             line = line.replace('REP_TO_VIEW_FLAGS', '%d' % settings.REP_TO_VIEW_FLAGS)
+            line = line.replace('REP_TO_UPLOAD', '%d' % settings.REP_TO_UPLOAD)
 
             new_lines.append(line)
 
