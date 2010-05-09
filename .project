@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>osqa</name>
+	<name>osqa-pydev</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -19,5 +19,6 @@
 	<natures>
 		<nature>org.python.pydev.pythonNature</nature>
 		<nature>org.eclipse.wst.jsdt.core.jsNature</nature>
+		<nature>org.python.pydev.django.djangoNature</nature>
 	</natures>
 </projectDescription>
