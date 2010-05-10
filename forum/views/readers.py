@@ -68,8 +68,6 @@ def tag(request, tag):
 def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, allowIgnoreTags=True):
     questions = initial.filter(deleted=None, in_moderation=None)
 
-    test = request.user.marked_tags
-
     if request.user.is_authenticated() and allowIgnoreTags:
         questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
 
