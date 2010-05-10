@@ -71,8 +71,8 @@ def command(func):
 
             response['success'] = True
         except Exception, e:
-            import sys, traceback
-            traceback.print_exc(file=sys.stdout)
+            #import sys, traceback
+            #traceback.print_exc(file=sys.stdout)
 
             if isinstance(e, CommandException):
                 response = {

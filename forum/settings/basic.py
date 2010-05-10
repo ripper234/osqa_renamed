@@ -43,3 +43,7 @@ widget=Textarea))
 APP_COPYRIGHT = Setting('APP_COPYRIGHT', u'Copyright OSQA, 2010. Some rights reserved under creative commons license.', BASIC_SET, dict(
 label = _("Copyright notice"),
 help_text = _("The copyright notice visible at the footer of your page.")))
+
+FEEDBACK_SITE_URL = Setting('FEEDBACK_SITE_URL', '', BASIC_SET, dict(
+label = _("Feedback site url"),
+help_text = _("If you have a specific place to get feedback from your users, use this field and the fedback link on the footer will point there.")))

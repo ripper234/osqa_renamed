@@ -12,7 +12,7 @@ from forum.models import Question, Answer, QuestionRevision, AnswerRevision, Nod
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
 from django.utils import simplejson
-from django.conf import settings
+from forum import settings
 from django.template.defaulttags import url as default_url
 from forum import skins
 
@@ -262,7 +262,7 @@ def media(url):
     url = skins.find_media_source(url)
     if url:
         url = '///' + settings.FORUM_SCRIPT_ALIAS + '/m/' + url
-        return posixpath.normpath(url) + '?v=%d' % settings.RESOURCE_REVISION
+        return posixpath.normpath(url)
 
 class ItemSeparatorNode(template.Node):
     def __init__(self,separator):
@@ -320,7 +320,7 @@ class BlockMediaUrlNode(template.Node):
 
         url = skins.find_media_source(url)
         url = prefix + url
-        out = posixpath.normpath(url) + '?v=%d' % settings.RESOURCE_REVISION
+        out = posixpath.normpath(url)
         return out.replace(' ','')
 
 @register.tag(name='blockmedia')

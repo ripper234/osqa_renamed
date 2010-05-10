@@ -14,7 +14,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.contrib.sitemaps import ping_google
 import django.dispatch
-from django.conf import settings
+from forum import settings
 import logging
 
 

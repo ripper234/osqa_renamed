@@ -5,7 +5,7 @@ from forum.models import User, Question, Comment, QuestionSubscription, Subscrip
 from forum.utils.mail import send_email
 from django.utils.translation import ugettext as _
 from forum.actions import AskAction, AnswerAction, CommentAction, AcceptAnswerAction, UserJoinsAction, QuestionViewAction
-from django.conf import settings
+from forum import settings
 from django.db.models import Q, F
 
 def create_subscription_if_not_exists(question, user):

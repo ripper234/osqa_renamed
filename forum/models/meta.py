@@ -5,7 +5,7 @@ class Vote(models.Model):
     user = models.ForeignKey(User, related_name="votes")
     node = models.ForeignKey(Node, related_name="votes")
     value = models.SmallIntegerField()
-    action = models.ForeignKey(Action, unique=True, related_name="vote")
+    action = models.OneToOneField(Action, related_name="vote")
     voted_at = models.DateTimeField(default=datetime.datetime.now)
 
     class Meta:
@@ -17,7 +17,7 @@ class Flag(models.Model):
     user = models.ForeignKey(User, related_name="flags")
     node = models.ForeignKey(Node, related_name="flags")
     reason = models.CharField(max_length=300)
-    action = models.ForeignKey(Action, unique=True, related_name="flag")
+    action = models.OneToOneField(Action, related_name="flag")
     flagged_at = models.DateTimeField(default=datetime.datetime.now)
 
     class Meta:
@@ -86,7 +86,7 @@ class Award(models.Model):
     awarded_at = models.DateTimeField(default=datetime.datetime.now)
 
     trigger = models.ForeignKey(Action, related_name="awards", null=True)
-    action = models.ForeignKey(Action, related_name="award", unique=True)
+    action = models.OneToOneField(Action, related_name="award")
 
 
     class Meta:

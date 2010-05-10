@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from forum.utils.forms import get_next_url
 from django.utils.translation import ugettext as _
 from forum.user_messages import create_message, get_and_delete_messages
-from django.conf import settings
+from forum import settings
 from django.core.urlresolvers import reverse
 import logging
 

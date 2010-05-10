@@ -8,7 +8,7 @@ from forum.models import User
 
 from django.utils.safestring import mark_safe
 from forum.utils.forms import NextUrlField, UserNameField, SetPasswordForm
-from django.conf import settings
+from forum import settings
 import logging
 
 class TitleField(forms.CharField):

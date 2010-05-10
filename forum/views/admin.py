@@ -47,6 +47,8 @@ def settings_set(request, set_name):
 
             if set_name in ('minrep', 'badges', 'repgain'):
                 settings.SETTINGS_PACK.set_value("custom")
+
+        return HttpResponseRedirect(reverse('admin_set', args=[set_name]))
     else:
         form = SettingsSetForm(set)
 

@@ -44,6 +44,13 @@ class AolAuthContext(ConsumerTemplateContext):
 
 
 class MyOpenIdAuthConsumer(OpenIdAbstractAuthConsumer):
+    dataype2ax_schema = {
+        'username': ('http://schema.openid.net/namePerson/friendly', 'friendly'),
+        'email': 'http://schema.openid.net/contact/email',
+        'web': 'http://schema.openid.net/contact/web/default',
+        'birthdate': ('http://schema.openid.net/birthDate', 'birthDate'),
+    }
+
     def get_user_url(self, request):
         blog_name = request.POST['input_field']
         return "http://%s.myopenid.com/" % blog_name

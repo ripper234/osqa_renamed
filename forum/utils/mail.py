@@ -9,7 +9,7 @@ from email.MIMEImage import MIMEImage
 from django.core.mail import DNS_NAME
 from smtplib import SMTP
 import email.Charset
-from django.conf import settings
+from forum import settings
 from django.template import loader, Context, Template
 from forum.utils.html import sanitize_html
 from forum.context import application_settings
@@ -64,7 +64,7 @@ def create_msg(subject, sender, recipient, html, text, images):
     msgRoot['Subject'] = subject
     msgRoot['From'] = named(sender)
     msgRoot['To'] =  named(recipient)
-    msgRoot.preamble = 'This is a multi-part message from %s.' % str(settings.APP_SHORT_NAME)
+    msgRoot.preamble = 'This is a multi-part message from %s.' % unicode(settings.APP_SHORT_NAME).encode('utf8')
 
     msgAlternative = MIMEMultipart('alternative')
     msgRoot.attach(msgAlternative)
@@ -86,7 +86,7 @@ def create_msg(subject, sender, recipient, html, text, images):
 
 def send_email(subject, recipients, template, context={}, sender=None, images=[], threaded=True):
     if sender is None:
-        sender = (str(settings.APP_SHORT_NAME), str(settings.DEFAULT_FROM_EMAIL))
+        sender = (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))
 
     if not len(images):
         images = [(os.path.join(str(settings.UPFILES_FOLDER), os.path.basename(str(settings.APP_LOGO))), 'logo')]

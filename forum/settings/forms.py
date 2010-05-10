@@ -1,4 +1,5 @@
 import os
+from string import strip
 from django import forms
 from base import Setting
 from django.utils.translation import ugettext as _
@@ -20,7 +21,7 @@ class SettingsSetForm(forms.Form):
         super(SettingsSetForm, self).__init__(data, *args, **kwargs)
 
         for setting in set:
-            if isinstance(setting, Setting.emulators.get(str, DummySetting)):
+            if isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):
                 field = forms.CharField(**setting.field_context)
             elif isinstance(setting, Setting.emulators.get(float, DummySetting)):
                 field = forms.FloatField(**setting.field_context)
@@ -91,5 +92,14 @@ class StringListWidget(forms.Widget):
             return data.getlist(name)
         else:
             return data[name]
+
+class CommaStringListWidget(forms.Textarea):
+    def value_from_datadict(self, data, files, name):
+        if 'submit' in data:
+            return map(strip, data[name].split(','))
+        else:
+            return ', '.join(data[name])    
+
+
 
 

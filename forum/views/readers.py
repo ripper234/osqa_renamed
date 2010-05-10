@@ -2,7 +2,7 @@
 import datetime
 import logging
 from urllib import unquote
-from django.conf import settings as django_settings
+from forum import settings as django_settings
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, Http404, HttpResponsePermanentRedirect
 from django.core.paginator import Paginator, EmptyPage, InvalidPage

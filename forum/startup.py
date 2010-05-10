@@ -1,3 +1,5 @@
+import forum.views
+
 import forum.badges
 import forum.subscriptions
 

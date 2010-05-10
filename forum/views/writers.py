@@ -14,10 +14,10 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
 from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction
+from forum.modules.decorators import decoratable
 from forum.forms import *
 from forum.models import *
 from forum.utils.forms import get_next_url
-from forum.views.commands import SpamNotAllowedException
 
 
 def upload(request):#ajax upload file to a question or answer
@@ -64,23 +64,12 @@ def upload(request):#ajax upload file to a question or answer
 
     return HttpResponse(result, mimetype="application/xml")
 
-
+@decoratable
 def ask(request):
     if request.POST and "text" in request.POST:
         form = AskForm(request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                data = {
-                    "user_ip":request.META["REMOTE_ADDR"],
-                    "user_agent":request.environ['HTTP_USER_AGENT'],
-                    "comment_author":request.user.username,
-                    "comment_author_email":request.user.email,
-                    "comment_author_url":request.user.website,
-                    "comment":request.POST['text']
-                }
-                if Node.isSpam(request.POST['text'], data):
-                    raise SpamNotAllowedException("question")
-
                 question = AskAction(user=request.user).save(data=form.cleaned_data).node
                 return HttpResponseRedirect(question.get_absolute_url())
             else:
@@ -193,23 +182,13 @@ def edit_answer(request, id):
                               'form': form,
                               }, context_instance=RequestContext(request))
 
+@decoratable
 def answer(request, id):
     question = get_object_or_404(Question, id=id)
     if request.POST:
         form = AnswerForm(question, request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                data = {
-                    "user_ip":request.META["REMOTE_ADDR"],
-                    "user_agent":request.environ['HTTP_USER_AGENT'],
-                    "comment_author":request.user.username,
-                    "comment_author_email":request.user.email,
-                    "comment_author_url":request.user.website,
-                    "comment":request.POST['text']
-                }
-                if Node.isSpam(request.POST['text'], data):
-                    raise SpamNotAllowedException("answer")
-
                 answer = AnswerAction(user=request.user).save(dict(question=question, **form.cleaned_data)).node
                 return HttpResponseRedirect(answer.get_absolute_url())
             else:

@@ -1,5 +1,5 @@
 import datetime
-from django.conf import settings
+from forum import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import simplejson
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
@@ -11,6 +11,7 @@ from forum.actions import *
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
+from forum.modules.decorators import decoratable
 from decorators import command, CommandException
 from forum import settings
 import logging
@@ -40,12 +41,6 @@ class AnonymousNotAllowedException(CommandException):
             Sorry but anonymous users cannot %(action)s.<br />
             Please login or create an account <a href'%(signin_url)s'>here</a>.
             """ % {'action': action, 'signin_url': reverse('auth_signin')})
-        )
-
-class SpamNotAllowedException(CommandException):
-    def __init__(self, action = "comment"):
-        super(SpamNotAllowedException, self).__init__(
-            _("""Your %s has been marked as spam.""" % action)
         )
 
 class NotEnoughLeftException(CommandException):
@@ -231,6 +226,7 @@ def mark_favorite(request, id):
         }
     }
 
+@decoratable
 @command
 def comment(request, id):
     post = get_object_or_404(Node, id=id)
@@ -252,17 +248,6 @@ def comment(request, id):
 
     if len(comment_text) > settings.FORM_MAX_COMMENT_BODY:
         raise CommandException(_("No more than %d characters on comment body.") % settings.FORM_MAX_COMMENT_BODY)
-
-    data = {
-        "user_ip":request.META["REMOTE_ADDR"],
-        "user_agent":request.environ['HTTP_USER_AGENT'],
-        "comment_author":request.user.username,
-        "comment_author_email":request.user.email,
-        "comment_author_url":request.user.website,
-        "comment":comment_text
-    }
-    if Node.isSpam(comment_text, data):
-        raise SpamNotAllowedException()
 
     if 'id' in request.POST:
         comment = get_object_or_404(Comment, id=request.POST['id'])

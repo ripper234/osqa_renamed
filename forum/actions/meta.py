@@ -15,7 +15,7 @@ class VoteAction(ActionProxy):
         vote.save()
 
     def cancel_action(self):
-        vote = self.vote.all()[0]
+        vote = self.vote
         self.update_node_score(-vote.value)
         vote.delete()
 
@@ -98,7 +98,7 @@ class FlagAction(ActionProxy):
                 DeleteAction(node=self.node, user=self.user, extra="BYFLAGGED").save()
 
     def cancel_action(self):
-        self.flag.all()[0].delete()
+        self.flag.delete()
         self.node.reset_flag_count_cache()
 
     @classmethod

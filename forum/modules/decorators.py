@@ -37,13 +37,19 @@ def decorate(origin, needs_origin=True):
                 return origin
             return decorator
 
-        raise Exception('Not an decoratable function: %s' % origin.name)
+        raise TypeError('Not a decoratable function: %s' % origin.__name__)
 
     def decorator(fn):
         origin.decorate(fn, needs_origin)
         return origin
 
     return decorator
+
+
+def decorate_all(module):
+    [setattr(module, n, decoratable(f)) for n, f in
+        [(n, getattr(module, n)) for n in dir(module)]
+        if (callable(f)) and (not inspect.isclass(f)) and (f.__module__ == module.__name__)]
 
 
 

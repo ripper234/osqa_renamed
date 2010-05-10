@@ -1,4 +1,5 @@
-from django.conf import settings
+from forum import settings
+from django.conf import settings as djsettings
 def application_settings(context):
     my_settings = {
         'APP_TITLE' : settings.APP_TITLE,
@@ -8,15 +9,14 @@ def application_settings(context):
         'APP_DESCRIPTION' : settings.APP_DESCRIPTION,
         'APP_INTRO' : settings.APP_INTRO,
         'APP_LOGO' : settings.APP_LOGO,
-        'EMAIL_VALIDATION': settings.EMAIL_VALIDATION,
+        'EMAIL_VALIDATION': 'off',
         'FEEDBACK_SITE_URL': settings.FEEDBACK_SITE_URL,
-        'FORUM_SCRIPT_ALIAS': settings.FORUM_SCRIPT_ALIAS,
-        'LANGUAGE_CODE': settings.LANGUAGE_CODE,
+        'FORUM_SCRIPT_ALIAS': djsettings.FORUM_SCRIPT_ALIAS,
+        'LANGUAGE_CODE': djsettings.LANGUAGE_CODE,
         'GOOGLE_SITEMAP_CODE':settings.GOOGLE_SITEMAP_CODE,
         'GOOGLE_ANALYTICS_KEY':settings.GOOGLE_ANALYTICS_KEY,
         'WIKI_ON':settings.WIKI_ON,
-        'RESOURCE_REVISION':settings.RESOURCE_REVISION,
-        'OSQA_SKIN':settings.OSQA_DEFAULT_SKIN,
+        'OSQA_SKIN':djsettings.OSQA_DEFAULT_SKIN,
         'APP_FAVICON':settings.APP_FAVICON,
         }
     return {'settings':my_settings}

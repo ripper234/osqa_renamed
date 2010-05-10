@@ -3,7 +3,7 @@ from django.core.management.base import NoArgsCommand
 from django.utils.translation import ugettext as _
 from django.template import loader, Context, Template
 from django.core.mail import EmailMultiAlternatives
-from django.conf import settings
+from forum import settings
 from forum.models import KeyValue, Activity, User, QuestionSubscription
 from forum.utils.mail import send_email
 

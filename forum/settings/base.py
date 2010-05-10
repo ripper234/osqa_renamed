@@ -66,10 +66,12 @@ class BaseSetting(object):
         self.set_value(self.default)
 
     def _parse(self, value):
-        try:
-            return self.base_type(value)
-        except:
-            return value
+        if not isinstance(value, self.base_type):
+            try:
+                return self.base_type(value)
+            except:
+                pass
+        return value        
 
 
 class Setting(object):

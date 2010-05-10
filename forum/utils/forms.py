@@ -2,7 +2,7 @@ from django import forms
 import re
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
-from django.conf import settings
+from forum import settings
 from django.http import str_to_unicode
 from forum.models import User
 import urllib
@@ -37,8 +37,6 @@ login_form_widget_attrs = { 'class': 'required login' }
 username_re = re.compile(r'^[\w ]+$')
 
 class UserNameField(StrippedNonEmptyCharField):
-    RESERVED_NAMES = (u'fuck', u'shit', u'ass', u'sex', u'add',
-                       u'edit', u'save', u'delete', u'manage', u'update', 'remove', 'new')
     def __init__(self,db_model=User, db_field='username', must_exist=False,skip_clean=False,label=_('choose a username'),**kw):
         self.must_exist = must_exist
         self.skip_clean = skip_clean
@@ -50,6 +48,7 @@ class UserNameField(StrippedNonEmptyCharField):
                         'missing':_('sorry, there is no user with this name'),
                         'multiple-taken':_('sorry, we have a serious error - user name is taken by several users'),
                         'invalid':_('user name can only consist of letters, empty space and underscore'),
+                        'toshort':_('user name is to short, please use at least %d characters') % settings.MIN_USERNAME_LENGTH
                     }
         if 'error_messages' in kw:
             error_messages.update(kw['error_messages'])
@@ -72,9 +71,11 @@ class UserNameField(StrippedNonEmptyCharField):
             username = super(UserNameField, self).clean(username)
         except forms.ValidationError:
             raise forms.ValidationError(self.error_messages['required'])
+        if len(username) < settings.MIN_USERNAME_LENGTH:
+            raise forms.ValidationError(self.error_messages['toshort'])
         if self.required and not username_re.search(username):
             raise forms.ValidationError(self.error_messages['invalid'])
-        if username in self.RESERVED_NAMES:
+        if username in settings.RESERVED_USERNAMES:
             raise forms.ValidationError(self.error_messages['forbidden'])
         try:
             user = self.db_model.objects.get(

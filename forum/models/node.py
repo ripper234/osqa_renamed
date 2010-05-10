@@ -1,4 +1,3 @@
-from forum.akismet import *
 from base import *
 from tag import Tag
 
@@ -257,11 +256,12 @@ class Node(BaseModel, NodeContent):
 
     @staticmethod
     def isSpam(comment, data):
-        if not settings.WORDPRESS_API_KEY:
-            return False
-            
-        api = Akismet(settings.WORDPRESS_API_KEY, settings.APP_URL)
-        return api.comment_check(comment, data)
+        return False
+        #if not settings.WORDPRESS_API_KEY:
+        #    return False
+        #
+        #api = Akismet(settings.WORDPRESS_API_KEY, settings.APP_URL)
+        #return api.comment_check(comment, data)
 
     class Meta:
         app_label = 'forum'

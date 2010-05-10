@@ -1,3 +1,5 @@
+import re
+
 from django.utils.html import escape
 from django.http import get_host
 
@@ -14,6 +16,15 @@ from django.utils.translation import ugettext as _
 from store import OsqaOpenIDStore
 
 class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
+
+    dataype2ax_schema = {
+        'username': 'http://axschema.org/namePerson/friendly',
+        'email': 'http://axschema.org/contact/email',
+        'web': 'http://axschema.org/contact/web/default',
+        'firstname': 'http://axschema.org/namePerson/first',
+        'lastname': 'http://axschema.org/namePerson/last',
+        'birthdate': 'http://axschema.org/birthDate',
+    }
 
     def get_user_url(self, request):
         try:
@@ -55,13 +66,17 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
 
         if request.session.get('force_email_request', True):
             axr = AXFetchRequest()
-            axr.add(AttrInfo("http://axschema.org/contact/email", 1, True, "email"))
+            for data_type, schema in self.dataype2ax_schema.items():
+                if isinstance(schema, tuple):
+                    axr.add(AttrInfo(schema[0], 1, True, schema[1]))
+                else:
+                    axr.add(AttrInfo(schema, 1, True, data_type))
+
             auth_request.addExtension(axr)
 
         trust_root = getattr(
             settings, 'OPENID_TRUST_ROOT', get_url_host(request) + '/'
         )
-
 
         return auth_request.redirectURL(trust_root, redirect_to)
 
@@ -72,8 +87,8 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
             (k.encode('utf8'), v.encode('utf8')) for k, v in request.GET.items()
         ])
 
-        #for i in query_dict.items():
-        #    print "%s : %s" % i
+        for i in query_dict.items():
+            print "%s : %s" % i
 
         url = get_url_host(request) + request.path
         openid_response = consumer.complete(query_dict, url)
@@ -82,10 +97,34 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
             if request.session.get('force_email_request', True):
                 try:
                     ax = AXFetchResponse.fromSuccessResponse(openid_response)
-                    email = ax.getExtensionArgs()['value.ext0.1']
-                    request.session['auth_email_request'] = email
+
+                    axargs = ax.getExtensionArgs()
+
+                    ax_schema2data_type = dict([(s, t) for t, s in self.dataype2ax_schema.items()])
+
+                    available_types = dict([
+                        (ax_schema2data_type[s], re.sub('^type\.', '', n))
+                        for n, s in axargs.items() if s in ax_schema2data_type
+                    ])
+
+                    available_data = dict([
+                        (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
+                    ])
+
+                    print available_data
+                    
+
+                    #email = ax.getExtensionArgs()['value.ext0.1']
+                    #username = ax.getExtensionArgs()['value.ext0.2']
+                    
+                    request.session['auth_consumer_data'] = {
+                        'email': '',
+                        'username': ''
+                    }
+
                 except Exception, e:
-                    pass
+                    import sys, traceback
+                    traceback.print_exc(file=sys.stdout)
 
             return request.GET['openid.identity']
         elif openid_response.status == CANCEL:

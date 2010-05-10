@@ -1,0 +1,15 @@
+{% extends "base_content.html" %}
+{% load i18n %}
+{% block title %}{% trans "Akismet message" %}{% endblock %}
+
+{% block content %}
+<div class="headNormal">
+{% blocktrans %}Akismet believes your {{ action_name }} is spam.{% endblocktrans %}
+</div>
+<div class="content">
+{% blocktrans %}
+We're sorry, but Akismet believes your {{ action_name }} is spam.<br />
+If you believe this is an error, please contact the forum administrator.
+{% endblocktrans %}
+</div>
+{% endblock %}

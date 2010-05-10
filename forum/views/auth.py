@@ -177,11 +177,11 @@ def external_register(request):
         provider_class = AUTH_PROVIDERS[request.session['auth_provider']].consumer
         user_data = provider_class.get_user_data(request.session['assoc_key'])
 
+        if not user_data:
+            user_data = request.session.get('auth_consumer_data', {})
+
         username = user_data.get('username', '')
         email = user_data.get('email', '')
-
-        if not email:
-            email = request.session.get('auth_email_request', '')
 
         if email:
             request.session['auth_validated_email'] = email
@@ -338,7 +338,6 @@ def login_and_forward(request,  user, forward=None, message=None):
     user.backend = "django.contrib.auth.backends.ModelBackend"
     login(request,  user)
 
-    #user_logged_in.send(user=user,old_session=old_session,sender=None)
     temp_data = request.session.pop('temp_node_data', None)
     if temp_data:
         request.POST = temp_data
