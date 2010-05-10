@@ -123,8 +123,9 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
                     }
 
                 except Exception, e:
-                    import sys, traceback
-                    traceback.print_exc(file=sys.stdout)
+                    pass
+                    #import sys, traceback
+                    #traceback.print_exc(file=sys.stdout)
 
             return request.GET['openid.identity']
         elif openid_response.status == CANCEL:
