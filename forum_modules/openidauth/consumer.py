@@ -87,8 +87,8 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
             (k.encode('utf8'), v.encode('utf8')) for k, v in request.GET.items()
         ])
 
-        for i in query_dict.items():
-            print "%s : %s" % i
+        #for i in query_dict.items():
+            #print "%s : %s" % i
 
         url = get_url_host(request) + request.path
         openid_response = consumer.complete(query_dict, url)
@@ -111,7 +111,7 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
                         (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
                     ])
 
-                    print available_data
+                    #print available_data
                     
 
                     #email = ax.getExtensionArgs()['value.ext0.1']
