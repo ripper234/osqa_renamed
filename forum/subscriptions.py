@@ -124,7 +124,7 @@ def answer_accepted(action, new):
             subscription_settings__enable_notifications=True,
             subscription_settings__notify_accepted=True,
             subscription_settings__subscribed_questions='i'
-    ).exclude(id=instance.accepted_by.id).distinct()
+    ).exclude(id=action.node.accepted.by.id).distinct()
     recipients = create_recipients_dict(subscribers)
 
     send_email(settings.EMAIL_SUBJECT_PREFIX + _("An answer to '%(question_title)s' was accepted") % dict(question_title=question.title),
@@ -144,7 +144,7 @@ def member_joined(action, new):
 
     recipients = create_recipients_dict(subscribers)
 
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("%(username)s is a new member on %(app_name)s") % dict(username=instance.username, app_name=settings.APP_SHORT_NAME),
+    send_email(settings.EMAIL_SUBJECT_PREFIX + _("%(username)s is a new member on %(app_name)s") % dict(username=action.user.username, app_name=settings.APP_SHORT_NAME),
                recipients, "notifications/newmember.html", {
         'newmember': action.user,
     }, threaded=False)
