@@ -52,5 +52,5 @@ class AwardAction(ActionProxy):
         return _("%(user)s %(were_was)s awarded the %(badge_name)s badge") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
             'were_was': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
-            'badge_name': self.award.all()[0].badge.name,
+            'badge_name': self.award.badge.name,
         }
