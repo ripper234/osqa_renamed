@@ -627,7 +627,7 @@ a.medal:hover {
 	min-height: 100px;
 }
 
-.question-body img { max-width: 600px; }
+.question-body img { max-width: 640px; }
 
 .vote-buttons {
 	float: left;
@@ -674,6 +674,8 @@ ul.errorlist li {
 	line-height: 20px;
 	min-height: 80px;
 }
+
+.answer-body img { max-width: 640px; }
 
 .answered-by-owner { background: none repeat scroll 0 0 #E9E9FF; }
 
