@@ -121,17 +121,20 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
             if private and not user == request.user:
                 return HttpResponseForbidden()
             context = fn(request, user)
+
+            rev_page_title = user.username + " - " + page_title
+
             context.update({
                 "tab_name" : tab_name,
                 "tab_description" : tab_description,
-                "page_title" : page_title,
+                "page_title" : rev_page_title,
             })
             return render_to_response(template, context, context_instance=RequestContext(request))
         return decorated
     return decorator
 
 
-@user_view('users/stats.html', 'stats', _('user profile'), _('user profile overview'))
+@user_view('users/stats.html', 'stats', _('user profile'), _('user overview'))
 def user_stats(request, user):
     questions = Question.objects.filter(author=user, deleted=None).order_by('-added_at')
     answers = Answer.objects.filter(author=user, deleted=None).order_by('-added_at')
@@ -161,21 +164,21 @@ def user_stats(request, user):
             "total_awards" : len(awards),
         }
 
-@user_view('users/recent.html', 'recent', _('recent user activity'), _('profile - recent activity'))
+@user_view('users/recent.html', 'recent', _('recent user activity'), _('recent activity'))
 def user_recent(request, user):
     activities = user.actions.exclude(action_type__in=("voteup", "votedown", "voteupcomment", "flag")).order_by('-action_date')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "activities" : activities}
 
 
-@user_view('users/votes.html', 'votes', _('user vote record'), _('profile - votes'), True)
+@user_view('users/votes.html', 'votes', _('user vote record'), _('votes'), True)
 def user_votes(request, user):
     votes = user.votes.filter(node__deleted=None).order_by('-voted_at')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "votes" : votes}
 
 
-@user_view('users/reputation.html', 'reputation', _('user reputation in the community'), _('profile - user reputation'))
+@user_view('users/reputation.html', 'reputation', _('user reputation in the community'), _('user reputation'))
 def user_reputation(request, user):
     rep = list(user.reputes.order_by('date'))
     values = [r.value for r in rep]
@@ -188,13 +191,13 @@ def user_reputation(request, user):
 
     return {"view_user": user, "reputation": reversed(rep), "graph_data": graph_data}
 
-@user_view('users/questions.html', 'favorites', _('favorite questions'),  _('profile - favorite questions'))
+@user_view('users/questions.html', 'favorites', _('favorite questions'),  _('favorite questions'))
 def user_favorites(request, user):
     favorites = FavoriteAction.objects.filter(user=user)
 
     return {"favorites" : favorites, "view_user" : user}
 
-@user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('profile - subscriptions'), True)
+@user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True)
 def user_subscriptions(request, user):
     if request.method == 'POST':
         form = SubscriptionSettingsForm(request.POST)

@@ -49,20 +49,20 @@ def index(request):
 def unanswered(request):
     return question_list(request, Question.objects.filter(extra_ref=None),
                          _('Open questions without an accepted answer'),
-                         sort='active')
+                         'active', None, _("Unanswered questions"))
 
 @decorators.render('questions.html', 'questions')
 def questions(request):
-    return question_list(request, Question.objects.all(), sort='active')
+    return question_list(request, Question.objects.all(), _('questions'), 'active')
 
 @decorators.render('questions.html')
 def tag(request, tag):
     return question_list(request, Question.objects.filter(tags__name=unquote(tag)),
                         mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
-                        sort='active')
+                        'active', None, mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}))
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
-def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None):
+def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None):
     questions = initial.filter(deleted=None, in_moderation=None)
 
     if request.user.is_authenticated():
@@ -79,12 +79,16 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
 
         questions=questions.order_by(view_dic.get(sort, '-added_at'))
 
+    if page_title is None:
+        page_title = _("Questions")
+        
     return {
         "questions" : questions,
         "questions_count" : questions.count(),
         #"tags_autocomplete" : _get_tags_cache_json(),
         "list_description": list_description,
         "base_path" : base_path,
+        "page_title" : page_title,
         }
 
 

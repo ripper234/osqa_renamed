@@ -4,7 +4,7 @@
 {% load i18n %}
 {% load extra_tags %}
 
-{% block title %}{% spaceless %}{% trans "Questions" %}{% endspaceless %}{% endblock %}
+{% block title %}{% spaceless %}{{ page_title }}{% endspaceless %}{% endblock %}
 {% block content %}
 <div class="tabBar">
     {% question_list_title %}
