@@ -107,9 +107,9 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
                         for n, s in axargs.items() if s in ax_schema2data_type
                     ])
 
-                    available_data = dict([
-                        (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
-                    ])
+                    #available_data = dict([
+                    #    (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
+                    #])
 
                     #print available_data
                     
