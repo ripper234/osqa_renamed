@@ -25,6 +25,17 @@
             $("#" + answer_sort_tab).attr('className',"on");
 
             $('#editor').TextAreaResizer();
+            
+            //toggle preview of editor
+            var display = true;
+            var txt = "[{% trans "hide preview" %}]";
+            $('#pre-collapse').text(txt);
+            $('#pre-collapse').bind('click', function(){
+                txt = display ? "[{% trans "show preview" %}]" : "[{% trans "hide preview" %}]";
+                display = !display;
+                $('#previewer').toggle();
+                $('#pre-collapse').text(txt);
+            });
         });
         </script>
         <noscript>
