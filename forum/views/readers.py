@@ -59,15 +59,19 @@ def questions(request):
 def tag(request, tag):
     return question_list(request, Question.objects.filter(tags__name=unquote(tag)),
                         mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
-                        'active', None, mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}))
+                        'active',
+                        None,
+                        mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}),
+                        True)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
-def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None):
+def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, ignoringTags=False):
     questions = initial.filter(deleted=None, in_moderation=None)
 
-    if request.user.is_authenticated():
-        questions = questions.filter(
-                ~Q(tags__id__in=request.user.marked_tags.filter(user_selections__reason='bad')))
+    test = request.user.marked_tags
+
+    if request.user.is_authenticated() and  not ignoringTags:
+        questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
 
     if sort is not False:
         if sort is None:
@@ -81,7 +85,7 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
 
     if page_title is None:
         page_title = _("Questions")
-        
+
     return {
         "questions" : questions,
         "questions_count" : questions.count(),

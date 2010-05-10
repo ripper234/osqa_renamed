@@ -1,5 +1,24 @@
 <!-- question_edit_tips.html -->
 {% load i18n %}
+{% block forejs %}
+        <script type="text/javascript">
+            var currentSideBar = 'div#title_side_bar';
+            function changeSideBar(enabled_bar) {
+                $(currentSideBar).hide();
+                currentSideBar = enabled_bar;
+                $(currentSideBar).fadeIn('slow');
+
+            }
+            $(function () {
+                $('div#editor_side_bar').hide();
+                $('div#tags_side_bar').hide();
+
+                $('input#id_title').focus(function(){changeSideBar('div#title_side_bar')});
+                $('textarea#editor').focus(function(){changeSideBar('div#editor_side_bar')});
+                $('input#id_tags').focus(function(){changeSideBar('div#tags_side_bar')});
+            });
+        </script>
+{% endblock %}
 <div class="boxC" id="title_side_bar">
     <p class="subtitle darkred">{% trans "Title Tips" %}</p>
     <div>
