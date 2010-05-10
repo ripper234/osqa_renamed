@@ -48,16 +48,18 @@ def index(request):
 @decorators.render('questions.html', 'unanswered')
 def unanswered(request):
     return question_list(request, Question.objects.filter(extra_ref=None),
-                         _('Open questions without an accepted answer'))
+                         _('Open questions without an accepted answer'),
+                         sort='active')
 
 @decorators.render('questions.html', 'questions')
 def questions(request):
-    return question_list(request, Question.objects.all())
+    return question_list(request, Question.objects.all(), sort='active')
 
 @decorators.render('questions.html')
 def tag(request, tag):
     return question_list(request, Question.objects.filter(tags__name=unquote(tag)),
-                        mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}))
+                        mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
+                        sort='active')
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None):
