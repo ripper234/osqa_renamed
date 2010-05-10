@@ -62,15 +62,15 @@ def tag(request, tag):
                         'active',
                         None,
                         mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}),
-                        True)
+                        False)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
-def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, ignoringTags=False):
+def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, allowIgnoreTags=True):
     questions = initial.filter(deleted=None, in_moderation=None)
 
     test = request.user.marked_tags
 
-    if request.user.is_authenticated() and  not ignoringTags:
+    if request.user.is_authenticated() and allowIgnoreTags:
         questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
 
     if sort is not False:
