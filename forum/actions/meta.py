@@ -2,7 +2,7 @@ from django.utils.translation import ugettext as _
 from django.db.models import F
 from forum.models.action import ActionProxy, DummyActionProxy
 from forum.models import Vote, Flag
-import settings
+from forum import settings
 
 class VoteAction(ActionProxy):
     def update_node_score(self, inc):
