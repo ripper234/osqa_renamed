@@ -21,8 +21,8 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
         'username': 'http://axschema.org/namePerson/friendly',
         'email': 'http://axschema.org/contact/email',
         'web': 'http://axschema.org/contact/web/default',
-        'firstname': 'http://axschema.org/namePerson/first',
-        'lastname': 'http://axschema.org/namePerson/last',
+        #'firstname': 'http://axschema.org/namePerson/first',
+        #'lastname': 'http://axschema.org/namePerson/last',
         'birthdate': 'http://axschema.org/birthDate',
     }
 
