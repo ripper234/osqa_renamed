@@ -1,6 +1,7 @@
 from django import template
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
+import logging
 
 register = template.Library()
 
@@ -41,9 +42,7 @@ class ActivityNode(template.Node):
             describe = mark_safe(action.describe(viewer))
             return self.template.render(template.Context(dict(action=action, describe=describe)))
         except Exception, e:
-            #import sys, traceback
-            #traceback.print_exc(file=sys.stdout)
-            pass
+            logging.error("Error in %s action describe: %s" % (action.action_type, str(e)))
 
 @register.tag
 def activity_item(parser, token):
