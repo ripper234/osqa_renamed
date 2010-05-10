@@ -945,9 +945,8 @@ function changeSideBar(enabled_bar) {
 
 }
 
-var currentSideBar = 'div#editor_side_bar';
+var currentSideBar = 'div#title_side_bar';
 $(function () {
-    $('div#title_side_bar').hide();
     $('div#editor_side_bar').hide();
     $('div#tags_side_bar').hide();
 
