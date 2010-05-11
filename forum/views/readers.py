@@ -1,4 +1,4 @@
-# encoding:utf-8
+# encoding:utf-8   
 import datetime
 import logging
 from urllib import unquote
@@ -43,28 +43,39 @@ ANSWERS_PAGE_SIZE = 10
 
 @decorators.render('index.html')
 def index(request):
-    return question_list(request, Question.objects.all(), sort='active', base_path=reverse('questions'))
+    return question_list(request,
+                         Question.objects.all(),
+                         sort=request.utils.set_sort_method('active'),
+                         base_path=reverse('questions'))
 
 @decorators.render('questions.html', 'unanswered')
 def unanswered(request):
-    return question_list(request, Question.objects.filter(extra_ref=None),
-                         list_description=_('Open questions without an accepted answer'),
-                         page_title=_("Unanswered questions"))
+    return question_list(request,
+                         Question.objects.filter(extra_ref=None),
+                         _('Open questions without an accepted answer'),
+                         request.utils.set_sort_method('active'),
+                         None,
+                         _("Unanswered questions"))
 
 @decorators.render('questions.html', 'questions')
 def questions(request):
-    return question_list(request, Question.objects.all(), _('questions'))
+    return question_list(request, Question.objects.all(), _('questions'), request.utils.set_sort_method('active'))
 
 @decorators.render('questions.html')
 def tag(request, tag):
-    return question_list(request, Question.objects.filter(tags__name=unquote(tag)),
-                        list_description=mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
-                        page_title=mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}),
-                        allowIgnoreTags=False)
+    return question_list(request,
+                         Question.objects.filter(tags__name=unquote(tag)),
+                         mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
+                         request.utils.set_sort_method('active'),
+                         None,
+                         mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}),
+                         False)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, allowIgnoreTags=True):
     questions = initial.filter(deleted=None, in_moderation=None)
+
+    test = request.user.marked_tags
 
     if request.user.is_authenticated() and allowIgnoreTags:
         questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
@@ -96,7 +107,7 @@ def search(request):
     if request.method == "GET" and "q" in request.GET:
         keywords = request.GET.get("q")
         search_type = request.GET.get("t")
-        
+
         if not keywords:
             return HttpResponseRedirect(reverse(index))
         if search_type == 'tag':
@@ -118,7 +129,7 @@ def question_search(request, keywords):
 
     return question_list(request, initial, _("questions matching '%(keywords)s'") % {'keywords': keywords},
             base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)
-    
+
 
 def tags(request):#view showing a listing of available tags - plain list
     stag = ""
@@ -280,7 +291,7 @@ def revisions(request, id):
             rev_ctx[i]['summary'] = _('Revision n. %(rev_number)d') % {'rev_number': revision.revision}
         else:
             rev_ctx[i]['summary'] = revision.summary
-            
+
     return render_to_response('revisions.html', {
                               'post': post,
                               'revisions': rev_ctx,
