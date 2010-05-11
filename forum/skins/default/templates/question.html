@@ -235,10 +235,10 @@
 {% endblock %}
 
 {% block sidebar %}
-{% sidebar_upper %}
 <div class="boxC" id="subscription_box">
     {% include "subscription_status.html" %}
 </div>
+{% sidebar_upper %}
 {% cache 60 questions_tags settings.APP_URL question.id %}
 <div class="boxC">
     <p>
