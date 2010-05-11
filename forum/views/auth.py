@@ -169,10 +169,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            if user_.email_isvalid:
-                return login_and_forward(request, user_)
-            else:
-                return HttpResponseRedirect(reverse('index'))
+            return login_and_forward(request, user_)
     else:
         provider_class = AUTH_PROVIDERS[request.session['auth_provider']].consumer
         user_data = provider_class.get_user_data(request.session['assoc_key'])

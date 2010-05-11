@@ -18,12 +18,12 @@ from store import OsqaOpenIDStore
 class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
 
     dataype2ax_schema = {
-        'username': 'http://axschema.org/namePerson/friendly',
+        #'username': 'http://axschema.org/namePerson/friendly',
         'email': 'http://axschema.org/contact/email',
-        'web': 'http://axschema.org/contact/web/default',
+        #'web': 'http://axschema.org/contact/web/default',
         #'firstname': 'http://axschema.org/namePerson/first',
         #'lastname': 'http://axschema.org/namePerson/last',
-        'birthdate': 'http://axschema.org/birthDate',
+        #'birthdate': 'http://axschema.org/birthDate',
     }
 
     def get_user_url(self, request):
@@ -107,19 +107,12 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
                         for n, s in axargs.items() if s in ax_schema2data_type
                     ])
 
-                    #available_data = dict([
-                    #    (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
-                    #])
-
-                    #print available_data
-                    
-
-                    #email = ax.getExtensionArgs()['value.ext0.1']
-                    #username = ax.getExtensionArgs()['value.ext0.2']
+                    available_data = dict([
+                        (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
+                    ])
                     
                     request.session['auth_consumer_data'] = {
-                        'email': '',
-                        'username': ''
+                        'email': available_data.get('email', None),
                     }
 
                 except Exception, e:
