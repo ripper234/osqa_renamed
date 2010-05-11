@@ -102,15 +102,15 @@ def send_email(subject, recipients, template, context={}, sender=None, images=[]
 
     for recipient in recipients:
         if isinstance(recipient, str):
-            recipient_data = [('recipient', recipient)]
+            recipient_data = ('recipient', recipient)
             recipient_context = None
         elif isinstance(recipient, (list, tuple)) and len(recipient) == 2:
             name, email = recipient
-            recipient_data = [(name, email)]
+            recipient_data = (name, email)
             recipient_context = None
         elif isinstance(recipient, (list, tuple)) and len(recipient) == 3:
             name, email, recipient_context = recipient
-            recipient_data = [(name, email)]
+            recipient_data = (name, email)
         else:
             raise Exception('bad argument for recipients')
 

@@ -112,7 +112,7 @@ class Command(NoArgsCommand):
                 context['new_questions'] = False
 
             if context['new_users'] or context['activity_in_subscriptions'] or context['new_questions']:
-                send_email(digest_subject, (u.username, u.email), "notifications/digest.html", context, threaded=False)
+                send_email(digest_subject, [(u.username, u.email)], "notifications/digest.html", context, threaded=False)
 
 
     def get_digest_control(self):
