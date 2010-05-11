@@ -5,7 +5,9 @@ from django.shortcuts import render_to_response
 from forum.modules.decorators import decorate
 from forum import views
 from lib.akismet import Akismet
-from forum.settings import APP_URL, OSQA_VERSION
+from forum.settings import APP_URL, OSQA_VERSION, REP_TO_FOR_NO_SPAM_CHECK
+from forum.models.user import User
+
 import settings
 
 
@@ -13,6 +15,8 @@ def check_spam(param, comment_type):
     def wrapper(origin, request, *args, **kwargs):
         if request.POST and request.POST.get(param, None) and settings.WORDPRESS_API_KEY:
             comment = request.POST[param]
+            user = request.user
+
             data = {
                 "user_ip":request.META["REMOTE_ADDR"],
                 "user_agent":request.environ['HTTP_USER_AGENT'],
@@ -20,7 +24,7 @@ def check_spam(param, comment_type):
                 "comment":comment
             }
 
-            if request.user.is_authenticated():
+            if user.is_authenticated():
                 data.update({
                     "comment_author":request.user.username,
                     "comment_author_email":request.user.email,
@@ -28,17 +32,18 @@ def check_spam(param, comment_type):
                 })
 
             api = Akismet(settings.WORDPRESS_API_KEY, APP_URL, "OSQA/%s" % OSQA_VERSION)
-            if api.comment_check(comment, data):
-                if request.is_ajax():
-                    response = {
-                        'success': False,
-                        'error_message': _("Sorry, but akismet thinks your %s is spam.") % comment_type
-                    }
-                    return HttpResponse(simplejson.dumps(response), mimetype="application/json")
-                else:
-                    return render_to_response('modules/akismet/foundspam.html', {
-                        'action_name': comment_type
-                    })
+            if not user.is_authenticated() or (user.reputation < settings.REP_TO_FOR_NO_SPAM_CHECK and not user.is_staff and not user.is_superuser):
+                if api.comment_check(comment, data):
+                    if request.is_ajax():
+                        response = {
+                            'success': False,
+                            'error_message': _("Sorry, but akismet thinks your %s is spam.") % comment_type
+                        }
+                        return HttpResponse(simplejson.dumps(response), mimetype="application/json")
+                    else:
+                        return render_to_response('modules/akismet/foundspam.html', {
+                            'action_name': comment_type
+                        })
                     
         return origin(request, *args, **kwargs)
     return wrapper
