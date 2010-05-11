@@ -13,6 +13,7 @@ FORUM_SCRIPT_ALIAS = djsettings.FORUM_SCRIPT_ALIAS
 
 
 from basic import *
+from sidebar import *
 from email import *
 from extkeys import *
 from minrep import *
