@@ -1,0 +1,9 @@
+{% load markup %}
+
+{% if show %}
+<div id="{{ blockid }}" class="boxC">
+    <div class="body">
+        {{ content|markdown }}
+     </div>
+</div>
+{% endif %}

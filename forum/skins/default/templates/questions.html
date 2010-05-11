@@ -3,6 +3,7 @@
 {% load question_list_tags %}
 {% load i18n %}
 {% load extra_tags %}
+{% load general_sidebar_tags %}
 
 {% block title %}{% spaceless %}{{ page_title }}{% endspaceless %}{% endblock %}
 {% block content %}
@@ -22,7 +23,10 @@
 
 {% block sidebar %}
     {% question_list_count %}
+    {% sidebar_upper %}
     {% tag_selector %}
     {% question_list_related_tags questions %}
+    {% sidebar_lower %}
+
 {% endblock %}
 <!-- end questions.html -->

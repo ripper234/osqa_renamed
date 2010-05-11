@@ -1,39 +1,38 @@
 from base import Setting, SettingSet
 from django.forms.widgets import Textarea
 
-SIDEBAR_SET = SettingSet('sidebar', 'Sidebar content', "Enter contents to display in the sidebar. You can use markdown and some basic html tags.", 1000, True)
+SIDEBAR_SET = SettingSet('sidebar', 'Sidebar content', "Enter contents to display in the sidebar. You can use markdown and some basic html tags.", 10, True)
 
 SIDEBAR_UPPER_SHOW = Setting('SIDEBAR_UPPER_SHOW', False, SIDEBAR_SET, dict(
-label = "Include Upper Sidebar Block",
-help_text = "Check if your pages should include the upper sidebar block.",
+label = "Show Upper Block",
+help_text = "Check if your pages should display the upper sidebar block.",
 required=False))
 
 
 SIDEBAR_UPPER_TEXT = Setting('SIDEBAR_UPPER_TEXT',
 u"""
-## Host your own OSQA at WebFaction
+## [Try WebFaction](http://www.webfaction.com?affiliate=osqa)
 
-We recommend WebFaction for hosting OSQA. Their affordable,
-reliable servers have everything you need!
+We recommend [**WebFaction**](http://www.webfaction.com?affiliate=osqa)
+for hosting OSQA. Their affordable, reliable servers have everything you need!
 """, SIDEBAR_SET, dict(
-label = "Sidebar (Upper)",
+label = "Upper Block Content",
 help_text = " The upper sidebar block. ",
 widget=Textarea(attrs={'rows': '10'})))
 
 
 SIDEBAR_LOWER_SHOW = Setting('SIDEBAR_LOWER_SHOW', False, SIDEBAR_SET, dict(
-label = "Include Lower Sidebar Block",
-help_text = "Check if your pages should include the lower sidebar block.",
+label = "Show Lower Block",
+help_text = "Check if your pages should display the lower sidebar block.",
 required=False))
-
 
 SIDEBAR_LOWER_TEXT = Setting('SIDEBAR_LOWER_TEXT',
 u"""
 ## Learn more about OSQA
 
-The OSQA website and wiki are also great resources to help you
-learn more about the OSQA open source Q&A system!
+The [**OSQA website**](http://www.osqa.net/) and [**OSQA wiki**](http://wiki.osqa.net/)
+are also great resources to help you learn more about the OSQA open source Q&A system!
 """, SIDEBAR_SET, dict(
-label = "Sidebar (Lower)",
+label = "Lower Block Content",
 help_text = " The lower sidebar block. ",
 widget=Textarea(attrs={'rows': '10'})))

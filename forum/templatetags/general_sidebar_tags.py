@@ -1,5 +1,6 @@
 from django import template
 from forum.models import Tag, Award
+from forum import settings
 
 #todo: move to settings
 RECENT_TAGS_SIZE = 25
@@ -14,3 +15,19 @@ def recent_tags():
 @register.inclusion_tag('sidebar/recent_awards.html')
 def recent_awards():
     return {'awards': Award.objects.order_by('-awarded_at')[:RECENT_AWARD_SIZE]}
+
+@register.inclusion_tag('sidebar/user_blocks.html')
+def sidebar_upper():
+    return {
+        'show': settings.SIDEBAR_UPPER_SHOW,
+        'content': settings.SIDEBAR_UPPER_TEXT,
+        'blockid': 'sidebar-upper'
+    }
+
+@register.inclusion_tag('sidebar/user_blocks.html')
+def sidebar_lower():
+    return {
+        'show': settings.SIDEBAR_LOWER_SHOW,
+        'content': settings.SIDEBAR_LOWER_TEXT,
+        'blockid': 'sidebar-lower'
+    }
