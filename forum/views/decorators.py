@@ -1,6 +1,6 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils import simplejson
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.utils.translation import ungettext, ugettext as _
@@ -29,7 +29,11 @@ def list(paginate, default_page_size):
             big_list = context[paginate]
             paginator = Paginator(big_list, pagesize)
 
-            page_obj = paginator.page(page)
+            try:
+                page_obj = paginator.page(page)
+            except EmptyPage:
+                raise Http404()
+                
             context[paginate] = page_obj.object_list.lazy()
 
             base_path = context.get('base_path', None) or request.path
