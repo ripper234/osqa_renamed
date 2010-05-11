@@ -11,11 +11,11 @@ required=False))
 
 SIDEBAR_UPPER_TEXT = Setting('SIDEBAR_UPPER_TEXT',
 u"""
-## [Try WebFaction](http://www.webfaction.com?affiliate=osqa)
+## [Reliable OSQA Hosting](http://www.webfaction.com?affiliate=osqa)
 
 We recommend [**WebFaction**](http://www.webfaction.com?affiliate=osqa) \
-for hosting OSQA. Their affordable, reliable servers have everything you need! \
-[Step-by-step instructions...](http://wiki.osqa.net/display/docs/Installing+OSQA+on+WebFaction)
+for OSQA hosting. For under $10/month their reliable servers have everything \
+you need. [Step-by-step instructions...](http://wiki.osqa.net/display/docs/Installing+OSQA+on+WebFaction)
 """, SIDEBAR_SET, dict(
 label = "Upper Block Content",
 help_text = " The upper sidebar block. ",
@@ -32,7 +32,7 @@ u"""
 ## Learn more about OSQA
 
 The [**OSQA website**](http://www.osqa.net/) and [**OSQA wiki**](http://wiki.osqa.net/) \
-are also great resources to help you learn more about the OSQA open source Q&A system!
+are great resources to help you learn more about the OSQA open source Q&A system!
 """, SIDEBAR_SET, dict(
 label = "Lower Block Content",
 help_text = " The lower sidebar block. ",
