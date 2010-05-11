@@ -3,6 +3,7 @@
 {% load node_tags %}
 {% load extra_tags %}
 {% load extra_filters %}
+{% load general_sidebar_tags %}
 {% load smart_if %}
 {% load humanize %}
 {% load i18n %}
@@ -234,6 +235,7 @@
 {% endblock %}
 
 {% block sidebar %}
+{% sidebar_upper %}
 <div class="boxC" id="subscription_box">
     {% include "subscription_status.html" %}
 </div>
@@ -260,6 +262,7 @@
     </p>
 </div>
 {% endcache %}
+{% sidebar_lower %}
 <div class="boxC">
     <h3 class="subtitle">{% trans "Related questions" %}</h3>
     <div class="questions-related">

@@ -16,9 +16,11 @@
     </div>
     {% endif %}
     {% question_list_count %}
+    {% sidebar_upper %}
     {% if request.user.is_authenticated %}
         {% tag_selector %}
     {% endif %}
+    {% sidebar_lower %}
     {% recent_tags %}
     {% recent_awards %}
 {% endblock %}
