@@ -46,4 +46,5 @@ help_text = _("The copyright notice visible at the footer of your page.")))
 
 FEEDBACK_SITE_URL = Setting('FEEDBACK_SITE_URL', '', BASIC_SET, dict(
 label = _("Feedback site url"),
-help_text = _("If you have a specific place to get feedback from your users, use this field and the fedback link on the footer will point there.")))
+help_text = _("If you have a specific place to get feedback from your users, use this field and the fedback link on the footer will point there."),
+required=False))
