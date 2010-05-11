@@ -21,7 +21,10 @@ h1,h2,h3,ul,li,form,img,p {
 	padding: 0;
 }
 
-label { vertical-align: middle; }
+label {vertical-align: middle;}
+
+.login label {display: block;}
+.login .form-row-vertical {margin-bottom: 8px;}
 
 hr {
 	border-color: #CCCCCE -moz-use-text-color -moz-use-text-color;

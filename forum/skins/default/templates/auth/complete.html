@@ -24,39 +24,40 @@
         {% endif %}
         </ul>
 	{% endif %}
-    {% comment %}
-	{% if form2.errors %}<!--form2 is dysfunctional so commented out -->
-	<div class="errors">
-        <span class="big">{% trans "Sorry, looks like we have some errors:" %}</span><br/>
-        <ul class="error-list">
-		{% if form2.username.errors %} 
-			<li><span class="error">{{ form2.username.errors|join:", " }}</span></li>
-		{% endif %}
-		{% if form2.password.errors %} 
-			<li><span class="error">{{ form2.password.errors|join:", " }}</span></li>
-		{% endif %}
-       </ul>
-	</div>
-	{% endif %}
-    {% endcomment %}
 
 	<div class="login">
         <form name="fregister" action="" method="POST">
             {{ form1.next }}
-            <div class="form-row-vertical">
-                <label for="id_username">{% trans "Screen name label" %}</label>
+            <div class="form-row-vertical margin-bottom">
+                <label for="id_username">{{ form1.username.label }}</label>
                 {% if form1.username.errors %} 
                     <p class="error">{{ form1.username.errors|join:", " }}</p>
                 {% endif %}
                 {{ form1.username }}
             </div>
             <div class="form-row-vertical margin-bottom">
-                <label for="id_email">{% trans "Email address label" %}</label>
+                <label for="id_email">{{ form1.email.label }}</label>
                 {% if form1.email.errors %} 
                     <p class="error">{{ form1.email.errors|join:", " }}</p>
                 {% endif %}
                 {{ form1.email }}
             </div>
+            {% if form1.password1 %}
+                <div class="form-row-vertical margin-bottom">
+                    <label for="password1_id">{{ form1.password1.label }}</label>
+                    {% if form1.password1.errors %}
+                        <p class="error">{{ form1.password1.errors|join:", " }}</p>
+                    {% endif %}
+                    {{ form1.password1 }}
+                </div>
+                <div class="form-row-vertical margin-bottom">
+                    <label for="password2_id">{{ form1.password2.label }}</label>
+                    {% if form1.password2.errors %} 
+                        <p class="error">{{ form1.password2.errors|join:", " }}</p>
+                    {% endif %}
+                    {{ form1.password2 }}
+                </div>
+            {% endif %}
             <p>{% trans "receive updates motivational blurb" %}</p>
             <div class='simple-subscribe-options'>
             {{email_feeds_form.subscribe}}
