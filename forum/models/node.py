@@ -254,15 +254,6 @@ class Node(BaseModel, NodeContent):
         super(Node, self).save(*args, **kwargs)
         if tags is not None: self.tags = tags
 
-    @staticmethod
-    def isSpam(comment, data):
-        return False
-        #if not settings.WORDPRESS_API_KEY:
-        #    return False
-        #
-        #api = Akismet(settings.WORDPRESS_API_KEY, settings.APP_URL)
-        #return api.comment_check(comment, data)
-
     class Meta:
         app_label = 'forum'
 
