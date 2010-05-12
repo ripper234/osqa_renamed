@@ -17,7 +17,6 @@ def check_spam(param, comment_type):
         if (request.POST and request.POST.get(param, None) and WORDPRESS_API_KEY) and (not request.user.is_authenticated()
              or not (request.user.is_staff and request.user.is_superuser and request.user.reputation >= REP_TO_FOR_NO_SPAM_CHECK)):
             comment = request.POST[param]
-            user = request.user
 
             data = {
                 "user_ip":request.META["REMOTE_ADDR"],
@@ -26,7 +25,7 @@ def check_spam(param, comment_type):
                 "comment":comment
             }
 
-            if user.is_authenticated():
+            if request.user.is_authenticated():
                 data.update({
                     "comment_author":request.user.username,
                     "comment_author_email":request.user.email,
