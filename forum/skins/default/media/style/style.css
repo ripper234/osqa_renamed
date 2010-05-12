@@ -340,16 +340,17 @@ blockquote {
 .questions-count {
 	color: #A40000;
 	font-family: sans-serif;
-	font-size: 32px;
+	font-size: 24px;
 	font-weight: 600;
 	margin-top: 3px;
+    margin-right: 5px;
 	padding: 0 0 5px 0;
 }
 
 .boxA {
-	background: none repeat scroll 0 0 #888A85;
-	margin-bottom: 8px;
-	padding: 6px;
+    background: none repeat scroll 0 0 #888A85;
+    margin-bottom: 8px;
+    padding: 6px;
 }
 
 .boxA h3 {

@@ -52,7 +52,7 @@ def index(request):
 def unanswered(request):
     return question_list(request,
                          Question.objects.filter(extra_ref=None),
-                         _('Open questions without an accepted answer'),
+                         _('open questions without an accepted answer'),
                          request.utils.set_sort_method('active'),
                          None,
                          _("Unanswered questions"))
@@ -65,10 +65,10 @@ def questions(request):
 def tag(request, tag):
     return question_list(request,
                          Question.objects.filter(tags__name=unquote(tag)),
-                         mark_safe(_('Questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
+                         mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          request.utils.set_sort_method('active'),
                          None,
-                         mark_safe(_('Questions tagged %(tag)s') % {'tag': tag}),
+                         mark_safe(_('questions tagged %(tag)s') % {'tag': tag}),
                          False)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
@@ -91,9 +91,12 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
     if page_title is None:
         page_title = _("Questions")
 
+    answer_count = Answer.objects.filter(deleted=None, parent__in=questions).count()   
+
     return {
         "questions" : questions,
         "questions_count" : questions.count(),
+        "answer_count" : answer_count,
         #"tags_autocomplete" : _get_tags_cache_json(),
         "list_description": list_description,
         "base_path" : base_path,

@@ -2,9 +2,21 @@
 {% load humanize %}
 
 <div class="boxC">
-		<div class="questions-count">{{ questions_count }}</div>
-		<p>{{ list_description }}</p>
+    <div class="questions-count">
+        {{ questions_count }}<span style="color:black;font-size:14px;margin-left:5px">{{ list_description }}</span>
+    </div>
+
+
+    {% if answer_count %}
+    <div class="questions-count" style="color:green">
+        {{ answer_count }}<span style="color:black;font-size:14px;margin-left:5px">answers</span>
+    </div>
+
+    {% endif %}
+
+    <div>
         <p class="nomargin">
-        {{ sort_description|safe }}
+            {{ sort_description|safe }}
         </p>
+    </div>
 </div>
