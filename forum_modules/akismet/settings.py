@@ -8,6 +8,6 @@ label = _("Wordpress API key"),
 help_text = _("Your Wordpress API key. You can get one at <a href='http://wordpress.com/'>http://wordpress.com/</a>"),
 required=False))
 
-REP_TO_FOR_NO_SPAM_CHECK = Setting('REP_TO_FOR_NO_SPAM_CHECK', 750, MIN_REP_SET, dict(
+REP_FOR_NO_SPAM_CHECK = Setting('REP_FOR_NO_SPAM_CHECK', 750, MIN_REP_SET, dict(
 label = _("Minimum reputation to not have your posts checked"),
 help_text = _("The minimum reputation a user must have so that when they post a question, answer or comment it is not checked for spam.")))

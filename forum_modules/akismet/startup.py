@@ -6,7 +6,7 @@ from forum.modules.decorators import decorate
 from forum import views
 from lib.akismet import Akismet
 from forum.settings import APP_URL, OSQA_VERSION
-from settings import WORDPRESS_API_KEY, REP_TO_FOR_NO_SPAM_CHECK
+from settings import WORDPRESS_API_KEY, REP_FOR_NO_SPAM_CHECK
 from forum.models.user import User
 
 import settings
@@ -15,7 +15,7 @@ import settings
 def check_spam(param, comment_type):
     def wrapper(origin, request, *args, **kwargs):
         if (request.POST and request.POST.get(param, None) and WORDPRESS_API_KEY) and (not request.user.is_authenticated()
-             or not (request.user.is_staff and request.user.is_superuser and request.user.reputation >= REP_TO_FOR_NO_SPAM_CHECK)):
+             or not (request.user.is_staff and request.user.is_superuser and request.user.reputation >= REP_FOR_NO_SPAM_CHECK)):
             comment = request.POST[param]
 
             data = {
