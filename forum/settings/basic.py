@@ -49,7 +49,7 @@ label = _("Feedback site url"),
 help_text = _("If you have a specific place to get feedback from your users, use this field and the fedback link on the footer will point there."),
 required=False))
 
-SHOW_WELCOME_BOX = Setting('SHOW_WELCOME_BOX', False, BASIC_SET, dict(
+SHOW_WELCOME_BOX = Setting('SHOW_WELCOME_BOX', True, BASIC_SET, dict(
 label = _("Show the Welcome box"),
 help_text = _("Do you want to show the welcome box when a user first visits your site."),
 required=False))
