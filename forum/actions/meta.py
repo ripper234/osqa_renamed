@@ -196,6 +196,9 @@ class DeleteAction(ActionProxy):
         else:
             return _("flagged by multiple users: ") + "; ".join([f.extra for f in FlagAction.objects.filter(node=self.node)])
 
+class UnknownAction(ActionProxy):
+    pass
+
 
 class QuestionViewAction(DummyActionProxy):
     def __init__(self, node, user, ip=None):

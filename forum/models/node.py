@@ -30,12 +30,13 @@ class NodeContent(models.Model):
 
     def tagname_list(self):
         if self.tagnames:
-            return [name for name in self.tagnames.split(u' ')]
+            t = [name.strip() for name in self.tagnames.split(u' ') if name]
+            return [name.strip() for name in self.tagnames.split(u' ') if name]
         else:
             return []
 
     def tagname_meta_generator(self):
-        return u','.join([unicode(tag) for tag in self.tagname_list()])
+        return u','.join([tag for tag in self.tagname_list()])
 
     class Meta:
         abstract = True
