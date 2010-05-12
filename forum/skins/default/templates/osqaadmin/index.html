@@ -39,12 +39,12 @@
                     <tr>
                         <td>
                             {% ifequal settings_pack "bootstrap" %}
-                                {% trans "Your site is running in bootstrap mode, click the button bellow to revert to defaults." %}<br />
+                                {% trans "Your site is running in bootstrap mode, click the button below to revert to defaults." %}<br />
                             {% else %}
                                 {% ifequal settings_pack "default" %}
-                                    {% trans "Your site is running in standard mode, click the button bellow to run in bootstrap mode." %}<br />
+                                    {% trans "Your site is running in standard mode, click the button below to run in bootstrap mode." %}<br />
                                 {% else %}
-                                    {% trans "Your site is running with some customized settings, click the buttons bellow to run with defaults or in bootstrap mode" %}
+                                    {% trans "Your site is running with some customized settings, click the buttons below to run with defaults or in bootstrap mode" %}
                                 {% endifequal %}
                             {% endifequal %}
                             {% ifnotequal settings_pack "default" %}
@@ -53,6 +53,12 @@
                             {% ifnotequal settings_pack "bootstrap" %}
                                 <button onclick="if (window.confirm('{% trans "Are you sure you want to run bootstrap mode?" %}')) window.location='{% url admin_go_bootstrap %}';">{% trans "go bootstrap" %}</button>
                             {% endifnotequal %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <em>"Bootstrap mode" relaxes the minimum required reputation to perform actions like voting and commenting.
+                            This is useful to help new communities get started.</em>
                         </td>
                     </tr>
                 </table>
