@@ -29,6 +29,7 @@ def get_modules_script(script_name):
             #repr(type(e)) + m.__name__ + ":" + str(e)
             pass
         except:
+            pass
             #import sys, traceback
             #traceback.print_exc(file=sys.stdout)
 
