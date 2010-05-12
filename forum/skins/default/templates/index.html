@@ -6,14 +6,16 @@
 {% block fulltitle %}{{ settings.APP_TITLE }}{% endblock %}
 {% block sidebar %}
     {% if not request.user.is_authenticated %}
-    <div class="boxA">
-        <h3>{% trans "welcome to " %}{{ settings.APP_SHORT_NAME }}</h3>
-        <div class="body">
-          {{ settings.APP_INTRO|safe }}
-          <div class="more"><a href="{% url about %}">{% trans "about" %} </a></div>
-          <div class="more"><a href="{% url faq %}">{% trans "faq" %} </a></div>
-        </div>
-    </div>
+        {% if settings.SHOW_WELCOME_BOX %}
+            <div class="boxA">
+                <h3>{% trans "welcome to " %}{{ settings.APP_SHORT_NAME }}</h3>
+                <div class="body">
+                  {{ settings.APP_INTRO|safe }}
+                  <div class="more"><a href="{% url about %}">{% trans "about" %} </a></div>
+                  <div class="more"><a href="{% url faq %}">{% trans "faq" %} </a></div>
+                </div>
+            </div>
+        {% endif %}
     {% endif %}
     {% question_list_count %}
     {% sidebar_upper %}
