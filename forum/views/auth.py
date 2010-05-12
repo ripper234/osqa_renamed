@@ -85,7 +85,9 @@ def prepare_provider_signin(request, provider):
         except InvalidAuthentication, e:
             request.session['auth_error'] = e.message
 
-        return HttpResponseRedirect(reverse('auth_signin'))    
+        return HttpResponseRedirect(reverse('auth_signin'))
+    else:
+        raise Http404()
 
 
 def process_provider_signin(request, provider):
