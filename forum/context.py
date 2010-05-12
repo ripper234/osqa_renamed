@@ -1,5 +1,6 @@
 from forum import settings
 from django.conf import settings as djsettings
+
 def application_settings(context):
     my_settings = {
         'APP_TITLE' : settings.APP_TITLE,
@@ -18,6 +19,9 @@ def application_settings(context):
         'WIKI_ON':settings.WIKI_ON,
         'OSQA_SKIN':djsettings.OSQA_DEFAULT_SKIN,
         'APP_FAVICON':settings.APP_FAVICON,
+        'OSQA_VERSION': settings.OSQA_VERSION,
+        'ADMIN_MEDIA_PREFIX': djsettings.ADMIN_MEDIA_PREFIX,
+        'SVN_REVISION': settings.SVN_REVISION,
         }
     return {'settings':my_settings}
 

@@ -5,8 +5,10 @@ from forms import ImageFormWidget
 from django.forms.widgets import Textarea
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings as djsettings
+from django.utils.version import get_svn_revision
 
-OSQA_VERSION = Setting('OSQA_VERSION', "Development Version")
+OSQA_VERSION = "Development Build"
+SVN_REVISION = get_svn_revision(djsettings.SITE_SRC_ROOT) 
 SETTINGS_PACK = Setting('SETTINGS_PACK', "default")
 APP_URL = djsettings.APP_URL
 FORUM_SCRIPT_ALIAS = djsettings.FORUM_SCRIPT_ALIAS

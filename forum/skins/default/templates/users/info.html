@@ -4,6 +4,7 @@
 {% load humanize %}
 {% load smart_if %}
 {% load i18n %}
+{% load markup %}
 {% load user_tags %}
 <div id="subheader" class="headUser">
     {{view_user.username}}
@@ -104,7 +105,7 @@
         <td width="380">
             <div class="user-about">
             {% if view_user.about %}
-                {{view_user.about|safe}}
+                {{view_user.about|markdown}}
             {% endif %}
             </div>
         </td>
