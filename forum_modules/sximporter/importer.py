@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from xml.dom import minidom
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import re
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import slugify
+from forum.models.utils import dbsafe_encode
 from orm import orm
 
 def getText(el):
@@ -29,11 +30,46 @@ def readEl(el):
 def readTable(dump, name):
     return [readEl(e) for e in minidom.parseString(dump.read("%s.xml" % name)).getElementsByTagName('row')]
 
+google_accounts_lookup = re.compile(r'^https?://www.google.com/accounts/')
+yahoo_accounts_lookup = re.compile(r'^https?://me.yahoo.com/a/')
+
+openid_lookups = [
+    re.compile(r'^https?://www.google.com/profiles/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://me.yahoo.com/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://openid.aol.com/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://(?P<uname>\w+(\.\w+)*).myopenid.com/?$'),
+    re.compile(r'^https?://flickr.com/(\w+/)*(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://technorati.com/people/technorati/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://(?P<uname>\w+(\.\w+)*).wordpress.com/?$'),
+    re.compile(r'^https?://(?P<uname>\w+(\.\w+)*).blogspot.com/?$'),
+    re.compile(r'^https?://(?P<uname>\w+(\.\w+)*).livejournal.com/?$'),
+    re.compile(r'^https?://claimid.com/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://(?P<uname>\w+(\.\w+)*).pip.verisignlabs.com/?$'),
+    re.compile(r'^https?://getopenid.com/(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://[\w\.]+/(\w+/)*(?P<uname>\w+(\.\w+)*)/?$'),
+    re.compile(r'^https?://(?P<uname>[\w\.]+)/?$'),
+]
+
+def final_username_attempt(sxu):
+    openid = sxu.get('openid', None)
+
+    if openid:
+        if google_accounts_lookup.search(openid):
+            return UnknownGoogleUser()
+        if yahoo_accounts_lookup.search(openid):
+            return UnknownYahooUser()
+
+        for lookup in openid_lookups:
+            if lookup.search(openid):
+                return lookup.search(openid).group('uname')
+
+    return UnknownUser()
+
 class UnknownUser(object):
     counter = 0
     def __init__(self):
-        UnknownUser.counter += 1
-        self.number = UnknownUser.counter
+        self.__class__.counter += 1
+        self.number = self.__class__.counter
 
     def __str__(self):
         return _("Unknown user %(number)d") % {'number': self.number}
@@ -43,6 +79,19 @@ class UnknownUser(object):
 
     def encode(self, *args):
         return self.__str__()
+
+class UnknownGoogleUser(UnknownUser):
+    counter = 0
+
+    def __str__(self):
+        return _("Unknown google user %(number)d") % {'number': self.number}
+
+class UnknownYahooUser(UnknownUser):
+    counter = 0
+
+    def __str__(self):
+        return _("Unknown yahoo user %(number)d") % {'number': self.number}
+
 
 class IdMapper(dict):
     def __getitem__(self, key):
@@ -77,7 +126,7 @@ def userimport(dump, options):
             uidmapper[-1] = 1
             create = False
         else:
-            username = sxu.get('displayname', sxu.get('displaynamecleaned', sxu.get('realname', UnknownUser())))
+            username = sxu.get('displayname', sxu.get('displaynamecleaned', sxu.get('realname', final_username_attempt(sxu))))
 
             if not isinstance(username, UnknownUser) and username in user_by_name:
                 #if options.get('mergesimilar', False) and sxu.get('email', 'INVALID') == user_by_name[username].email:
@@ -107,6 +156,7 @@ def userimport(dump, options):
                 is_staff     = sxu.get('usertypeid') == '4',
                 is_active    = True,
                 date_joined  = readTime(sxu.get('creationdate')),
+                last_seen    = readTime(sxu.get('lastaccessdate')),
                 about         = sxu.get('aboutme', ''),
                 date_of_birth = sxu.get('birthday', None) and readTime(sxu['birthday']) or None,
                 email_isvalid = int(sxu.get('usertypeid')) > 2,
@@ -119,6 +169,21 @@ def userimport(dump, options):
             )
 
             osqau.save()
+
+            user_joins = orm.Action(
+                action_type = "userjoins",
+                action_date = osqau.date_joined,
+                user = osqau
+            )
+            user_joins.save()
+
+            rep = orm.ActionRepute(
+                value = 1,
+                user = osqau,
+                date = osqau.date_joined,
+                action = user_joins
+            )
+            rep.save()            
 
             try:
                 orm.SubscriptionSettings.objects.get(user=osqau)
@@ -189,32 +254,68 @@ def postimport(dump, uidmap, tagmap):
     posts = readTable(dump, "Posts")
 
     for sxpost in posts:
-        postclass = sxpost.get('posttypeid') == '1' and orm.Question or orm.Answer
+        nodetype = (sxpost.get('posttypeid') == '1') and "nodetype" or "answer"
 
-        post = postclass(
+        post = orm.Node(
+            node_type = nodetype,
             id = sxpost['id'],
             added_at = readTime(sxpost['creationdate']),
             body = sxpost['body'],
             score = sxpost.get('score', 0),
-            vote_up_count = 0,
-            vote_down_count = 0
+            author_id = sxpost.get('deletiondate', None) and 1 or uidmap[sxpost['owneruserid']]
         )
 
-        if sxpost.get('deletiondate', None):
-            post.deleted = True
-            post.deleted_at = readTime(sxpost['deletiondate'])
-            post.author_id = 1
-        else:
-            post.author_id = uidmap[sxpost['owneruserid']]
+        post.save()
+
+        create_action = orm.Action(
+            action_type = (nodetype == "nodetype") and "ask" or "answer",
+            user_id = post.author_id,
+            node = post,
+            action_date = post.added_at
+        )
+
+        create_action.save()
+
+        #if sxpost.get('deletiondate', None):
+        #    delete_action = orm.Action(
+        #        action_type = "delete",
+        #        user_id = 1,
+        #        node = post,
+        #        action_date = readTime(sxpost['deletiondate'])
+        #    )
+
+        #    delete_action.save()
+        #    post.deleted = delete_action
 
         if sxpost.get('lasteditoruserid', None):
-            post.last_edited_by_id = uidmap[sxpost.get('lasteditoruserid')]
-            post.last_edited_at = readTime(sxpost['lasteditdate'])
+            revise_action = orm.Action(
+                action_type = "revise",
+                user_id = uidmap[sxpost.get('lasteditoruserid')],
+                node = post,
+                action_date = readTime(sxpost['lasteditdate']),
+            )
+
+            revise_action.save()
+            post.last_edited = revise_action
 
         if sxpost.get('communityowneddate', None):
             post.wiki = True
-            post.wikified_at = readTime(sxpost['communityowneddate'])
 
+            wikify_action = orm.Action(
+                action_type = "wikify",
+                user_id = 1,
+                node = post,
+                action_date = readTime(sxpost['communityowneddate'])
+            )
+
+            wikify_action.save()
+
+
+        if sxpost.get('lastactivityuserid', None):
+            post.last_activity_by_id = uidmap[sxpost['lastactivityuserid']]
+            post.last_activity_at = readTime(sxpost['lastactivitydate'])
+
+            
         if sxpost.get('posttypeid') == '1': #question
             post.node_type = "question"
             post.title = sxpost['title']
@@ -222,31 +323,49 @@ def postimport(dump, uidmap, tagmap):
             tagnames = sxpost['tags'].replace(u'ö', '-').replace(u'é', '').replace(u'à', '')
             post.tagnames = tagnames
 
-            post.view_count = sxpost.get('viewcount', 0)
-            post.favourite_count = sxpost.get('favoritecount', 0)
-            post.answer_count = sxpost.get('answercount', 0)
+            post.extra_count = sxpost.get('viewcount', 0)
 
-            if sxpost.get('lastactivityuserid', None):
-                post.last_activity_by_id = uidmap[sxpost['lastactivityuserid']]
-                post.last_activity_at = readTime(sxpost['lastactivitydate'])
+            #if sxpost.get('closeddate', None):
+            #    post.marked = True
+            #
+            #    close_action = orm.Action(
+            #        action_type = "close",
+            #        user_id = 1,
+            #        node = post,
+            #        action_date = datetime.now() - timedelta(days=7)
+            #    )
+            #
+            #    close_action.save()
+            #    post.extra_action = close_action
 
-            if sxpost.get('closeddate', None):
-                post.closed = True
-                post.closed_by_id = 1
-                post.closed_at = datetime.now()
+            #if sxpost.get('acceptedanswerid', None):
+            #    accepted[int(sxpost.get('acceptedanswerid'))] = post
 
-            if sxpost.get('acceptedanswerid', None):
-                post.accepted_answer_id = int(sxpost.get('acceptedanswerid'))
-                accepted[int(sxpost.get('acceptedanswerid'))] = post
+            #post.save()
 
         else:
-            post.node_type = "answer"
             post.parent_id = sxpost['parentid']
 
-            if int(post.id) in accepted:
-                post.accepted = True
-                post.accepted_at = datetime.now()
-                post.accepted_by_id = accepted[int(post.id)].author_id
+            #if int(post.id) in accepted:
+                #post.marked = True
+
+                #accept_action = orm.Action(
+                #    action_type = "acceptanswer",
+                #    user_id = accepted[int(post.id)].author_id,
+                #    node = post,
+                #    action_date = datetime.now() - timedelta(days=7)
+                #)
+
+                #accept_action.save()
+
+
+                #post.accepted_at = datetime.now()
+                #post.accepted_by_id = accepted[int(post.id)].author_id
+
+                #accepted[int(post.id)].extra_ref = post
+                #accepted[int(post.id)].save()
+
+        post.save()
 
         all[int(post.id)] = post
 
@@ -266,18 +385,35 @@ def comment_import(dump, uidmap, posts):
             author_id = uidmap[sxc.get('userid', 1)],
             body = sxc['text'],
             parent_id = sxc.get('postid'),
-            vote_up_count = 0,
-            vote_down_count = 0
         )
 
         if sxc.get('deletiondate', None):
-            oc.deleted = True
-            oc.deleted_at = readTime(sxc['deletiondate'])
-            oc.deleted_by_id = uidmap[sxc['deletionuserid']]
+            delete_action = orm.Action(
+                action_type = "delete",
+                user_id = uidmap[sxc['deletionuserid']],
+                action_date = readTime(sxc['deletiondate'])
+            )
+
             oc.author_id = uidmap[sxc['deletionuserid']]
+            oc.save()
+
+            delete_action.node = oc
+            delete_action.save()
+
+            oc.deleted = delete_action
         else:
             oc.author_id = uidmap[sxc.get('userid', 1)]
+            oc.save()
 
+        create_action = orm.Action(
+            action_type = "comment",
+            user_id = oc.author_id,
+            node = oc,
+            action_date = oc.added_at
+        )
+
+        create_action.save()
+        oc.save()
 
         posts[oc.id] = oc
         mapping[int(sxc['id'])] = int(oc.id)
@@ -285,12 +421,10 @@ def comment_import(dump, uidmap, posts):
     return posts, mapping
 
 
-def save_posts(posts, tagmap):
+def add_tags_to_posts(posts, tagmap):
     for post in posts.values():
-        post.save()
-
         if post.node_type == "question":
-            tags = filter(lambda t: t is not None, [tagmap.get(n, None) for n in post.tagnames.split()])
+            tags = [tag for tag in [tagmap.get(name.strip()) for name in post.tagnames.split(u' ') if name] if tag]
             post.tagnames = " ".join([t.name for t in tags]).strip()
             post.tags = tags
 
@@ -313,64 +447,182 @@ def create_and_activate_revision(post):
     post.active_revision_id = rev.id
     post.save()
 
-
 def post_vote_import(dump, uidmap, posts):
     votes = readTable(dump, "Posts2Votes")
+    close_reasons = dict([(r['id'], r['name']) for r in readTable(dump, "CloseReasons")])
+
+    user2vote = []
 
     for sxv in votes:
-        if sxv['votetypeid'] in ('2', '3'):
-            ov = orm.Vote(
-                node_id = sxv['postid'],
-                user_id = uidmap[sxv['userid']],
-                voted_at = readTime(sxv['creationdate']),
-                vote = sxv['votetypeid'] == '2' and 1 or -1,
+        action = orm.Action(
+            user_id=uidmap[sxv['userid']],
+            action_date = readTime(sxv['creationdate']),
+        )
+
+        node = posts.get(int(sxv['postid']), None)
+        if not node: continue
+        action.node = node
+
+        if sxv['votetypeid'] == '1':
+            answer = node
+            question = posts.get(int(answer.parent_id), None)
+
+            action.action_type = "acceptanswer"
+            action.save()
+
+            answer.marked = True
+            answer.extra_action = action
+
+            question.extra_ref_id = answer.id
+
+            answer.save()
+            question.save()
+
+        elif sxv['votetypeid'] in ('2', '3'):
+            if not (action.node.id, action.user_id) in user2vote:
+                user2vote.append((action.node.id, action.user_id))
+
+                action.action_type = (sxv['votetypeid'] == '2') and "voteup" or "votedown"
+                action.save()
+
+                ov = orm.Vote(
+                    node_id = action.node.id,
+                    user_id = action.user_id,
+                    voted_at = action.action_date,
+                    value = sxv['votetypeid'] == '2' and 1 or -1,
+                    action = action
+                )
+                ov.save()
+            else:
+                action.action_type = "unknown"
+                action.save()
+
+        elif sxv['votetypeid'] in ('4', '12', '13'):
+            action.action_type = "flag"
+            action.save()
+
+            of = orm.Flag(
+                node = action.node,
+                user_id = action.user_id,
+                flagged_at = action.action_date,
+                reason = '',
+                action = action
             )
 
-            if sxv['votetypeid'] == '2':
-                posts[int(sxv['postid'])].vote_up_count += 1
-            else:
-                posts[int(sxv['postid'])].vote_down_count += 1
+            of.save()
 
-            ov.save()
+        elif sxv['votetypeid'] == '5':
+            action.action_type = "favorite"
+            action.save()
+
+        elif sxv['votetypeid'] == '6':
+            action.action_type = "close"
+            action.extra = dbsafe_encode(close_reasons[sxv['comment']])
+            action.save()
+
+            node.marked = True
+            node.extra_action = action
+            node.save()
+
+        elif sxv['votetypeid'] == '7':
+            action.action_type = "unknown"
+            action.save()
+            
+            node.marked = False
+            node.extra_action = None
+            node.save()
+
+        elif sxv['votetypeid'] == '10':
+            action.action_type = "delete"
+            action.save()
+
+            node.deleted = action
+            node.save()
+
+        elif sxv['votetypeid'] == '11':
+            action.action_type = "unknown"
+            action.save()
+
+            node.deleted = None
+            node.save()
+
+        else:
+            action.action_type = "unknown"
+            action.save()
+
+
+        if sxv.get('targetrepchange', None):
+            rep = orm.ActionRepute(
+                action = action,
+                date = action.action_date,
+                user_id = uidmap[sxv['targetuserid']],
+                value = int(sxv['targetrepchange'])
+            )
+
+            rep.save()
+
+        if sxv.get('voterrepchange', None):
+            rep = orm.ActionRepute(
+                action = action,
+                date = action.action_date,
+                user_id = uidmap[sxv['userid']],
+                value = int(sxv['voterrepchange'])
+            )
+
+            rep.save()
+
 
 def comment_vote_import(dump, uidmap, comments, posts):
     votes = readTable(dump, "Comments2Votes")
+    user2vote = []
 
     for sxv in votes:
-        if sxv['votetypeid'] in ('2', '3'):
-            ov = orm.Vote(
-                node_id = comments[int(sxv['postcommentid'])],
-                user_id = uidmap[sxv['userid']],
-                voted_at = readTime(sxv['creationdate']),
-                vote = sxv['votetypeid'] == '2' and 1 or -1,
-            )
+        if sxv['votetypeid'] == "2":
+            comment_id = comments[int(sxv['postcommentid'])]
+            user_id = uidmap[sxv['userid']]
 
-            if sxv['votetypeid'] == '2':
-                posts[comments[int(sxv['postcommentid'])]].vote_up_count += 1
-            else:
-                posts[comments[int(sxv['postcommentid'])]].vote_down_count += 1
+            if not (comment_id, user_id) in user2vote:
+                user2vote.append((comment_id, user_id))
 
-            ov.save()
+                action = orm.Action(
+                    action_type = "voteupcomment",
+                    user_id = user_id,
+                    action_date = readTime(sxv['creationdate']),
+                    node_id = comment_id
+                )
+                action.save()
+
+                ov = orm.Vote(
+                    node_id = comment_id,
+                    user_id = user_id,
+                    voted_at = action.action_date,
+                    value = 1,
+                    action = action
+                )
+
+                ov.save()
+
+                posts[int(action.node_id)].score += 1
+                posts[int(action.node_id)].save()
 
 
 
-def badges_import(dump, uidmap):
+def badges_import(dump, uidmap, post_list):
     node_ctype = orm['contenttypes.contenttype'].objects.get(name='node')
-    obadges = dict([(b.slug, b) for b in orm.Badge.objects.all()])
+    obadges = dict([(b.cls, b) for b in orm.Badge.objects.all()])
     sxbadges = dict([(int(b['id']), b) for b in readTable(dump, "Badges")])
+    user_badge_count = {}
 
     sx_to_osqa = {}
 
     for id, sxb in sxbadges.items():
-        slug = slugify(sxb['name'].replace('&', 'and'))
-        if slug in obadges:
-            sx_to_osqa[id] = obadges[slug]
+        cls = "".join(sxb['name'].replace('&', 'And').split(' '))
+
+        if cls in obadges:
+            sx_to_osqa[id] = obadges[cls]
         else:
             osqab = orm.Badge(
-                name = sxb['name'],
-                slug = slugify(sxb['name']),
-                description = sxb['description'],
-                multiple = sxb.get('single', 'false') == 'false',
+                cls = cls,
                 awarded_count = 0,
                 type = sxb['class']                
             )
@@ -382,21 +634,33 @@ def badges_import(dump, uidmap):
 
     for sxa in sxawards:
         badge = sx_to_osqa[int(sxa['badgeid'])]
+
+        user_id = uidmap[sxa['userid']]
+        if not user_badge_count.get(user_id, None):
+            user_badge_count[user_id] = 0
+
+        action = orm.Action(
+            action_type = "award",
+            user_id = user_id,
+            action_date = readTime(sxa['date'])
+        )
+
+        action.save()
+
         osqaa = orm.Award(
             user_id = uidmap[sxa['userid']],
             badge = badge,
-            content_type = node_ctype,
-            object_id = 1
+            node = post_list[user_badge_count[user_id]],
+            awarded_at = action.action_date,
+            action = action
         )
 
-        osqaawards.append(osqaa)
+        osqaa.save()
         badge.awarded_count += 1
+        user_badge_count[user_id] += 1
 
-    for b in sx_to_osqa.values():
-        b.save()
-
-    for a in osqaawards:
-        a.save()
+    for badge in obadges.values():
+        badge.save()
 
 
 def reset_sequences():
@@ -411,12 +675,10 @@ def sximport(dump, options):
     tagmap = tagsimport(dump, uidmap)
     posts = postimport(dump, uidmap, tagmap)
     posts, comments = comment_import(dump, uidmap, posts)
-    save_posts(posts, tagmap)
+    add_tags_to_posts(posts, tagmap)
     post_vote_import(dump, uidmap, posts)
     comment_vote_import(dump, uidmap, comments, posts)
-    for post in posts.values():
-        post.save()
-    badges_import(dump, uidmap)
+    badges_import(dump, uidmap, posts.values())
 
     from south.db import db
     db.commit_transaction()
@@ -429,29 +691,27 @@ PG_SEQUENCE_RESETS = """
 SELECT setval('"auth_user_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user";
 SELECT setval('"auth_user_groups_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user_groups";
 SELECT setval('"auth_user_user_permissions_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user_user_permissions";
-SELECT setval('"activity_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "activity";
-SELECT setval('"forum_subscriptionsettings_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_subscriptionsettings";
-SELECT setval('"forum_validationhash_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_validationhash";
-SELECT setval('"forum_authkeyuserassociation_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_authkeyuserassociation";
-SELECT setval('"tag_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "tag";
-SELECT setval('"forum_markedtag_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_markedtag";
-SELECT setval('"forum_node_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_noderevision_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_noderevision";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"favorite_question_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "favorite_question";
-SELECT setval('"forum_questionsubscription_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_questionsubscription";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"vote_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "vote";
-SELECT setval('"flagged_item_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "flagged_item";
-SELECT setval('"badge_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "badge";
-SELECT setval('"award_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "award";
-SELECT setval('"repute_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "repute";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_keyvalue_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_keyvalue";
-SELECT setval('"forum_openidnonce_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_openidnonce";
-SELECT setval('"forum_openidassociation_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_openidassociation";
+SELECT setval('"forum_keyvalue_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_keyvalue";
+SELECT setval('"forum_action_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_action";
+SELECT setval('"forum_actionrepute_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_actionrepute";
+SELECT setval('"forum_subscriptionsettings_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_subscriptionsettings";
+SELECT setval('"forum_validationhash_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_validationhash";
+SELECT setval('"forum_authkeyuserassociation_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_authkeyuserassociation";
+SELECT setval('"forum_tag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_tag";
+SELECT setval('"forum_markedtag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_markedtag";
+SELECT setval('"forum_node_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_noderevision_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_noderevision";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_questionsubscription_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_questionsubscription";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_vote_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_vote";
+SELECT setval('"forum_flag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_flag";
+SELECT setval('"forum_badge_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_badge";
+SELECT setval('"forum_award_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_award";
+SELECT setval('"forum_openidnonce_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_openidnonce";
+SELECT setval('"forum_openidassociation_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_openidassociation";
 """
 
 
