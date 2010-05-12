@@ -92,13 +92,15 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
         page_title = _("Questions")
 
     answer_count = Answer.objects.filter(deleted=None, parent__in=questions).count()   
-
+    answer_description = _("answers")
+    
     return {
         "questions" : questions,
         "questions_count" : questions.count(),
         "answer_count" : answer_count,
         #"tags_autocomplete" : _get_tags_cache_json(),
         "list_description": list_description,
+        "answer_description": answer_description,
         "base_path" : base_path,
         "page_title" : page_title,
         }
