@@ -55,24 +55,22 @@ def final_username_attempt(sxu):
 
     if openid:
         if google_accounts_lookup.search(openid):
-            return UnknownGoogleUser()
+            return UnknownGoogleUser(sxu.get('id'))
         if yahoo_accounts_lookup.search(openid):
-            return UnknownYahooUser()
+            return UnknownYahooUser(sxu.get('id'))
 
         for lookup in openid_lookups:
             if lookup.search(openid):
                 return lookup.search(openid).group('uname')
 
-    return UnknownUser()
+    return UnknownUser(sxu.get('id'))
 
 class UnknownUser(object):
-    counter = 0
-    def __init__(self):
-        self.__class__.counter += 1
-        self.number = self.__class__.counter
+    def __init__(self, id):
+        self._id = id
 
     def __str__(self):
-        return _("Unknown user %(number)d") % {'number': self.number}
+        return _("user-%(id)d") % {'id': self._id}
 
     def __unicode__(self):
         return self.__str__()
@@ -81,16 +79,12 @@ class UnknownUser(object):
         return self.__str__()
 
 class UnknownGoogleUser(UnknownUser):
-    counter = 0
-
     def __str__(self):
-        return _("Unknown google user %(number)d") % {'number': self.number}
+        return _("user-%(id)d (google)") % {'id': self._id}
 
 class UnknownYahooUser(UnknownUser):
-    counter = 0
-
     def __str__(self):
-        return _("Unknown yahoo user %(number)d") % {'number': self.number}
+        return _("user-%(id)d (yahoo)") % {'id': self._id}
 
 
 class IdMapper(dict):
