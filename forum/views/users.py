@@ -173,7 +173,7 @@ def user_recent(request, user):
 
 @user_view('users/votes.html', 'votes', _('user vote record'), _('votes'), True)
 def user_votes(request, user):
-    votes = user.votes.filter(node__deleted=None).order_by('-voted_at')[:USERS_PAGE_SIZE]
+    votes = user.votes.filter(node__deleted=None, node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "votes" : votes}
 

@@ -70,7 +70,7 @@ class UnknownUser(object):
         self._id = id
 
     def __str__(self):
-        return _("user-%(id)d") % {'id': self._id}
+        return _("user-%(id)s") % {'id': self._id}
 
     def __unicode__(self):
         return self.__str__()
@@ -80,11 +80,11 @@ class UnknownUser(object):
 
 class UnknownGoogleUser(UnknownUser):
     def __str__(self):
-        return _("user-%(id)d (google)") % {'id': self._id}
+        return _("user-%(id)s (google)") % {'id': self._id}
 
 class UnknownYahooUser(UnknownUser):
     def __str__(self):
-        return _("user-%(id)d (yahoo)") % {'id': self._id}
+        return _("user-%(id)s (yahoo)") % {'id': self._id}
 
 
 class IdMapper(dict):
@@ -194,7 +194,7 @@ def userimport(dump, options):
                 else:
                     osqau.about = new_about
 
-            osqau.username = sxu.get('displayname', sxu.get('displaynamecleaned', sxu.get('realname', UnknownUser())))
+            osqau.username = sxu.get('displayname', sxu.get('displaynamecleaned', sxu.get('realname', final_username_attempt(sxu))))
             osqau.email = sxu.get('email', '')
             osqau.reputation += int(sxu.get('reputation'))
             osqau.gold += int(badges['1'])
@@ -685,27 +685,27 @@ PG_SEQUENCE_RESETS = """
 SELECT setval('"auth_user_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user";
 SELECT setval('"auth_user_groups_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user_groups";
 SELECT setval('"auth_user_user_permissions_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "auth_user_user_permissions";
-SELECT setval('"forum_keyvalue_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_keyvalue";
-SELECT setval('"forum_action_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_action";
-SELECT setval('"forum_actionrepute_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_actionrepute";
-SELECT setval('"forum_subscriptionsettings_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_subscriptionsettings";
-SELECT setval('"forum_validationhash_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_validationhash";
-SELECT setval('"forum_authkeyuserassociation_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_authkeyuserassociation";
-SELECT setval('"forum_tag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_tag";
-SELECT setval('"forum_markedtag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_markedtag";
-SELECT setval('"forum_node_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_noderevision_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_noderevision";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_questionsubscription_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_questionsubscription";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_node_tags";
-SELECT setval('"forum_vote_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_vote";
-SELECT setval('"forum_flag_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_flag";
-SELECT setval('"forum_badge_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_badge";
-SELECT setval('"forum_award_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_award";
-SELECT setval('"forum_openidnonce_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_openidnonce";
-SELECT setval('"forum_openidassociation_id_seq"', coalesce(max("id"), 1), max("id") IS NOT null) FROM "forum_openidassociation";
+SELECT setval('"forum_keyvalue_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_keyvalue";
+SELECT setval('"forum_action_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_action";
+SELECT setval('"forum_actionrepute_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_actionrepute";
+SELECT setval('"forum_subscriptionsettings_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_subscriptionsettings";
+SELECT setval('"forum_validationhash_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_validationhash";
+SELECT setval('"forum_authkeyuserassociation_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_authkeyuserassociation";
+SELECT setval('"forum_tag_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_tag";
+SELECT setval('"forum_markedtag_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_markedtag";
+SELECT setval('"forum_node_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_noderevision_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_noderevision";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_questionsubscription_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_questionsubscription";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_node_tags_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_node_tags";
+SELECT setval('"forum_vote_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_vote";
+SELECT setval('"forum_flag_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_flag";
+SELECT setval('"forum_badge_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_badge";
+SELECT setval('"forum_award_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_award";
+SELECT setval('"forum_openidnonce_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_openidnonce";
+SELECT setval('"forum_openidassociation_id_seq"', coalesce(max("id"), 1) + 2, max("id") IS NOT null) FROM "forum_openidassociation";
 """
 
 
