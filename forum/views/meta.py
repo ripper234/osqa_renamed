@@ -13,7 +13,6 @@ from forum.models import Badge, Award, User
 from forum.badges.base import BadgesMeta
 from forum import settings
 from forum.utils.mail import send_email
-from forum.settings.settingsmarkdown import SettingsExtension, markdown
 import re
 
 def favicon(request):
