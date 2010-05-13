@@ -160,6 +160,7 @@ def userimport(dump, options):
                 silver        = int(badges['2']),
                 bronze        = int(badges['3']),
                 real_name     = sxu.get('realname', ''),
+                location      = sxu.get('location', ''),
             )
 
             osqau.save()
@@ -200,6 +201,12 @@ def userimport(dump, options):
             osqau.gold += int(badges['1'])
             osqau.silver += int(badges['2'])
             osqau.bronze += int(badges['3'])
+
+            osqau.date_joined = readTime(sxu.get('creationdate'))
+            osqau.website = sxu.get('websiteurl', '')
+            osqau.date_of_birth = sxu.get('birthday', None) and readTime(sxu['birthday']) or None
+            osqau.location = sxu.get('location', '')
+            osqau.real_name = sxu.get('realname', '')
 
             merged_users.append(osqau.id)
             osqau.save()
