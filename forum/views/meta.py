@@ -38,6 +38,7 @@ def feedback(request):
                 context['email'] = form.cleaned_data.get('email',None)
             context['message'] = form.cleaned_data['message']
             context['name'] = form.cleaned_data.get('name',None)
+            context['ip'] = request.META['REMOTE_ADDR']
 
             recipients = [(adm.username, adm.email) for adm in User.objects.filter(is_superuser=True)]
 

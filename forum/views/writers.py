@@ -70,7 +70,7 @@ def ask(request):
         form = AskForm(request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                question = AskAction(user=request.user).save(data=form.cleaned_data).node
+                question = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data).node
                 return HttpResponseRedirect(question.get_absolute_url())
             else:
                 request.session['temp_node_data'] = request.POST
@@ -105,7 +105,7 @@ def _retag_question(request, question):
         form = RetagQuestionForm(question, request.POST)
         if form.is_valid():
             if form.has_changed():
-                RetagAction(user=request.user, node=question).save(data=dict(tagnames=form.cleaned_data['tags']))
+                RetagAction(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=dict(tagnames=form.cleaned_data['tags']))
 
             return HttpResponseRedirect(question.get_absolute_url())
     else:
@@ -129,7 +129,7 @@ def _edit_question(request, question):
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                ReviseAction(user=request.user, node=question).save(data=form.cleaned_data)
+                ReviseAction(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
             else:
                 if not revision == question.active_revision:
                     RollbackAction(user=request.user, node=question).save(data=dict(activate=revision))
@@ -166,10 +166,10 @@ def edit_answer(request, id):
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                ReviseAction(user=request.user, node=answer).save(data=form.cleaned_data)
+                ReviseAction(user=request.user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
             else:
                 if not revision == answer.active_revision:
-                    RollbackAction(user=request.user, node=answer).save(data=dict(activate=revision))
+                    RollbackAction(user=request.user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(activate=revision))
 
             return HttpResponseRedirect(answer.get_absolute_url())
 
@@ -189,7 +189,7 @@ def answer(request, id):
         form = AnswerForm(question, request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                answer = AnswerAction(user=request.user).save(dict(question=question, **form.cleaned_data)).node
+                answer = AnswerAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(dict(question=question, **form.cleaned_data)).node
                 return HttpResponseRedirect(answer.get_absolute_url())
             else:
                 request.session['temp_node_data'] = request.POST
