@@ -31,14 +31,14 @@ When a question or answer is upvoted, the user who posted them will gain some po
 
 For example, if you ask an interesting question or give a helpful answer, your input will be upvoted. On the other hand if the answer is misleading - it will be downvoted. Each vote in favor will generate 10 points, each vote against will subtract 2 points. There is a limit of 200 points that can be accumulated per question or answer. The table below explains reputation point requirements for each type of moderation task.
 
-* add comments ->  REP_TO_COMMENT
-* delete comments -> REP_TO_DELETE_COMMENTS
-* close own questions -> REP_TO_CLOSE_OWN
-* reopen own questions -> REP_TO_REOPEN_OWN
-* retag questions -> REP_TO_RETAG
-* edit any answer -> REP_TO_EDIT_OTHERS
-* open any closed question -> REP_TO_CLOSE_OTHERS
-* delete any comment -> REP_TO_DELETE_COMMENTS
+* add comments ->  |REP_TO_COMMENT|
+* delete comments -> |REP_TO_DELETE_COMMENTS|
+* close own questions -> |REP_TO_CLOSE_OWN|
+* reopen own questions -> |REP_TO_REOPEN_OWN|
+* retag questions -> |REP_TO_RETAG|
+* edit any answer -> |REP_TO_EDIT_OTHERS|
+* open any closed question -> |REP_TO_CLOSE_OTHERS|
+* delete any comment -> |REP_TO_DELETE_COMMENTS|
 
 **What is gravatar?**
 

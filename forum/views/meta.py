@@ -19,15 +19,8 @@ import re
 def favicon(request):
     return HttpResponseRedirect(str(settings.APP_FAVICON))
 
-def about(request):
-    return render_to_response('about.html', {'text': settings.ABOUT_PAGE_TEXT.value }, context_instance=RequestContext(request))
-
-def faq(request):
-    md = markdown.Markdown([SettingsExtension({})])
-    text = md.convert(settings.FAQ_PAGE_TEXT.value)
-
-    return render_to_response('faq.html', {'text' : text}, context_instance=RequestContext(request))
-
+def static(request, title, content):
+    return render_to_response('static.html', {'content' : content, 'title': title}, context_instance=RequestContext(request))
 
 def opensearch(request):   
     return render_to_response('opensearch.html', {'settings' : settings}, context_instance=RequestContext(request))
