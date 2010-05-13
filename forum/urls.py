@@ -109,7 +109,7 @@ urlpatterns += patterns('',
     url(r'^feeds/(?P<url>.*)/$', 'django.contrib.syndication.views.feed', {'feed_dict': feeds}, name='feeds'),
     url(r'^%s$' % _('upload/'), app.writers.upload, name='upload'),
     url(r'^%s$' % _('search/'), app.readers.search, name='search'),
-    url(r'^%s$' % _('feedback/'), app.meta.feedback, name='feedback'),
+    url(r'^%s$' % _('contact/'), app.meta.feedback, name='feedback'),
 
     (r'^i18n/', include('django.conf.urls.i18n')),
 
