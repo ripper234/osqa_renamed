@@ -27,7 +27,7 @@
         <a href="{% url admin_switch_interface %}?to=djstyle">{% trans "Switch to django style interface" %}</a>
         <h3 class="subtitle">{% trans "Administration menu" %}</h3>
         <ul>
-        {% for set in sets %}
+        {% for set in allsets.values %}
             <li><a href="{% url admin_set set.name %}">{{ set.title }}</a></li>
         {% endfor %}
         </ul>
