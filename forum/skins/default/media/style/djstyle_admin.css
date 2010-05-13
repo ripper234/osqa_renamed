@@ -5,3 +5,11 @@ textarea {
 input.longstring {
     width: 100%;
 }
+
+#admin_form tr th {
+    white-space: nowrap;        
+}
+
+#admin_form tr td {
+    width: 100%;    
+}
