@@ -70,7 +70,6 @@ def badges(request):
     return render_to_response('badges.html', {
         'badges' : badges,
         'mybadges' : my_badges,
-        'feedback_faq_url' : reverse('feedback'),
     }, context_instance=RequestContext(request))
 
 def badge(request, id, slug):
