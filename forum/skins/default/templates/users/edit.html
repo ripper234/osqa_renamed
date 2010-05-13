@@ -30,13 +30,13 @@
 {% endblock %}
 {% block content %}
 <div id="main-bar" class="headNormal">
-    {{ request.user.username }} - {% trans "edit profile" %}
+    {{ user.username }} - {% trans "edit profile" %}
 </div>
 <div id="main-body" style="width:100%;padding-top:10px">
-    <form name="" action="{% url edit_user request.user.id %}" method="post">
+    <form name="" action="{% url edit_user user.id %}" method="post">
         <div id="left" style="float:left;width:180px">
-            {% if request.user.email %}
-            {% gravatar request.user 128 %}
+            {% if user.email %}
+            {% gravatar user 128 %}
             {% else %}
             <img src="{% media  "/media/images/nophoto.png" %}">
             {% endif %}
@@ -59,7 +59,7 @@
 	            	{% if form.username %}
 	            	    {{ form.username }} <span class="form-error"></span> {{ form.username.errors }}
 	            	{% else %}
-	            	    {{ request.user.username }}
+	            	    {{ user.username }}
 	            	{% endif %}
 	            	</td>
 	            </tr>

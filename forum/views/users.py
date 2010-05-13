@@ -82,8 +82,8 @@ def set_new_email(user, new_email, nomessage=False):
 @login_required
 def edit_user(request, id):
     user = get_object_or_404(User, id=id)
-    if request.user != user:
-        raise Http404
+    if not (request.user.is_superuser or request.user == user):
+        return HttpResponseForbidden()
     if request.method == "POST":
         form = EditUserForm(user, request.POST)
         if form.is_valid():
@@ -108,6 +108,7 @@ def edit_user(request, id):
     else:
         form = EditUserForm(user)
     return render_to_response('users/edit.html', {
+                                                'user': user,
                                                 'form' : form,
                                                 'gravatar_faq_url' : reverse('faq') + '#gravatar',
                                     }, context_instance=RequestContext(request))
@@ -118,7 +119,7 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
     def decorator(fn):
         def decorated(request, id, slug=None):
             user = get_object_or_404(User, id=id)
-            if private and not user == request.user:
+            if private and not (user == request.user or request.user.is_superuser):
                 return HttpResponseForbidden()
             context = fn(request, user)
 
@@ -128,6 +129,7 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
                 "tab_name" : tab_name,
                 "tab_description" : tab_description,
                 "page_title" : rev_page_title,
+                "can_view_private": (user == request.user) or request.user.is_superuser
             })
             return render_to_response(template, context, context_instance=RequestContext(request))
         return decorated

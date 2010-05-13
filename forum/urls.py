@@ -122,7 +122,7 @@ urlpatterns += patterns('',
     url(r'^%s%s(?P<user>\d+)/(?P<code>.+)/$' % (_('account/'), _('validate/')),  app.auth.validate_email, name="auth_validate_email"),
     url(r'^%s%s$' % (_('account/'), _('tempsignin/')),  app.auth.request_temp_login, name="auth_request_tempsignin"),
     url(r'^%s%s(?P<user>\d+)/(?P<code>.+)/$' % (_('account/'), _('tempsignin/')),  app.auth.temp_signin, name="auth_tempsignin"),
-    url(r'^%s%s$' % (_('account/'), _('authsettings/')), app.auth.auth_settings, name='user_authsettings'),
+    url(r'^%s(?P<id>\d+)/%s$' % (_('account/'), _('authsettings/')), app.auth.auth_settings, name='user_authsettings'),
     url(r'^%s%s(?P<id>\d+)/%s$' % (_('account/'), _('providers/'),  _('remove/')), app.auth.remove_external_provider, name='user_remove_external_provider'),
     url(r'^%s%s%s$' % (_('account/'), _('providers/'),  _('add/')), app.auth.signin_page, name='user_add_external_provider'),
 

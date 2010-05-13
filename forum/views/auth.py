@@ -259,14 +259,12 @@ def validate_email(request, user, code):
         raise Http404()
 
 @login_required
-def auth_settings(request):
-    """
-    change password view.
+def auth_settings(request, id):
+    user_ = get_object_or_404(User, id=id)
 
-    url : /changepw/
-    template: authopenid/changepw.html
-    """
-    user_ = request.user
+    if not (request.user.is_superuser or request.user == user_):
+        return HttpResponseForbidden()
+
     auth_keys = user_.auth_keys.all()
 
     if user_.has_usable_password():
@@ -285,7 +283,7 @@ def auth_settings(request):
                 
             user_.set_password(form.cleaned_data['password1'])
             user_.save()
-            return HttpResponseRedirect(reverse('user_authsettings'))
+            return HttpResponseRedirect(reverse('user_authsettings', kwargs={'id': user_.id}))
     
     form = FormClass(user=user_)
 
@@ -313,11 +311,12 @@ def auth_settings(request):
 
 def remove_external_provider(request, id):
     association = get_object_or_404(AuthKeyUserAssociation, id=id)
-    if not association.user == request.user:
+    if not (request.user.is_superuser or request.user == association.user):
         return HttpResponseForbidden()
+
     request.user.message_set.create(message=_("You removed the association with %s") % association.provider)
     association.delete()
-    return HttpResponseRedirect(reverse('user_authsettings'))
+    return HttpResponseRedirect(reverse('user_authsettings', kwargs={'id': association.user.id}))
 
 def newquestion_signin_action(user):
     question = Question.objects.filter(author=user).order_by('-added_at')[0]
