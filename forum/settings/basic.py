@@ -35,11 +35,6 @@ label = _("Application description"),
 help_text = _("The description of your application"),
 widget=Textarea))
 
-APP_INTRO = Setting('APP_INTRO', u'<p>Ask and answer questions, make the world better!</p>', BASIC_SET, dict(
-label = _("Application intro"),
-help_text = _("The introductory page that is visible in the sidebar for anonymous users."),
-widget=Textarea))
-
 APP_COPYRIGHT = Setting('APP_COPYRIGHT', u'Copyright OSQA, 2010. Some rights reserved under creative commons license.', BASIC_SET, dict(
 label = _("Copyright notice"),
 help_text = _("The copyright notice visible at the footer of your page.")))
@@ -49,7 +44,3 @@ label = _("Feedback site url"),
 help_text = _("If you have a specific place to get feedback from your users, use this field and the fedback link on the footer will point there."),
 required=False))
 
-SHOW_WELCOME_BOX = Setting('SHOW_WELCOME_BOX', True, BASIC_SET, dict(
-label = _("Show the Welcome box"),
-help_text = _("Do you want to show the welcome box when a user first visits your site."),
-required=False))

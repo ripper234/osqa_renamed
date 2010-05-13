@@ -8,8 +8,11 @@ from django.conf import settings as djsettings
 from django.utils.version import get_svn_revision
 
 OSQA_VERSION = "Development Build"
-SVN_REVISION = get_svn_revision(djsettings.SITE_SRC_ROOT) 
+SVN_REVISION = get_svn_revision(djsettings.SITE_SRC_ROOT)
+
 SETTINGS_PACK = Setting('SETTINGS_PACK', "default")
+DJSTYLE_ADMIN_INTERFACE = Setting('DJSTYLE_ADMIN_INTERFACE', True)
+
 APP_URL = djsettings.APP_URL
 FORUM_SCRIPT_ALIAS = djsettings.FORUM_SCRIPT_ALIAS
 

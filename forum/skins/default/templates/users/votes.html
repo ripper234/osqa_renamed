@@ -18,7 +18,7 @@
                 {% endifequal %}
                 </div>
                 <div style="float:left;overflow:hidden;width:750px">
-                    <span class="{{ vote.node.node_type }}-title-link"><a href="{{ vote.node.leaf.get_absolute_url }}">{{ vote.node.leaf.headline }}</a></span>
+                    <span class="{{ vote.node.node_type }}-title-link"><a href="{{ vote.node.get_absolute_url }}">{{ vote.node.headline }}</a></span>
                     <div style="height:5px"></div>
                 </div>          
             </div>

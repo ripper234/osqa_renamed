@@ -70,7 +70,7 @@ class Action(models.Model):
         return ""
 
     def describe(self, viewer=None):
-        return ""
+        return self.__class__.__name__
 
     def get_absolute_url(self):
         if self.node:

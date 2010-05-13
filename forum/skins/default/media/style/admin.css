@@ -46,3 +46,9 @@
     position: relative;
     left: 554px;
 }
+
+table caption {
+    font-size: 120%;
+	padding: 3px 0;
+    text-align: left;
+}

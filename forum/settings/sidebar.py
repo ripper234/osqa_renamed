@@ -1,7 +1,19 @@
 from base import Setting, SettingSet
 from django.forms.widgets import Textarea
+from django.utils.translation import ugettext_lazy as _
 
 SIDEBAR_SET = SettingSet('sidebar', 'Sidebar content', "Enter contents to display in the sidebar. You can use markdown and some basic html tags.", 10, True)
+
+SHOW_WELCOME_BOX = Setting('SHOW_WELCOME_BOX', True, SIDEBAR_SET, dict(
+label = _("Show the Welcome box"),
+help_text = _("Do you want to show the welcome box when a user first visits your site."),
+required=False))
+
+APP_INTRO = Setting('APP_INTRO', u'<p>Ask and answer questions, make the world better!</p>', SIDEBAR_SET, dict(
+label = _("Application intro"),
+help_text = _("The introductory page that is visible in the sidebar for anonymous users."),
+widget=Textarea))
+
 
 SIDEBAR_UPPER_SHOW = Setting('SIDEBAR_UPPER_SHOW', True, SIDEBAR_SET, dict(
 label = "Show Upper Block",

@@ -22,6 +22,8 @@ class SettingsSetForm(forms.Form):
 
         for setting in set:
             if isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):
+                if not setting.field_context.get('widget', None):
+                    setting.field_context['widget'] = forms.TextInput(attrs={'class': 'longstring'})
                 field = forms.CharField(**setting.field_context)
             elif isinstance(setting, Setting.emulators.get(float, DummySetting)):
                 field = forms.FloatField(**setting.field_context)

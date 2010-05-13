@@ -24,7 +24,7 @@
 	    {% trans "User login" %}
     </div>
     {% if msg %}
-        <p class="warning">{{ msg }}</p>
+        <p class="error">{{ msg }}</p>
     {% endif %}
     {% for provider in top_stackitem_providers %}
         <form class="signin_form" method="POST" action="{% url auth_provider_signin provider=provider.id %}">

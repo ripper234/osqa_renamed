@@ -75,7 +75,7 @@ urlpatterns += patterns('',
     #place general question item in the end of other operations
     url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('question/'), app.readers.question, name='question'),
     url(r'^%s$' % _('tags/'), app.readers.tags, name='tags'),
-    url(r'^%s(?P<tag>[^/]+)/$' % _('tags/'), app.readers.tag, name='tag_questions'),
+    url(r'^%s(?P<tag>.*)/$' % _('tags/'), app.readers.tag, name='tag_questions'),
 
     url(r'^%s%s(?P<tag>[^/]+)/$' % (_('mark-tag/'),_('interesting/')), app.commands.mark_tag, \
                                 kwargs={'reason':'good','action':'add'}, \
@@ -126,7 +126,9 @@ urlpatterns += patterns('',
     url(r'^%s%s%s$' % (_('account/'), _('providers/'),  _('add/')), app.auth.signin_page, name='user_add_external_provider'),
 
 
-    url(r'^%s$' % _('admin/'), app.admin.index, name="admin_index"),
+    url(r'^%s$' % _('admin/'), app.admin.dashboard, name="admin_index"),
+    url(r'^%s%s$' % (_('admin/'), _('switch_interface/')), app.admin.interface_switch, name="admin_switch_interface"),
+    url(r'^%s%s$' % (_('admin/'), _('statistics/')), app.admin.statistics, name="admin_statistics"),
     url(r'^%s%s$' % (_('admin/'), _('denormalize/')), app.admin.recalculate_denormalized, name="admin_denormalize"),
     url(r'^%s%s$' % (_('admin/'), _('go_bootstrap/')), app.admin.go_bootstrap, name="admin_go_bootstrap"),
     url(r'^%s%s$' % (_('admin/'), _('go_defaults/')), app.admin.go_defaults, name="admin_go_defaults"),

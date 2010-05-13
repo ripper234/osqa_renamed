@@ -3,13 +3,25 @@ from django.db.models import F
 from forum.models.action import ActionProxy
 from forum.models import Award
 from forum import settings
+from forum.settings import APP_SHORT_NAME
 
 class UserJoinsAction(ActionProxy):
     def repute_users(self):
         self.repute(self.user, int(settings.INITIAL_REP))
 
+    def describe(self, viewer=None):
+        return _("%(user)s as joined the %(app_name)s Q&A community") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'app_name': APP_SHORT_NAME,
+        }
+
 class EditProfileAction(ActionProxy):
-    pass
+    def describe(self, viewer=None):
+        return _("%(user)s edited %(hes_or_your)s %(profile_link)s") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'hes_or_your': self.viewer_or_user_verb(viewer, self.user, _('your'), _('hes')),
+            'profile_link': self.hyperlink(self.user.get_profile_url(), _('profile')),
+        }
 
 class AwardAction(ActionProxy):
     def process_data(self, badge, trigger):

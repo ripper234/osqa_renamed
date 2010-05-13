@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+import time
 
 from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, Http404
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
+from django.utils import simplejson
 from django.db.models import Sum
 
 from forum.settings.base import Setting
@@ -18,20 +20,84 @@ def super_user_required(fn):
         if request.user.is_authenticated() and request.user.is_superuser:
             return fn(request, *args, **kwargs)
         else:
-            raise Http404
+            return HttpResponseForbidden()
 
     return wrapper
 
-@super_user_required
-def index(request):
-    return render_to_response('osqaadmin/index.html', {
-        'sets': get_all_sets(),
+def admin_page(fn):
+    @super_user_required
+    def wrapper(request, *args, **kwargs):
+        res = fn(request, *args, **kwargs)
+        if isinstance(res, tuple):
+            template, context = res
+            context['basetemplate'] = settings.DJSTYLE_ADMIN_INTERFACE and "osqaadmin/djstyle_base.html" or "osqaadmin/base.html"
+            context['allsets'] = Setting.sets
+            context['othersets'] = sorted(
+                    [s for s in Setting.sets.values() if not s.name in
+                    ('basic', 'users', 'email', 'paths', 'extkeys', 'repgain', 'minrep', 'voting', 'badges', 'about', 'faq', 'sidebar',
+                    'form', 'moderation')]
+                    , lambda s1, s2: s1.weight - s2.weight)
+            return render_to_response(template, context, context_instance=RequestContext(request))
+        else:
+            return res
+
+    return wrapper
+
+@admin_page
+def dashboard(request):
+    return ('osqaadmin/dashboard.html', {
         'settings_pack': unicode(settings.SETTINGS_PACK),
         'statistics': get_statistics(),
         'recent_activity': get_recent_activity(),
-    }, context_instance=RequestContext(request))
+    })
 
-@super_user_required    
+@super_user_required
+def interface_switch(request):
+    if request.GET and request.GET.get('to', None) and request.GET['to'] in ('default', 'djstyle'):
+        settings.DJSTYLE_ADMIN_INTERFACE.set_value(request.GET['to'] == 'djstyle')
+
+    return HttpResponseRedirect(reverse('admin_index'))
+
+@admin_page
+def statistics(request):
+    today = datetime.now()
+    last_month = today - timedelta(days=30)
+
+    last_month_questions = Question.objects.filter(deleted=None, added_at__gt=last_month
+                                                  ).order_by('added_at').values_list('added_at', flat=True)
+
+    last_month_n_questions = Question.objects.filter(deleted=None, added_at__lt=last_month).count()
+    qgraph_data = simplejson.dumps([
+            (time.mktime(d.timetuple()) * 1000, i + last_month_n_questions)
+            for i, d in enumerate(last_month_questions)
+    ])
+
+    last_month_users = User.objects.filter(date_joined__gt=last_month
+                                                  ).order_by('date_joined').values_list('date_joined', flat=True)
+
+    last_month_n_users = User.objects.filter(date_joined__lt=last_month).count()
+
+    ugraph_data = simplejson.dumps([
+            (time.mktime(d.timetuple()) * 1000, i + last_month_n_users)
+            for i, d in enumerate(last_month_users)
+    ])
+
+    return 'osqaadmin/statistics.html', {
+        'graphs': [
+            {
+                'id': 'questions_graph',
+                'caption': _("Questions Graph"),
+                'data': qgraph_data
+            },{
+                'id': 'userss_graph',
+                'caption': _("Users Graph"),
+                'data': ugraph_data
+            }
+        ]
+    }
+
+
+@admin_page
 def settings_set(request, set_name):
     set = Setting.sets.get(set_name, None)
 
@@ -52,14 +118,11 @@ def settings_set(request, set_name):
     else:
         form = SettingsSetForm(set)
 
-    return render_to_response('osqaadmin/set.html', {
+    return 'osqaadmin/set.html', {
         'form': form,
         'markdown': set.markdown,
-        'sets': get_all_sets(),
-    }, context_instance=RequestContext(request))
+    }
 
-def get_all_sets():
-    return sorted(Setting.sets.values(), lambda s1, s2: s1.weight - s2.weight)
 
 def get_recent_activity():
     return Action.objects.order_by('-action_date')[0:30]
@@ -74,7 +137,7 @@ def get_statistics():
         'answers_last_24': Answer.objects.filter(deleted=None, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
     }
 
-@super_user_required      
+@super_user_required
 def go_bootstrap(request):
     #todo: this is the quick and dirty way of implementing a bootstrap mode
     try:
