@@ -188,8 +188,6 @@ class EditAnswerForm(forms.Form):
 
 class EditUserForm(forms.Form):
     email = forms.EmailField(label=u'Email', help_text=_('this email does not have to be linked to gravatar'), required=True, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
-    if settings.EDITABLE_SCREEN_NAME:
-    	username = UserNameField(label=_('Screen name'))
     realname = forms.CharField(label=_('Real name'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
     website = forms.URLField(label=_('Website'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
     city = forms.CharField(label=_('Location'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
@@ -198,8 +196,8 @@ class EditUserForm(forms.Form):
 
     def __init__(self, user, *args, **kwargs):
         super(EditUserForm, self).__init__(*args, **kwargs)
-        logging.debug('initializing the form')
         if settings.EDITABLE_SCREEN_NAME:
+            self.fields['username'] = UserNameField(label=_('Screen name'))
             self.fields['username'].initial = user.username
             self.fields['username'].user_instance = user
         self.fields['email'].initial = user.email

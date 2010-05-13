@@ -55,7 +55,13 @@
                 </tr>
                 <tr style="height:35px">
 	            	<td>{% trans "Screen Name" %}:</td>
-	            	<td>{{ request.user.username }} <span class="form-error"></span> {{ form.username.errors }} </td>
+	            	<td>
+	            	{% if form.username %}
+	            	    {{ form.username }} <span class="form-error"></span> {{ form.username.errors }}
+	            	{% else %}
+	            	    {{ request.user.username }}
+	            	{% endif %}
+	            	</td>
 	            </tr>
                 
 	            <tr style="height:35px">
