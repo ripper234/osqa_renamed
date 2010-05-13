@@ -26,13 +26,15 @@
         <div id="header">
             {% block header %}
             <div id="branding">
-                <h1 id="site-name"><a href="{% url index %}">{{ settings.APP_SHORT_NAME }} - {% trans "Administration Area" %}</a> </h1>
+                <h1 id="site-name"><a href="{% url admin_index %}">{{ settings.APP_SHORT_NAME }} - {% trans "Administration Area" %}</a> </h1>
             </div>
             {% endblock %}
             <div id="user-tools">
                 {% trans "Welcome," %}
                 <strong>{{ request.user.username }}</strong>.
-                <a href="{% url admin_switch_interface %}?to=default">{% trans "To standard interface" %}</a> / <a href="{% url logout %}">{% trans "Log out" %}</a>
+                <a href="{% url admin_switch_interface %}?to=default">{% trans "To standard interface" %}</a>
+                / <a href="{% url index %}">{% trans "Back to home page" %}</a>
+                / <a href="{% url logout %}">{% trans "Log out" %}</a>
             </div>
         </div>
         <div class="breadcrumbs">
