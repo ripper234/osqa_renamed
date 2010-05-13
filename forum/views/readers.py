@@ -91,6 +91,10 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
     if page_title is None:
         page_title = _("Questions")
 
+    keywords =  ""
+    if request.GET.get("q"):
+        keywords = request.GET.get("q").strip()
+
     answer_count = Answer.objects.filter(deleted=None, parent__in=questions).count()   
     answer_description = _("answers")
     
@@ -98,6 +102,7 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
         "questions" : questions,
         "questions_count" : questions.count(),
         "answer_count" : answer_count,
+        "keywords" : keywords,
         #"tags_autocomplete" : _get_tags_cache_json(),
         "list_description": list_description,
         "answer_description": answer_description,

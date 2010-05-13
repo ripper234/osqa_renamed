@@ -38,7 +38,7 @@
         {% endif %}
         {% block forejs %}{% endblock %}
 
-        <link rel="search" type="application/opensearchdescription+xml" href="open_search.xml" title="Web Search" />
+        <link rel="search" type="application/opensearchdescription+xml" href="/{{settings.FORUM_SCRIPT_ALIAS}}opensearch.xml" title="{{ settings.APP_SHORT_NAME }} Search" />
     </head>
     <body>
         <div class="notify" style="display:none">

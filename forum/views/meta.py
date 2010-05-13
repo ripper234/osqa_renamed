@@ -1,7 +1,7 @@
 from itertools import groupby
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.template import RequestContext
+from django.template import RequestContext, loader
 from django.http import HttpResponseRedirect, HttpResponse
 from forum import settings
 from forum.forms import FeedbackForm
@@ -27,6 +27,11 @@ def faq(request):
     text = md.convert(settings.FAQ_PAGE_TEXT.value)
 
     return render_to_response('faq.html', {'text' : text}, context_instance=RequestContext(request))
+
+
+def opensearch(request):   
+    return render_to_response('opensearch.html', {'settings' : settings}, context_instance=RequestContext(request))
+    
 
 def feedback(request):
     if request.method == "POST":
