@@ -33,6 +33,9 @@ help_text = _("If a question's content can be empty."),
 required=False))
 
 
+
+
+""" settings for tags """
 FORM_MIN_NUMBER_OF_TAGS = Setting('FORM_MIN_NUMBER_OF_TAGS', 1, FORUM_SET, dict(
 label = _("Required number of tags per question"),
 help_text = _("How many tags are required in questions."),
@@ -42,6 +45,17 @@ FORM_MAX_NUMBER_OF_TAGS = Setting('FORM_MAX_NUMBER_OF_TAGS', 5, FORUM_SET, dict(
 label = _("Maximum number of tags per question"),
 help_text = _("How many tags are allowed in questions."),
 ))
+
+FORM_MIN_LENGTH_OF_TAG = Setting('FORM_MIN_LENGTH_OF_TAG', 1, FORUM_SET, dict(
+label = _("Minimum length of a tag"),
+help_text = _("How short a tag can be."),
+))
+
+FORM_MAX_LENGTH_OF_TAG = Setting('FORM_MAX_LENGTH_OF_TAG', 20, FORUM_SET, dict(
+label = _("Maximum length of a tag"),
+help_text = _("How long a tag can be."),
+))
+
 
 
 

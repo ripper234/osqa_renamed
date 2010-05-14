@@ -58,26 +58,25 @@ class TagNamesField(forms.CharField):
     def clean(self, value):
         value = super(TagNamesField, self).clean(value)
         data = value.strip()
-        if len(data) < 1:
-            raise forms.ValidationError(_('tags are required'))
 
         split_re = re.compile(r'[ ,]+')
         list = split_re.split(data)
-        list_temp = []
-        if len(list) > settings.FORM_MAX_NUMBER_OF_TAGS or len(list) < settings.FORM_MIN_NUMBER_OF_TAGS:
-            raise forms.ValidationError(_('please use betwen %(min)s and %(max)s tags') % {
-            'min': apnumber(settings.FORM_MIN_NUMBER_OF_TAGS), 'max': apnumber(settings.FORM_MAX_NUMBER_OF_TAGS)
-        })
 
+        if len(list) > settings.FORM_MAX_NUMBER_OF_TAGS or len(list) < settings.FORM_MIN_NUMBER_OF_TAGS:
+            raise forms.ValidationError(_('please use between %(min)s and %(max)s tags') % { 'min': apnumber(settings.FORM_MIN_NUMBER_OF_TAGS), 'max': apnumber(settings.FORM_MAX_NUMBER_OF_TAGS)})
+
+        list_temp = []
         tagname_re = re.compile(r'[a-z0-9]+')
         for tag in list:
-            if len(tag) > 20:
-                raise forms.ValidationError(_('tags must be shorter than 20 characters'))
+            test = len(tag)
+            if len(tag) > settings.FORM_MAX_LENGTH_OF_TAG or len(tag) < settings.FORM_MIN_LENGTH_OF_TAG:
+                raise forms.ValidationError(_('please use between %(min)s and %(max)s characters in you tags') % { 'min': apnumber(settings.FORM_MIN_LENGTH_OF_TAG), 'max': apnumber(settings.FORM_MAX_LENGTH_OF_TAG)})
             if not tagname_re.match(tag):
                 raise forms.ValidationError(_('please use following characters in tags: letters \'a-z\', numbers, and characters \'.-_#\''))
             # only keep one same tag
             if tag not in list_temp and len(tag.strip()) > 0:
                 list_temp.append(tag)
+
         return u' '.join(list_temp)
 
 class WikiField(forms.BooleanField):
