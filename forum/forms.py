@@ -68,7 +68,6 @@ class TagNamesField(forms.CharField):
         list_temp = []
         tagname_re = re.compile(r'[a-z0-9]+')
         for tag in list:
-            test = len(tag)
             if len(tag) > settings.FORM_MAX_LENGTH_OF_TAG or len(tag) < settings.FORM_MIN_LENGTH_OF_TAG:
                 raise forms.ValidationError(_('please use between %(min)s and %(max)s characters in you tags') % { 'min': apnumber(settings.FORM_MIN_LENGTH_OF_TAG), 'max': apnumber(settings.FORM_MAX_LENGTH_OF_TAG)})
             if not tagname_re.match(tag):
