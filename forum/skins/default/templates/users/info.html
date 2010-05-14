@@ -31,7 +31,7 @@
                 {% if view_user != request.user and request.user.is_superuser %}
                 <tr>
                     <td class="moderation" align="left" colspan="2">
-                        {% comment %}{% user_moderation request.user view_user %}{% endcomment %}
+                        {% user_moderation request.user view_user %}
                     </td>
                 </tr>
                 {% endif %}

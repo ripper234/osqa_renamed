@@ -54,7 +54,7 @@ def activity_item(parser, token):
     return ActivityNode(activity, viewer)
 
 
-@register.inclusion_tag('users/action_info.html')
+@register.inclusion_tag('users/moderation.html')
 def user_moderation(moderator, user):
-    return dict(user=user)
+    return dict(moderator=moderator, user=user)
 

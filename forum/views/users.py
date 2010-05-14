@@ -114,6 +114,24 @@ def edit_user(request, id):
                                     }, context_instance=RequestContext(request))
 
 
+@login_required
+def user_powers(request, id, action, status):
+    if not request.user.is_superuser:
+        return HttpResponseForbidden()
+
+    user = get_object_or_404(User, id=id)
+    new_state = action == 'grant'
+
+    if status == 'super':
+        user.is_superuser = new_state
+    elif status == 'staff':
+        user.is_staff = new_state
+    else:
+        raise Http404()
+
+    user.save()    
+    return HttpResponseRedirect(user.get_profile_url())
+
 
 def user_view(template, tab_name, tab_description, page_title, private=False):
     def decorator(fn):

@@ -94,7 +94,7 @@ urlpatterns += patterns('',
 
     url(r'^%s$' % _('users/'),app.users.users, name='users'),
     url(r'^%s(?P<id>\d+)/%s$' % (_('users/'), _('edit/')), app.users.edit_user, name='edit_user'),
-
+    url(r'^%s(?P<id>\d+)/%s(?P<action>[a-z]+)/(?P<status>[a-z]+)/$' % (_('users/'), _('powers/')), app.users.user_powers, name='user_powers'),
     url(r'^%s(?P<id>\d+)/(?P<slug>.+)/%s$' % (_('users/'), _('subscriptions/')), app.users.user_subscriptions, name='user_subscriptions'),
     url(r'^%s(?P<id>\d+)/(?P<slug>.+)/%s$' % (_('users/'), _('favorites/')), app.users.user_favorites, name='user_favorites'),
     url(r'^%s(?P<id>\d+)/(?P<slug>.+)/%s$' % (_('users/'), _('reputation/')), app.users.user_reputation, name='user_reputation'),
