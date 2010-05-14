@@ -50,7 +50,7 @@ class TagNamesField(forms.CharField):
         self.max_length = 255
         self.label  = _('tags')
         #self.help_text = _('please use space to separate tags (this enables autocomplete feature)')
-        self.help_text = _('Tags are short keywords, with no spaces within. At least one %(min)s and up to %(max)s tags can be used.') % {
+        self.help_text = _('Tags are short keywords, with no spaces within. At least %(min)s and up to %(max)s tags can be used.') % {
             'min': settings.FORM_MIN_NUMBER_OF_TAGS, 'max': settings.FORM_MAX_NUMBER_OF_TAGS    
         }
         self.initial = ''
