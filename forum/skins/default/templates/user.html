@@ -3,6 +3,8 @@
 {% load extra_tags %}
 {% load extra_filters %}
 {% load humanize %}
+{% load smart_if %}
+
 {% block title %}{% spaceless %}{{ page_title }}{% endspaceless %}{% endblock %}
 {% block forestyle%}
     <style type="text/css">
@@ -11,8 +13,14 @@
 	</style>
 {% endblock %}
 {% block forejs %}
-    {% if request.user.is_superuser %}
+    {% if request.user.is_superuser or request.user == view_user %}
         <script type='text/javascript' src='{% media  "/media/js/jquery.form.js" %}'></script>
+        <script type="text/javascript">google.load("jquery", "1.4.2");google.load("jqueryui", "1.8.1");</script>
+        <script src="{% media "/media/js/osqa.user.js" %}" type="text/javascript"></script>
+
+        <link rel="stylesheet" href="http://jquery-ui.googlecode.com/svn/tags/latest/themes/base/jquery-ui.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" />
+        <link rel="stylesheet" type="text/css" media="screen" href="{% media "/media/style/user.css" %}"/>
     {% endif %}
     <script type="text/javascript">
         var viewUserID = {{view_user.id}};

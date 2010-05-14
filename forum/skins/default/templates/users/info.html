@@ -6,6 +6,7 @@
 {% load i18n %}
 {% load markup %}
 {% load user_tags %}
+
 <div id="subheader" class="headUser">
     {{view_user.username}}
 </div>
@@ -20,32 +21,15 @@
                 </tr>
                 <tr>
                     <td align="center">
-                        <div class="scoreNumber">{{view_user.reputation|intcomma}}</div>
+                        <div class="scoreNumber" id="user-reputation">{{view_user.reputation|intcomma}}</div>
                         <p><b style="color:#777;">{% trans "reputation" %}</b></p>
                     </td>
                 </tr>
             </table>
         </td>
         <td width="360" style="vertical-align: top;">
+        {% if can_view_private %}{% user_menu request.user view_user %}{% endif %}
             <table class="user-details">
-                {% if view_user != request.user and request.user.is_superuser %}
-                <tr>
-                    <td class="moderation" align="left" colspan="2">
-                        {% user_moderation request.user view_user %}
-                    </td>
-                </tr>
-                {% endif %}
-                {% if can_view_private %}
-                <tr>
-                    <td class="user-profile-tool-links" align="left" colspan="2">
-                        {% joinitems using ' | ' %}
-                            <span class="user-edit-link"><a href="{% url edit_user id=view_user.id %}">{% trans "update profile" %}</a></span>
-                        {% separator %}
-                            <a href="{% url user_authsettings id=view_user.id %}">{% trans "authentication settings" %}</a>
-                        {% endjoinitems %}
-                    </td>
-                </tr>  
-                {% endif %}
                 <tr>
                     <th colspan="2" align="left"><h3>{% trans "Registered user" %}</h3></th>
                 </tr>

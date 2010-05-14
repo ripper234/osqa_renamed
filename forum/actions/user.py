@@ -23,6 +23,25 @@ class EditProfileAction(ActionProxy):
             'profile_link': self.hyperlink(self.user.get_profile_url(), _('profile')),
         }
 
+class BonusRepAction(ActionProxy):
+    def process_data(self, value):
+        self._value = value
+
+    def repute_users(self):
+        self.repute(self.user, self._value)
+        self.user.message_set.create(message=_("Congratulations, you have been awarded an extra %s reputation points.") % self._value +
+                                     '<br />%s' % self.extra.get('message', _('Thank you')))
+        
+    def describe(self, viewer=None):
+        value = self.extra.get('value', _('unknown'))
+        message = self.extra.get('message', '')
+
+        return _("%(user)s %(was_were)s awarded %(value)s reputation points: %(message)s") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'was_were': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
+            'value': value, 'message': message
+        }
+
 class AwardAction(ActionProxy):
     def process_data(self, badge, trigger):
         self.__dict__['_badge'] = badge

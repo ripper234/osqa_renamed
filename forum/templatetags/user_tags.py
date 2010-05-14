@@ -1,6 +1,7 @@
 from django import template
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
+from forum.forms import AwardPointsForm
 import logging
 
 register = template.Library()
@@ -54,7 +55,7 @@ def activity_item(parser, token):
     return ActivityNode(activity, viewer)
 
 
-@register.inclusion_tag('users/moderation.html')
-def user_moderation(moderator, user):
-    return dict(moderator=moderator, user=user)
+@register.inclusion_tag('users/menu.html')
+def user_menu(request, user):
+    return dict(viewer=request.user, user=user)
 

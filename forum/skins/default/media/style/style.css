@@ -1376,3 +1376,17 @@ div.comment-tools a:hover {
 	font-weight: bold;
 	text-align: center;
 }
+
+.moderation-table input[type=text], .moderation-table textarea {
+    width: 150px;
+    max-height: 50px;
+}
+
+.moderation-table th {
+    vertical-align: top;
+    text-align: left;
+}
+
+.moderation-table-footer {
+    text-align: right;
+}

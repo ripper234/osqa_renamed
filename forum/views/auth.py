@@ -304,7 +304,8 @@ def auth_settings(request, id):
         })
 
     return render_to_response('auth/auth_settings.html', {
-        'user': user_,
+        'view_user': user_,
+        "can_view_private": (user_ == request.user) or request.user.is_superuser,
         'form': form,
         'has_password': user_.has_usable_password(),
         'auth_keys': auth_keys_list,

@@ -17,7 +17,7 @@ from forum.forms import *
 from forum.utils.html import sanitize_html
 from datetime import date
 import decorators
-from forum.actions import EditProfileAction, FavoriteAction
+from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction
 
 import time
 
@@ -131,6 +131,24 @@ def user_powers(request, id, action, status):
 
     user.save()    
     return HttpResponseRedirect(user.get_profile_url())
+
+
+@decorators.command
+def award_points(request, id):
+    if (not request.POST) and request.POST.get('points', None):
+        raise decorators.CommandException(_("Invalid request type"))
+
+    if not request.user.is_superuser:
+        raise decorators.CommandException(_("Only superusers are allowed to award reputation points"))
+
+    user = get_object_or_404(User, id=id)
+    points = int(request.POST['points'])
+
+    extra = dict(message=request.POST.get('message', ''), awarding_user=request.user.id, value=points)
+
+    BonusRepAction(user=user, extra=extra).save(data=dict(value=points))
+
+    return dict(reputation=user.reputation)
 
 
 def user_view(template, tab_name, tab_description, page_title, private=False):

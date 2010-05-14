@@ -1,10 +1,10 @@
-{% extends "base.html" %}
+{% extends "user.html" %}
 <!-- changepw.html -->
 {% load i18n %}
 {% block head %}{% endblock %}
 {% block title %}{% spaceless %}{% trans "Authentication settings" %}{% endspaceless %}{% endblock %}
-{% block content %}
-<div class="headNormal">{% trans "Authentication settings" %}</div>
+{% block usercontent %}
+<h2>{% trans "Authentication settings" %}</h2>
 {% if auth_keys %}
     <p class="message">{% blocktrans %}These are the external authentication providers currently associated with your account.{% endblocktrans %}</p>
     <div>
@@ -16,7 +16,7 @@
 {% if not auth_keys %}
     <p class="message">{% blocktrans %}You currently have no external authentication provider associated with your account.{% endblocktrans %}</p>
 {% endif %}
-{% ifequal user request.user %}
+{% ifequal view_user request.user %}
     <input type="button" class="submit" value="{% trans "Add new provider" %}" onclick="window.location='{% url user_add_external_provider %}'" />
 {% endifequal %}
 {% if has_password %}

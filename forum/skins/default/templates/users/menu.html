@@ -1,0 +1,96 @@
+{% load i18n %}
+{% load smart_if %}
+
+<script type="text/javascript">
+var messages = {
+    username: '{{ user.username }}}',
+    confirm: "{% trans "Are you sure?" %}",
+    yes: "{% trans "Yes" %}",
+    no: "{% trans "No" %}",
+    points: "{% trans "Points to award:" %}",
+    message: "{% trans "Message:" %}",
+    award: "{% trans "Award" %}",
+    cancel: "{% trans "Cancel" %}"
+}
+</script>
+
+<div id="user-menu-container">
+    <span id="user-menu">{% trans "User tools" %} &#9660;</span>
+    <ul id="user-menu-dropdown">
+        <li class="item"><span class="user-edit"></span><a href="{% url edit_user id=user.id %}">{% trans "edit profile" %}</a></li>
+        <li class="item"><span class="user-auth"></span><a href="{% url user_authsettings id=user.id %}">{% trans "authentication settings" %}</a></li>
+        <li class="item"><span class="user-subscriptions"></span><a href="{% url user_subscriptions id=user.id %}">{% trans "email notification settings" %}</a></li>
+        {% ifnotequal user viewer %}
+            {% if viewer.is_superuser %}
+            <li class="separator">{% trans "Moderation tools" %}</li>
+            <li class="item"><span class="user-award_rep"></span><a href="{% url user_award_points id=user.id %}" id="award-rep-points">{% trans "reputation bonus" %}</a></li>
+                {% if not user.is_superuser %}
+                    {% if not user.is_staff %}
+                    <li class="item"><span class="user-moderator"></span>
+                        <a class="confirm" href="{% url user_powers id=user.id,action="grant",status="staff" %}">{% trans "grant moderator status" %}</a>
+                    </li>
+                    {% else %}
+                    <li class="item"><span class="user-moderator"></span>
+                        <a class="confirm" href="{% url user_powers id=user.id,action="remove",status="staff" %}">{% trans "remove moderator status" %}</a>
+                    </li>
+                    {% endif %}
+                    <li class="item"><span class="user-superuser"></span>
+                        <a class="confirm" href="{% url user_powers id=user.id,action="grant",status="super" %}">{% trans "grant super user status" %}</a>
+                    </li>
+                {% else %}
+                    {% ifequal viewer.id 1 %}
+                    <li class="item"><span class="user-superuser"></span>
+                        <a class="confirm" href="{% url user_powers id=user.id,action="remove",status="super" %}">{% trans "remove super user status" %}</a>
+                    </li>
+                    {% endifequal %}
+                {% endif %}
+            {% endif %}
+        {% endifnotequal %}
+    </ul>
+</div>
+
+{% comment %}
+<h3>{% trans "Moderation tools" %}</h3>
+<p><a href="#" id="point-award-action">{% trans "Reputation bonus" %}</a></p>
+<form action="" method="POST">
+    <table style="display: none" id="award-points-table" class="moderation-table">
+    {{ awardform.as_table }}
+    <tr><td colspan="2" class="moderation-table-footer"><input type="submit" id="award-points-submit" value="{% trans "Send" %}" /></td></tr>
+    </table>    
+</form>
+<script>
+    $(function() {
+        $('#point-award-action').click(function() {
+            $('#award-points-table').slideToggle('slow');
+        });
+
+        $('#award-points-submit').click(function() {
+            $('#award-points-table').find('.error').remove();
+            var $points_input = $('#award-points-table').find('input[type=text]');
+            var points = parseInt($points_input.val());
+
+            if (isNaN(points) || points < 1) {
+                $points_input.before('<p class="error">{% trans "Sorry but that\'s not a valid input" %}</p>');
+                return false;
+            }
+
+            $.post('{% url user_award_points id=user.id %}')
+        });
+    });
+</script>
+{% if not user.is_superuser %}
+<p><a href="{% url user_powers id=user.id,action="grant",status="super" %}">{% trans "Grant super user status" %}</a></p>
+    {% if not user.is_staff %}
+    <p><a href="{% url user_powers id=user.id,action="grant",status="staff" %}">{% trans "Grant moderator status" %}</a></p>
+    {% else %}
+    <p><a href="{% url user_powers id=user.id,action="remove",status="staff" %}" class="">{% trans "Remove moderator status" %}</a></p>
+    {% endif %}
+{% else %}
+    {% ifequal moderator.id 1 %}
+        {% ifnotequal user.id 1 %}
+            <p><a href="{% url user_powers id=user.id,action="remove",status="super" %}">{% trans "Remove super user status" %}</a></p>
+        {% endifnotequal %}
+    {% endifequal %}
+{% endif %}
+
+{% endcomment %}
