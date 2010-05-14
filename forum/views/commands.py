@@ -19,47 +19,31 @@ import logging
 class NotEnoughRepPointsException(CommandException):
     def __init__(self, action):
         super(NotEnoughRepPointsException, self).__init__(
-            _("""
-            Sorry, but you don't have enough reputation points to %(action)s.<br />
-            Please check the <a href'%(faq_url)s'>faq</a>
-            """ % {'action': action, 'faq_url': reverse('faq')})
+            _("""Sorry, but you don't have enough reputation points to %(action)s.<br />Please check the <a href='%(faq_url)s'>faq</a>""" % {'action': action, 'faq_url': reverse('faq')})
         )
 
 class CannotDoOnOwnException(CommandException):
     def __init__(self, action):
         super(CannotDoOnOwnException, self).__init__(
-            _("""
-            Sorry but you cannot %(action)s your own post.<br />
-            Please check the <a href'%(faq_url)s'>faq</a>
-            """ % {'action': action, 'faq_url': reverse('faq')})
+            _("""Sorry but you cannot %(action)s your own post.<br />Please check the <a href='%(faq_url)s'>faq</a>""" % {'action': action, 'faq_url': reverse('faq')})
         )
 
 class AnonymousNotAllowedException(CommandException):
     def __init__(self, action):
         super(AnonymousNotAllowedException, self).__init__(
-            _("""
-            Sorry but anonymous users cannot %(action)s.<br />
-            Please login or create an account <a href'%(signin_url)s'>here</a>.
-            """ % {'action': action, 'signin_url': reverse('auth_signin')})
+            _("""Sorry but anonymous users cannot %(action)s.<br />Please login or create an account <a href='%(signin_url)s'>here</a>.""" % {'action': action, 'signin_url': reverse('auth_signin')})
         )
 
 class NotEnoughLeftException(CommandException):
     def __init__(self, action, limit):
         super(NotEnoughLeftException, self).__init__(
-            _("""
-            Sorry, but you don't have enough %(action)s left for today..<br />
-            The limit is %(limit)s per day..<br />
-            Please check the <a href'%(faq_url)s'>faq</a>
-            """ % {'action': action, 'limit': limit, 'faq_url': reverse('faq')})
+            _("""Sorry, but you don't have enough %(action)s left for today..<br />The limit is %(limit)s per day..<br />Please check the <a href='%(faq_url)s'>faq</a>""" % {'action': action, 'limit': limit, 'faq_url': reverse('faq')})
         )
 
 class CannotDoubleActionException(CommandException):
     def __init__(self, action):
         super(CannotDoubleActionException, self).__init__(
-            _("""
-            Sorry, but you cannot %(action)s twice the same post.<br />
-            Please check the <a href'%(faq_url)s'>faq</a>
-            """ % {'action': action, 'faq_url': reverse('faq')})
+            _("""Sorry, but you cannot %(action)s twice the same post.<br />Please check the <a href='%(faq_url)s'>faq</a>""" % {'action': action, 'faq_url': reverse('faq')})
         )
 
 
