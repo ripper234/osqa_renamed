@@ -16,7 +16,9 @@
 {% if not auth_keys %}
     <p class="message">{% blocktrans %}You currently have no external authentication provider associated with your account.{% endblocktrans %}</p>
 {% endif %}
-<input type="button" class="submit" value="{% trans "Add new provider" %}" onclick="window.location='{% url user_add_external_provider %}'" />
+{% ifequal user request.user %}
+    <input type="button" class="submit" value="{% trans "Add new provider" %}" onclick="window.location='{% url user_add_external_provider %}'" />
+{% endifequal %}
 {% if has_password %}
     <p class="message">{% blocktrans %}This is where you can change your password. Make sure you remember it!{% endblocktrans %}</p>
 {% endif %}

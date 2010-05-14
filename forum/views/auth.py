@@ -304,6 +304,7 @@ def auth_settings(request, id):
         })
 
     return render_to_response('auth/auth_settings.html', {
+        'user': user_,
         'form': form,
         'has_password': user_.has_usable_password(),
         'auth_keys': auth_keys_list,
