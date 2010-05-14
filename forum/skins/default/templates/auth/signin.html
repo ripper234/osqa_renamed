@@ -99,7 +99,7 @@
     <h3 class="or_label">{% trans 'Or...' %}</h3>
     <form name="signin_form" id="dummy_form_unused" class="signin_form" method="POST" action="">
         <fieldset>
-            {% trans 'Click' %} <a href="{% url auth_request_tempsignin %}">here</a> {% trans "if you're having troubles signing in." %}
+            {% trans 'Click' %} <a href="{% url auth_request_tempsignin %}">{% trans 'here' %}</a> {% trans "if you're having troubles signing in." %}
         </fieldset>
     </form>
     <script type="text/html" id="simple_form_template">
