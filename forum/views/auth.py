@@ -117,7 +117,7 @@ def process_provider_signin(request, provider):
                     uassoc = AuthKeyUserAssociation(user=request.user, key=assoc_key, provider=provider)
                     uassoc.save()
                     request.user.message_set.create(message=_('The new credentials are now associated with your account'))
-                    return HttpResponseRedirect(reverse('user_authsettings'))
+                    return HttpResponseRedirect(reverse('user_authsettings', args=[request.user.id]))
 
             return HttpResponseRedirect(reverse('auth_signin'))
         else:
