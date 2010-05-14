@@ -114,7 +114,7 @@ def settings_set(request, set_name):
             if set_name in ('minrep', 'badges', 'repgain'):
                 settings.SETTINGS_PACK.set_value("custom")
 
-        return HttpResponseRedirect(reverse('admin_set', args=[set_name]))
+            return HttpResponseRedirect(reverse('admin_set', args=[set_name]))
     else:
         form = SettingsSetForm(set)
 
@@ -122,6 +122,21 @@ def settings_set(request, set_name):
         'form': form,
         'markdown': set.markdown,
     }
+
+@super_user_required
+def get_default(request, set_name, var_name):
+    set = Setting.sets.get(set_name, None)
+    if set is None: raise Http404
+
+    setting = dict([(s.name, s) for s in set]).get(var_name, None)
+    if setting is None: raise Http404
+
+    setting.to_default()
+
+    if request.is_ajax():
+        return HttpResponse(setting.default)
+    else:
+        return HttpResponseRedirect(reverse('admin_set', kwargs={'set_name': set_name}))
 
 
 def get_recent_activity():

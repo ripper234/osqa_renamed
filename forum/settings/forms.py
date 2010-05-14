@@ -38,6 +38,12 @@ class SettingsSetForm(forms.Form):
 
         self.set = set
 
+    def as_table(self):
+        return self._html_output(
+                u'<tr><th>%(label)s' + ('<br /><a class="fieldtool context" href="#">%s</a><span class="sep">|</span><a class="fieldtool default" href="#">%s</a></th>' % (
+                    _('context'), _('default'))) + u'<td>%(errors)s%(field)s%(help_text)s</td>',
+                u'<tr><td colspan="2">%s</td></tr>', '</td></tr>', u'<br />%s', False)
+
     def save(self):
         for setting in self.set:
             setting.set_value(self.cleaned_data[setting.name])
@@ -76,7 +82,7 @@ class StringListWidget(forms.Widget):
         ret = ""
         for s in value:
             ret += """
-            <div>
+            <div class="string-list-input">
                 <input type="text" name="%(name)s" value="%(value)s" />
                 <button class="string_list_widget_button">-</button>
             </div>

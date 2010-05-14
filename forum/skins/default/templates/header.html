@@ -8,7 +8,7 @@
                     {% if request.user.is_superuser %}
                         <a href="{% url admin_index %}">{% trans "administration" %}</a>   
                     {% endif %}
-                    <a href="{% url user_profile id=request.user.id,slug=request.user.username|slugify %}">{{ request.user.username }}</a> {% get_score_badge request.user %} 
+                    <a href="{{ request.user.get_profile_url }}">{{ request.user.username }}</a> {% get_score_badge request.user %} 
                     <a href="{% url logout %}">{% trans "logout" %}</a>
                 {% else %}
                     <a href="{% url auth_signin %}">{% trans "login" %}</a>

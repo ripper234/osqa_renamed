@@ -134,6 +134,7 @@ urlpatterns += patterns('',
     url(r'^%s%s$' % (_('admin/'), _('go_bootstrap/')), app.admin.go_bootstrap, name="admin_go_bootstrap"),
     url(r'^%s%s$' % (_('admin/'), _('go_defaults/')), app.admin.go_defaults, name="admin_go_defaults"),
     url(r'^%s(?P<set_name>\w+)/$' % _('admin/'), app.admin.settings_set, name="admin_set"),
+    url(r'^%s(?P<set_name>\w+)/(?P<var_name>\w+)/$' % _('admin/'), app.admin.get_default, name="admin_default"),
 
     url(r'^feeds/rss/$', RssLastestQuestionsFeed, name="latest_questions_feed"),
 )
