@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-04-28 16:53-0400\n"
-"PO-Revision-Date: 2010-05-13 17:06\n"
+"PO-Revision-Date: 2010-05-14 15:33\n"
 "Last-Translator: Rick Ross <rick@dzone.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1953,7 +1953,7 @@ msgstr ""
 
 #: forum/skins/default/templates/logout.html:19
 msgid "As a registered user you can login with your OpenID, log out of the site or permanently remove your account."
-msgstr "Clicking <strong>Logout</strong> will log you out from the forumbut will not sign you off from your OpenID provider.</p><p>If you wish to sign off completely - please make sure to log out from your OpenID provider as well."
+msgstr "Clicking <strong>Logout</strong> will log you out from the forum, but will not sign you off from your OpenID provider.</p><p>If you wish to sign off completely - please make sure to log out from your OpenID provider as well."
 
 #: forum/skins/default/templates/logout.html:20
 msgid "Logout now"
