@@ -41,7 +41,7 @@
                         {% joinitems using ' | ' %}
                             <span class="user-edit-link"><a href="{% url edit_user id=view_user.id %}">{% trans "update profile" %}</a></span>
                         {% separator %}
-                            <a href="{% url user_authsettings id=view_user.id %}">authentication settings</a>
+                            <a href="{% url user_authsettings id=view_user.id %}">{% trans "authentication settings" %}</a>
                         {% endjoinitems %}
                     </td>
                 </tr>  
