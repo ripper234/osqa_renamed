@@ -1364,29 +1364,3 @@ div.comment-tools a:hover {
     color: orange;    
 }
 
-.moderation {
-	background-color: #FFF380;
-	border: 1px solid darkred;
-	padding: 0 5px;
-}
-
-.moderation p { margin-bottom: 3px; }
-
-.moderation #action_status {
-	font-weight: bold;
-	text-align: center;
-}
-
-.moderation-table input[type=text], .moderation-table textarea {
-    width: 150px;
-    max-height: 50px;
-}
-
-.moderation-table th {
-    vertical-align: top;
-    text-align: left;
-}
-
-.moderation-table-footer {
-    text-align: right;
-}
