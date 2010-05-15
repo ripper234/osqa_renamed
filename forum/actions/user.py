@@ -1,7 +1,7 @@
 from django.utils.translation import ugettext as _
 from django.db.models import F
 from forum.models.action import ActionProxy
-from forum.models import Award
+from forum.models import Award, Badge
 from forum import settings
 from forum.settings import APP_SHORT_NAME
 
@@ -58,6 +58,16 @@ class AwardAction(ActionProxy):
         award.save()
         award.badge.awarded_count = F('awarded_count') + 1
         award.badge.save()
+
+        if award.badge.type == Badge.GOLD:
+            self.user.gold += 1
+        if award.badge.type == Badge.SILVER:
+            self.user.silver += 1
+        if award.badge.type == Badge.BRONZE:
+            self.user.silver += 1
+
+        self.user.save()
+
         self.user.message_set.create(message=_("""Congratulations, you have received a badge '%(badge_name)s'. Check out <a href=\"%(profile_url)s\">your profile</a>.""") %
                                      dict(badge_name=award.badge.name, profile_url=self.user.get_profile_url()))
 
