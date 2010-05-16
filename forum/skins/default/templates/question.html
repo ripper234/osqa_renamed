@@ -245,7 +245,7 @@
 		{% trans "Question tags" %}:
     </p>
     <p class="tags" >
-        {% for tag in tags %}
+        {% for tag in question.tags.all %}
         	<a href="{% url tag_questions tag.name|urlencode %}" 
 			title="{% trans "see questions tagged"%}'{{tag.name}}'{% trans "using tags" %}" 
 			rel="tag">{{ tag.name }}</a> <span class="tag-number">&#215;{{ tag.used_count|intcomma }}</span><br/>
