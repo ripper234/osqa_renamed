@@ -196,6 +196,9 @@ def answer(request, id):
                 request.session['temp_node_type'] = 'answer'
                 request.session['temp_question_id'] = id
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
+        else:
+            request.session['redirect_POST_data'] = request.POST
+            return HttpResponseRedirect(question.get_absolute_url() + '#fmanswer')
 
     return HttpResponseRedirect(question.get_absolute_url())
 

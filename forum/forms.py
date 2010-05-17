@@ -30,17 +30,35 @@ class TitleField(forms.CharField):
 class EditorField(forms.CharField):
     def __init__(self, *args, **kwargs):
         super(EditorField, self).__init__(*args, **kwargs)
-        self.required = True
         self.widget = forms.Textarea(attrs={'id':'editor'})
         self.label  = _('content')
         self.help_text = u''
         self.initial = ''
 
+
+class QuestionEditorField(EditorField):
+    def __init__(self, *args, **kwargs):
+        super(QuestionEditorField, self).__init__(*args, **kwargs)
+        self.required = not bool(settings.FORM_EMPTY_QUESTION_BODY)
+
+
     def clean(self, value):
-        if len(value) < settings.FORM_MIN_QUESTION_BODY and not settings.FORM_EMPTY_QUESTION_BODY:
+        if self.required and (len(value) < settings.FORM_MIN_QUESTION_BODY):
             raise forms.ValidationError(_('question content must be must be at least %s characters' % settings.FORM_MIN_QUESTION_BODY))
 
         return value
+
+class AnswerEditorField(EditorField):
+    def __init__(self, *args, **kwargs):
+        super(AnswerEditorField, self).__init__(*args, **kwargs)
+        self.required = True
+
+    def clean(self, value):
+        if len(value) < settings.FORM_MIN_QUESTION_BODY:
+            raise forms.ValidationError(_('answer content must be must be at least %s characters' % settings.FORM_MIN_QUESTION_BODY))
+
+        return value
+
 
 class TagNamesField(forms.CharField):
     def __init__(self, *args, **kwargs):
@@ -66,12 +84,12 @@ class TagNamesField(forms.CharField):
             raise forms.ValidationError(_('please use between %(min)s and %(max)s tags') % { 'min': settings.FORM_MIN_NUMBER_OF_TAGS, 'max': settings.FORM_MAX_NUMBER_OF_TAGS})
 
         list_temp = []
-        tagname_re = re.compile(r'^[\w+\.-]$', re.UNICODE)
+        tagname_re = re.compile(r'^[\w+\.-]+$', re.UNICODE)
         for tag in list:
             if len(tag) > settings.FORM_MAX_LENGTH_OF_TAG or len(tag) < settings.FORM_MIN_LENGTH_OF_TAG:
                 raise forms.ValidationError(_('please use between %(min)s and %(max)s characters in you tags') % { 'min': settings.FORM_MIN_LENGTH_OF_TAG, 'max': settings.FORM_MAX_LENGTH_OF_TAG})
             if not tagname_re.match(tag):
-                raise forms.ValidationError(_('please use following characters in tags: letters , numbers, and the following characters \'.-_#\''))
+                raise forms.ValidationError(_('please use following characters in tags: letters , numbers, and characters \'.-_\''))
             # only keep one same tag
             if tag not in list_temp and len(tag.strip()) > 0:
                 list_temp.append(tag)
@@ -111,13 +129,13 @@ class FeedbackForm(forms.Form):
 
 class AskForm(forms.Form):
     title  = TitleField()
-    text   = EditorField()
+    text   = QuestionEditorField()
     tags   = TagNamesField()
     wiki = WikiField()
 
 
 class AnswerForm(forms.Form):
-    text   = EditorField()
+    text   = AnswerEditorField()
     wiki   = WikiField()
 
     def __init__(self, question, *args, **kwargs):
@@ -154,7 +172,7 @@ class RevisionForm(forms.Form):
 
 class EditQuestionForm(forms.Form):
     title  = TitleField()
-    text   = EditorField()
+    text   = QuestionEditorField()
     tags   = TagNamesField()
     summary = SummaryField()
 
@@ -173,7 +191,7 @@ class EditQuestionForm(forms.Form):
             self.fields['wiki'] = WikiField()
 
 class EditAnswerForm(forms.Form):
-    text = EditorField()
+    text = AnswerEditorField()
     summary = SummaryField()
 
     def __init__(self, answer, revision=None, *args, **kwargs):

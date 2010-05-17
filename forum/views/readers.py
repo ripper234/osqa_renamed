@@ -234,7 +234,11 @@ def question(request, id, slug):
     if question.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
 
-    answer_form = AnswerForm(question)
+    if request.POST:
+        answer_form = AnswerForm(question, request.POST)
+    else:
+        answer_form = AnswerForm(question)
+
     answers = request.user.get_visible_answers(question)
 
     if answers is not None:

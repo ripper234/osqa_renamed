@@ -37,6 +37,10 @@ class RequestUtils(object):
                     'app_title': APP_TITLE
                 }))
 
+        if request.session.get('redirect_POST_data', None):
+            request.POST = request.session.pop('redirect_POST_data')
+            request.META['REQUEST_METHOD'] = "POST"
+
         self.request = request
         request.utils = self
         return None
