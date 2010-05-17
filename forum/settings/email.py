@@ -39,3 +39,5 @@ EMAIL_SUBJECT_PREFIX = Setting('EMAIL_SUBJECT_PREFIX', '', EMAIL_SET, dict(
 label = _("Email subject prefix"),
 help_text = _("Every email sent through your website will have the subject prefixed by this string. It's usually a good idea to have such a prefix so your users can easilly set up a filter on theyr email clients."),
 required=False))
+
+EMAIL_DIGEST_CONTROL = Setting('EMAIL_DIGEST_CONTROL', None)

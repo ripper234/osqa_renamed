@@ -4,7 +4,9 @@ from django.utils.translation import ugettext as _
 from django.template import loader, Context, Template
 from django.core.mail import EmailMultiAlternatives
 from forum import settings
-from forum.models import KeyValue, Activity, User, QuestionSubscription
+from forum.settings.email import EMAIL_DIGEST_CONTROL
+from forum import actions
+from forum.models import KeyValue, Action, User, QuestionSubscription
 from forum.utils.mail import send_email
 
 class QuestionRecord:
@@ -16,11 +18,11 @@ class QuestionRecord:
         self.records.append(activity)
 
     def get_activity_since(self, since):
-        activity = [r for r in self.records if r.active_at > since]
-        answers = [a for a in activity if a.activity_type == const.TYPE_ACTIVITY_ANSWER]
-        comments = [a for a in activity if a.activity_type in (const.TYPE_ACTIVITY_COMMENT_QUESTION, const.TYPE_ACTIVITY_COMMENT_ANSWER)]
+        activity = [r for r in self.records if r.action_date > since]
+        answers = [a for a in activity if a.action_type == "answer"]
+        comments = [a for a in activity if a.activity_type == "comment"]
 
-        accepted = [a for a in activity if a.activity_type == const.TYPE_ACTIVITY_MARK_ANSWER]
+        accepted = [a for a in activity if a.activity_type == "accept_answer"]
 
         if len(accepted):
             accepted = accepted[-1:][0]
@@ -36,7 +38,13 @@ class QuestionRecord:
 
 class Command(NoArgsCommand):
     def handle_noargs(self, **options):
-        digest_control = self.get_digest_control()
+        digest_control = EMAIL_DIGEST_CONTROL.value
+
+        if digest_control is None:
+            digest_control = KeyValue(key='DIGEST_CONTROL', value={
+                'LAST_DAILY': datetime.now() - timedelta(days=1),
+                'LAST_WEEKLY': datetime.now() - timedelta(days=1),
+            })
 
         self.send_digest('daily', 'd', digest_control.value['LAST_DAILY'])
         digest_control.value['LAST_DAILY'] = datetime.now()
@@ -45,10 +53,11 @@ class Command(NoArgsCommand):
             self.send_digest('weekly', 'w', digest_control.value['LAST_WEEKLY'])
             digest_control.value['LAST_WEEKLY'] = datetime.now()
 
-        digest_control.save()
+        EMAIL_DIGEST_CONTROL.set_value(digest_control)
             
 
     def send_digest(self, name, char_in_db, control_date):
+        
         new_questions, question_records = self.prepare_activity(control_date)
         new_users = User.objects.filter(date_joined__gt=control_date)
 
@@ -83,7 +92,7 @@ class Command(NoArgsCommand):
 
                         if not u.subscription_settings.notify_comments:
                             if u.subscription_settings.notify_comments_own_post:
-                                record.comments = [a for a in record.comments if a.content_object.content_object.author == u]
+                                record.comments = [a for a in record.comments if a.user == u]
                                 record['own_comments_only'] = True
                             else:
                                 del record['comments']
@@ -115,23 +124,11 @@ class Command(NoArgsCommand):
                 send_email(digest_subject, [(u.username, u.email)], "notifications/digest.html", context, threaded=False)
 
 
-    def get_digest_control(self):
-        try:
-            digest_control = KeyValue.objects.get(key='DIGEST_CONTROL')
-        except:
-            digest_control = KeyValue(key='DIGEST_CONTROL', value={
-                'LAST_DAILY': datetime.now() - timedelta(days=1),
-                'LAST_WEEKLY': datetime.now() - timedelta(days=1),
-            })
-
-        return digest_control
-
     def prepare_activity(self, since):
-        all_activity = Activity.objects.filter(active_at__gt=since, activity_type__in=(
-            const.TYPE_ACTIVITY_ASK_QUESTION, const.TYPE_ACTIVITY_ANSWER,
-            const.TYPE_ACTIVITY_COMMENT_QUESTION, const.TYPE_ACTIVITY_COMMENT_ANSWER,
-            const.TYPE_ACTIVITY_MARK_ANSWER
-        )).order_by('active_at')
+        all_activity = Action.objects.filter(canceled=False, action_date__gt=since, action_type__in=(
+            actions.AskAction.get_type(),actions.AnswerAction.get_type(),
+            actions.CommentAction.get_type(), actions.AcceptAnswerAction.get_type()
+        )).order_by('action_date')
 
         question_records = {}
         new_questions = []
@@ -139,32 +136,17 @@ class Command(NoArgsCommand):
 
         for activity in all_activity:
             try:
-                question = self.get_question_for_activity(activity)
+                question = activity.node.abs_parent
 
                 if not question.id in question_records:
                     question_records[question.id] = QuestionRecord(question)
 
                 question_records[question.id].log_activity(activity)
 
-                if activity.activity_type == const.TYPE_ACTIVITY_ASK_QUESTION:
+                if activity.action_type == "ask":
                     new_questions.append(question)
             except:
                 pass
 
         return new_questions, question_records
 
-    def get_question_for_activity(self, activity):
-        if activity.activity_type == const.TYPE_ACTIVITY_ASK_QUESTION:
-            question = activity.content_object
-        elif activity.activity_type == const.TYPE_ACTIVITY_ANSWER:
-            question = activity.content_object.question
-        elif activity.activity_type == const.TYPE_ACTIVITY_COMMENT_QUESTION:
-            question = activity.content_object.content_object
-        elif activity.activity_type == const.TYPE_ACTIVITY_COMMENT_ANSWER:
-            question = activity.content_object.content_object.question
-        elif activity.activity_type == const.TYPE_ACTIVITY_MARK_ANSWER:
-            question = activity.content_object.question
-        else:
-            raise Exception
-
-        return question
