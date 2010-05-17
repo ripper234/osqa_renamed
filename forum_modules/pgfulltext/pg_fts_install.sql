@@ -1,82 +1,107 @@
-  CREATE OR REPLACE FUNCTION public.create_plpgsql_language ()
-      RETURNS TEXT
-      AS $$
-          CREATE LANGUAGE plpgsql;
-          SELECT 'language plpgsql created'::TEXT;
-      $$
-  LANGUAGE 'sql';
+CREATE OR REPLACE FUNCTION public.create_plpgsql_language ()
+    RETURNS TEXT
+    AS $$
+        CREATE LANGUAGE plpgsql;
+        SELECT 'language plpgsql created'::TEXT;
+    $$
+LANGUAGE 'sql';
 
-  SELECT CASE WHEN
-        (SELECT true::BOOLEAN
-           FROM pg_language
-          WHERE lanname='plpgsql')
-      THEN
-        (SELECT 'language already installed'::TEXT)
-      ELSE
-        (SELECT public.create_plpgsql_language())
-      END;
+SELECT CASE WHEN
+      (SELECT true::BOOLEAN
+         FROM pg_language
+        WHERE lanname='plpgsql')
+    THEN
+      (SELECT 'language already installed'::TEXT)
+    ELSE
+      (SELECT public.create_plpgsql_language())
+    END;
 
-  DROP FUNCTION public.create_plpgsql_language ();
+DROP FUNCTION public.create_plpgsql_language ();
 
-  CREATE OR REPLACE FUNCTION node_ranking(node_id int, srch text) RETURNS float AS $$
-  declare
-     v tsvector;
-     cv tsvector;
-     rev_id int;
-     child_count int;
-     r record;
-  begin
-     SELECT active_revision_id INTO rev_id FROM forum_node WHERE id = node_id;
-     SELECT tsv INTO v FROM forum_noderevision WHERE id = rev_id;
+CREATE OR REPLACE FUNCTION public.drop_tsv_noderevision_column () RETURNS VOID AS $$
+begin
+        ALTER TABLE forum_noderevision DROP COLUMN tsv;
+        DROP TRIGGER IF EXISTS tsvectorupdate ON forum_noderevision;
+end
+$$ LANGUAGE plpgsql;
 
-    SELECT  count(*) INTO child_count FROM forum_node WHERE abs_parent_id = node_id AND deleted_id IS NULL;
+CREATE OR REPLACE FUNCTION public.tsv_noderevision_column_exists() RETURNS int AS $$
+ SELECT COUNT(attname)::int FROM pg_attribute WHERE attrelid = (SELECT oid FROM pg_class WHERE relname = 'forum_noderevision') AND attname = 'tsv';
+$$ LANGUAGE 'sql';
 
-    IF child_count > 0 THEN
-       FOR r in SELECT * FROM forum_node WHERE abs_parent_id = node_id  AND deleted_id IS NULL LOOP
-           SELECT tsv INTO cv FROM forum_noderevision WHERE id = r.active_revision_id;
-           v :=(v || cv);
+select case when public.tsv_noderevision_column_exists()>0 then public.drop_tsv_noderevision_column()end;
+
+drop function drop_tsv_noderevision_column();
+drop function tsv_noderevision_column_exists();
+
+CREATE OR REPLACE FUNCTION set_doctable_tsv() RETURNS TRIGGER AS $$
+declare
+  root_id int;
+  doc tsvector;
+  rcount int;
+  cv tsvector;
+begin
+    SELECT abs_parent_id INTO root_id FROM forum_node WHERE id = new.node_id;
+
+    IF root_id IS NULL THEN
+	  root_id := new.node_id;
+    END IF;
+
+    SELECT count(*)::int INTO rcount FROM forum_node WHERE id = root_id;
+
+    IF rcount = 0 THEN
+        return new;
+    END IF;
+
+    doc :=
+      setweight(to_tsvector('english', coalesce(new.tagnames,'')), 'A') ||
+      setweight(to_tsvector('english', coalesce(new.title,'')), 'B') ||
+      setweight(to_tsvector('english', coalesce(new.body,'')), 'C');
+
+    SELECT count(*)::int INTO rcount FROM forum_node WHERE abs_parent_id = root_id AND deleted_id IS NULL;
+
+    IF rcount > 0 THEN
+       FOR cv in SELECT setweight(to_tsvector('english', coalesce(body,'')), 'C') FROM forum_node WHERE abs_parent_id = root_id  AND deleted_id IS NULL LOOP
+           doc :=(doc || cv);
        END LOOP;
      END IF;
 
-     RETURN ts_rank_cd(v, plainto_tsquery('english', srch), 32);
-  end
-  $$ LANGUAGE plpgsql;
+    SELECT count(*)::int INTO rcount FROM forum_rootnode_doc WHERE node_id = root_id;
 
-  CREATE OR REPLACE FUNCTION set_node_tsv() RETURNS TRIGGER AS $$
-  begin
-      new.tsv :=
-         setweight(to_tsvector('english', coalesce(new.tagnames,'')), 'A') ||
-         setweight(to_tsvector('english', coalesce(new.title,'')), 'B') ||
-         setweight(to_tsvector('english', coalesce(new.body,'')), 'C');
+    IF rcount > 0 THEN
+       UPDATE forum_rootnode_doc SET document = doc WHERE node_id = root_id;
+    ELSE
+       INSERT INTO forum_rootnode_doc (node_id, document) VALUES (root_id, doc);
+    END IF;
 
-    RETURN new;
-  end
-  $$ LANGUAGE plpgsql;
+  RETURN new;
+end
+$$ LANGUAGE plpgsql;
 
-  CREATE OR REPLACE FUNCTION public.create_tsv_noderevision_column () RETURNS TEXT AS $$
-  begin
-          ALTER TABLE forum_noderevision ADD COLUMN tsv tsvector;
+CREATE OR REPLACE FUNCTION public.build_doc_table() RETURNS VOID as $$
+  CREATE TABLE forum_rootnode_doc
+  (
+     node_id integer,
+     "document" tsvector,
+      PRIMARY KEY (node_id),
+      FOREIGN KEY (node_id) REFERENCES forum_node (id)    ON UPDATE NO ACTION ON DELETE NO ACTION
+  ) WITH (OIDS=FALSE);
 
-          DROP TRIGGER IF EXISTS tsvectorupdate ON forum_noderevision;
+  DROP TRIGGER IF EXISTS tsvectorupdate ON forum_noderevision;
 
-          CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
-	        ON forum_noderevision FOR EACH ROW EXECUTE PROCEDURE set_node_tsv();
+  CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+    ON forum_noderevision FOR EACH ROW EXECUTE PROCEDURE set_doctable_tsv();
 
-	      CREATE INDEX noderevision_tsv ON forum_noderevision USING gin(tsv);
+  CREATE INDEX doctable_tsv ON forum_rootnode_doc USING gin(document);
+$$ LANGUAGE 'sql';
 
-          RETURN 'tsv column created'::TEXT;
-  end
-  $$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION public.doc_table_exists() RETURNS int AS $$
+ SELECT COUNT(table_name)::int FROM information_schema.tables WHERE table_name = 'forum_rootnode_doc';
+$$ LANGUAGE 'sql';
 
-  SELECT CASE WHEN
-     (SELECT true::BOOLEAN FROM pg_attribute WHERE attrelid = (SELECT oid FROM pg_class WHERE relname = 'forum_noderevision') AND attname = 'tsv')
-  THEN
-     (SELECT 'Tsv column already exists'::TEXT)
-  ELSE
-     (SELECT public.create_tsv_noderevision_column())
+select case when public.doc_table_exists()=0 then public.build_doc_table()end;
 
-  END;
+drop function build_doc_table();
+drop function doc_table_exists();
 
-  DROP FUNCTION public.create_tsv_noderevision_column();
-
-  UPDATE forum_noderevision SET id=id WHERE TRUE;
+UPDATE forum_noderevision SET id = id WHERE TRUE;
