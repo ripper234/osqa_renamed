@@ -47,3 +47,9 @@ input.longstring {
     position: relative;
     left: 612px;
 }
+
+.admin_message {
+    background-color: #ffffe0;
+    border: 3px double #b8860b;
+    padding: 4px;
+}

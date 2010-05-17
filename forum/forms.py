@@ -251,7 +251,3 @@ class SubscriptionSettingsForm(forms.Form):
     notify_comments = forms.BooleanField(required=False, initial=False)
     notify_accepted = forms.BooleanField(required=False, initial=False)
 
-
-class AwardPointsForm(forms.Form):
-    points = forms.IntegerField(min_value=1, initial=50, label=_('Points to award'))
-    message = forms.CharField(widget=forms.Textarea(), label=_('Message'), required=False)

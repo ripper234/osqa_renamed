@@ -15,10 +15,6 @@ REP_GAIN_BY_UPVOTED = Setting('REP_GAIN_BY_UPVOTED', 10, REP_GAIN_SET, dict(
 label = _("Rep gain by upvoted"),
 help_text = _("Reputation a user gains for having one of his posts up voted.")))
 
-REP_LOST_BY_UPVOTE_CANCELED = Setting('REP_LOST_BY_UPVOTE_CANCELED', 10, REP_GAIN_SET, dict(
-label = _("Rep lost bu upvote canceled"),
-help_text = _("Reputation a user loses for having one of the upvotes on his posts canceled.")))
-
 REP_LOST_BY_DOWNVOTED = Setting('REP_LOST_BY_DOWNVOTED', 2, REP_GAIN_SET, dict(
 label = _("Rep lost by downvoted"),
 help_text = _("Reputation a user loses for having one of his posts down voted.")))
@@ -27,29 +23,14 @@ REP_LOST_BY_DOWNVOTING = Setting('REP_LOST_BY_DOWNVOTING', 1, REP_GAIN_SET, dict
 label = _("Rep lost by downvoting"),
 help_text = _("Reputation a user loses for down voting a post.")))
 
-REP_GAIN_BY_DOWNVOTE_CANCELED = Setting('REP_GAIN_BY_DOWNVOTE_CANCELED', 2, REP_GAIN_SET, dict(
-label = _("Rep gain by downvote canceled"),
-help_text = _("Reputation a user gains for having one of the downvotes on his posts canceled.")))
-
-REP_GAIN_BY_CANCELING_DOWNVOTE = Setting('REP_GAIN_BY_CANCELING_DOWNVOTE', 1, REP_GAIN_SET, dict(
-label = _("Rep gain by canceling downvote"),
-help_text = _("Reputation a user gains for canceling a downvote.")))
 
 REP_GAIN_BY_ACCEPTED = Setting('REP_GAIN_BY_ACCEPTED', 15, REP_GAIN_SET, dict(
 label = _("Rep gain by accepted answer"),
 help_text = _("Reputation a user gains for having one of his answers accepted.")))
 
-REP_LOST_BY_ACCEPTED_CANCELED = Setting('REP_LOST_BY_ACCEPTED_CANCELED', 15, REP_GAIN_SET, dict(
-label = _("Rep lost by accepted canceled"),
-help_text = _("Reputation a user loses for having one of his accepted answers canceled.")))
-
 REP_GAIN_BY_ACCEPTING = Setting('REP_GAIN_BY_ACCEPTING', 2, REP_GAIN_SET, dict(
 label = _("Rep gain by accepting answer"),
 help_text = _("Reputation a user gains for accepting an answer to one of his questions.")))
-
-REP_LOST_BY_CANCELING_ACCEPTED = Setting('REP_LOST_BY_CANCELING_ACCEPTED', 2, REP_GAIN_SET, dict(
-label = _("Rep lost by canceling accepted"),
-help_text = _("Reputation a user loses by canceling an accepted answer.")))
 
 REP_LOST_BY_FLAGGED = Setting('REP_LOST_BY_FLAGGED', 2, REP_GAIN_SET, dict(
 label = _("Rep lost by post flagged"),

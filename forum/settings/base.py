@@ -71,7 +71,11 @@ class BaseSetting(object):
                 return self.base_type(value)
             except:
                 pass
-        return value        
+        return value
+
+class AnyTypeSetting(BaseSetting):
+     def _parse(self, value):
+        return value
 
 
 class Setting(object):
@@ -79,6 +83,9 @@ class Setting(object):
     sets = {}
 
     def __new__(cls, name, default, set=None, field_context=None):
+        if default is None:
+            return AnyTypeSetting(name, default, set, field_context)
+            
         deftype = type(default)
 
         if deftype in Setting.emulators:

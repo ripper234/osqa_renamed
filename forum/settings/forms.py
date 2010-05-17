@@ -1,4 +1,5 @@
 import os
+import socket
 from string import strip
 from django import forms
 from base import Setting
@@ -108,6 +109,37 @@ class CommaStringListWidget(forms.Textarea):
         else:
             return ', '.join(data[name])    
 
+
+class IPListField(forms.CharField):
+    def clean(self, value):
+        ips = [ip.strip() for ip in value.strip().strip(',').split(',')]
+        iplist = []
+
+        if len(ips) < 1:
+            raise forms.ValidationError(_('Please input at least one ip address'))    
+
+        for ip in ips:
+            try:
+                socket.inet_aton(ip)
+            except socket.error:
+                raise forms.ValidationError(_('Invalid ip address: %s' % ip))
+
+            if not len(ip.split('.')) == 4:
+                raise forms.ValidationError(_('Please use the dotted quad notation for the ip addresses'))
+
+            iplist.append(ip)
+
+        return iplist
+
+class MaintenanceModeForm(forms.Form):
+    ips = IPListField(label=_('Allow ips'),
+                      help_text=_('Comma separated list of ips allowed to access the site while in maintenance'),
+                      required=True,
+                      widget=forms.TextInput(attrs={'class': 'longstring'}))
+
+    message = forms.CharField(label=_('Message'),
+                              help_text=_('A message to display to your site visitors while in maintainance mode'),
+                              widget=forms.Textarea)
 
 
 

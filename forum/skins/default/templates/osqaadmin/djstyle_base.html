@@ -45,6 +45,9 @@
         </div>
         <div id="content" class="colMS">
             <div id="content-main">
+                {% for message in user_messages %}
+                    <p class="admin_message">{{ message }}</p>
+                {% endfor %}
                 {% block admincontent %}{% endblock %}
             </div>
             <div id="content-related">
@@ -90,12 +93,12 @@
                     {% endfor %}
                     </ul>
                 </div>
-                {% comment %}<div id="tools-menu" class="module">
+                <div id="tools-menu" class="module">
                     <h2>{% trans "Tools" %}</h2>
                     <ul>
-                        <li><a href="{% url admin_statistics %}">{% trans "Statistics" %}</a></li>
+                        <li><a href="{% url admin_maintenance %}">{% trans "Maintenance mode" %}</a></li>
                     </ul>
-                </div>{% endcomment %}
+                </div>
             </div>
         </div>
         <div id="footer" class="breadcumbs">

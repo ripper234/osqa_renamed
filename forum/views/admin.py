@@ -10,7 +10,7 @@ from django.utils import simplejson
 from django.db.models import Sum
 
 from forum.settings.base import Setting
-from forum.settings.forms import SettingsSetForm
+from forum.settings.forms import SettingsSetForm, MaintenanceModeForm
 
 from forum.models import Question, Answer, User, Node, Action
 from forum import settings
@@ -200,15 +200,10 @@ def go_bootstrap(request):
     settings.INITIAL_REP.set_value(1)
     settings.MAX_REP_BY_UPVOTE_DAY.set_value(300)
     settings.REP_GAIN_BY_UPVOTED.set_value(15)
-    settings.REP_LOST_BY_UPVOTE_CANCELED.set_value(15)
     settings.REP_LOST_BY_DOWNVOTED.set_value(1)
     settings.REP_LOST_BY_DOWNVOTING.set_value(0)
-    settings.REP_GAIN_BY_DOWNVOTE_CANCELED.set_value(1)
-    settings.REP_GAIN_BY_CANCELING_DOWNVOTE.set_value(0)
     settings.REP_GAIN_BY_ACCEPTED.set_value(25)
-    settings.REP_LOST_BY_ACCEPTED_CANCELED.set_value(25)
     settings.REP_GAIN_BY_ACCEPTING.set_value(5)
-    settings.REP_LOST_BY_CANCELING_ACCEPTED.set_value(5)
     settings.REP_LOST_BY_FLAGGED.set_value(2)
     settings.REP_LOST_BY_FLAGGED_3_TIMES.set_value(30)
     settings.REP_LOST_BY_FLAGGED_5_TIMES.set_value(100)
@@ -247,4 +242,34 @@ def recalculate_denormalized(request):
 
     request.user.message_set.create(message=_('All values recalculated'))
     return HttpResponseRedirect(reverse('admin_index'))
+
+@admin_page
+def maintenance(request):
+    if request.POST:
+        if 'close' in request.POST or 'adjust' in request.POST:
+            form = MaintenanceModeForm(request.POST)
+
+            if form.is_valid():
+                settings.MAINTAINANCE_MODE.set_value({
+                    'allow_ips': form.cleaned_data['ips'],
+                    'message': form.cleaned_data['message']})
+
+                if 'close' in request.POST:
+                    message = _('Maintenance mode enabled')
+                else:
+                    message = _('Settings adjusted')
+
+                request.user.message_set.create(message=message)
+
+                return HttpResponseRedirect(reverse('admin_maintenance'))
+        elif 'open' in request.POST:
+            settings.MAINTAINANCE_MODE.set_value(None)
+            request.user.message_set.create(message=_("Your site is now running normally"))
+            return HttpResponseRedirect(reverse('admin_maintenance'))
+    else:
+        form = MaintenanceModeForm(initial={'ips': request.META['REMOTE_ADDR'],
+                                            'message': _('Currently down for maintenance. We\'ll be back soon')})
+
+    return ('osqaadmin/maintenance.html', {'form': form, 'in_maintenance': settings.MAINTAINANCE_MODE.value is not None})
+
 
