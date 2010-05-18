@@ -137,6 +137,7 @@ urlpatterns += patterns('',
     url(r'^%s%s$' % (_('admin/'), _('go_defaults/')), app.admin.go_defaults, name="admin_go_defaults"),
     url(r'^%s%s(?P<set_name>\w+)/(?P<var_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.get_default, name="admin_default"),
     url(r'^%s%s$' % (_('admin/'), _('maintenance/')), app.admin.maintenance, name="admin_maintenance"),
+    url(r'^%s%s$' % (_('admin/'), _('flagged_posts/')), app.admin.flagged_posts, name="admin_flagged_posts"),
 
     url(r'^%s%s(?P<set_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.settings_set, name="admin_set"),
 

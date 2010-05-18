@@ -54,6 +54,16 @@ def activity_item(parser, token):
     return ActivityNode(activity, viewer)
 
 
+@register.tag
+def flagged_item(parser, token):
+    try:
+        tag_name, post, viewer = token.split_contents()
+    except ValueError:
+        raise template.TemplateSyntaxError, "%r tag requires exactly two arguments" % token.contents.split()[0]
+
+    return ActivityNode(post, viewer)
+
+
 @register.inclusion_tag('users/menu.html')
 def user_menu(request, user):
     return dict(viewer=request.user, user=user)

@@ -7,12 +7,11 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidde
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.utils import simplejson
-from django.db.models import Sum
-
+from django.db.models import Sum, Q, Count
 from forum.settings.base import Setting
 from forum.settings.forms import SettingsSetForm, MaintenanceModeForm
 
-from forum.models import Question, Answer, User, Node, Action
+from forum.models import Question, Answer, User, Node, Action, base
 from forum import settings
 
 def super_user_required(fn):
@@ -49,6 +48,7 @@ def dashboard(request):
         'settings_pack': unicode(settings.SETTINGS_PACK),
         'statistics': get_statistics(),
         'recent_activity': get_recent_activity(),
+        'flagged_posts': get_flagged_posts(),
     })
 
 @super_user_required
@@ -141,6 +141,9 @@ def get_default(request, set_name, var_name):
 
 def get_recent_activity():
     return Action.objects.order_by('-action_date')[0:30]
+
+def get_flagged_posts():
+    return Action.objects.filter(action_type="flag").order_by('-action_date')[0:30]
 
 def get_statistics():
     return {
@@ -271,5 +274,12 @@ def maintenance(request):
                                             'message': _('Currently down for maintenance. We\'ll be back soon')})
 
     return ('osqaadmin/maintenance.html', {'form': form, 'in_maintenance': settings.MAINTAINANCE_MODE.value is not None})
+
+
+@admin_page
+def flagged_posts(request):
+    return ('osqaadmin/flagged_posts.html', {
+        'flagged_posts': get_flagged_posts(),
+    })
 
 
