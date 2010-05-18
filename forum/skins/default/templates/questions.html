@@ -6,9 +6,15 @@
 {% load general_sidebar_tags %}
 
 {% block title %}{% spaceless %}{{ page_title }}{% endspaceless %}{% endblock %}
+
+{% block forejs %}
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="/feeds/rss">
+{% endblock %}
+
 {% block content %}
 <div class="tabBar">
     {% question_list_title %}
+    <a style="float:left" href="/feeds/rss" title="{% trans "subscribe to question RSS feed" %}"><img src="{% media "media/images/feed-icon-small.png" %}" alt=""></a>
     {% question_sort_tabs sort_context %}
 </div>
 <div id="listA">{% for question in questions %}
