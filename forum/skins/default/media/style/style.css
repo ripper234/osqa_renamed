@@ -756,6 +756,10 @@ table.check-table td { padding-right: 50px; }
 	margin: 0;
 }
 
+.small {
+	font-size: 11px;
+}
+
 span.form-error {
 	color: #990000;
 	font-size: 90%;

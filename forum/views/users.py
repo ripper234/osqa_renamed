@@ -227,7 +227,9 @@ def user_reputation(request, user):
             for i in range(len(values))
     ])
 
-    return {"view_user": user, "reputation": reversed(rep), "graph_data": graph_data}
+    rep = user.reputes.filter(action__canceled=False).order_by('-date')[0:20]
+    
+    return {"view_user": user, "reputation": rep, "graph_data": graph_data}
 
 @user_view('users/questions.html', 'favorites', _('favorite questions'),  _('favorite questions'))
 def user_favorites(request, user):
