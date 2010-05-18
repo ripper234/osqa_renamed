@@ -7,11 +7,11 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidde
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.utils import simplejson
-from django.db.models import Sum, Q, Count
+from django.db.models import Sum
 from forum.settings.base import Setting
 from forum.settings.forms import SettingsSetForm, MaintenanceModeForm
 
-from forum.models import Question, Answer, User, Node, Action, base
+from forum.models import Question, Answer, User, Node, Action
 from forum import settings
 
 def super_user_required(fn):
