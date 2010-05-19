@@ -24,20 +24,25 @@ class Flag(models.Model):
         app_label = 'forum'
         unique_together = ('user', 'node')
 
-class BadgeManager(models.Manager):
-    use_for_related_fields = True
-    
+class BadgesQuerySet(models.query.QuerySet):
     def get(self, *args, **kwargs):
         try:
             pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact')][0]
         except:
-            return super(BadgeManager, self).get(*args, **kwargs)
+            return super(BadgesQuerySet, self).get(*args, **kwargs)
 
         from forum.badges.base import BadgesMeta
         badge = BadgesMeta.by_id.get(int(pk), None)
         if not badge:
-            return super(BadgeManager, self).get(*args, **kwargs)
+            return super(BadgesQuerySet, self).get(*args, **kwargs)
         return badge.ondb
+
+
+class BadgeManager(models.Manager):
+    use_for_related_fields = True
+
+    def get_query_set(self):
+        return BadgesQuerySet(self.model)
 
 class Badge(models.Model):
     GOLD = 1

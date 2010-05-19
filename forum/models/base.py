@@ -40,6 +40,27 @@ class CachedQuerySet(models.query.QuerySet):
         else:
             return self
 
+    def get(self, *args, **kwargs):
+        try:
+            pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact'
+                            ) or k.endswith('_ptr__pk') or k.endswith('_ptr__id')][0]
+        except:
+            pk = None
+
+        if pk is not None:
+            key = self.model.cache_key(pk)
+            obj = cache.get(key)
+
+            if obj is None:
+                obj = super(CachedQuerySet, self).get(*args, **kwargs)
+                obj.__class__.objects.cache_obj(obj)
+            else:
+                d = obj.__dict__
+
+            return obj
+
+        return super(CachedQuerySet, self).get(*args, **kwargs) 
+
 from action import Action
 
 class CachedManager(models.Manager):
@@ -57,27 +78,6 @@ class CachedManager(models.Manager):
                 del obj.__dict__[k]
 
         cache.set(self.model.cache_key(obj.id), obj, 60 * 60)
-
-    def get(self, *args, **kwargs):
-        try:
-            pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact'
-                            ) or k.endswith('_ptr__pk') or k.endswith('_ptr__id')][0]
-        except:
-            pk = None
-
-        if pk is not None:
-            key = self.model.cache_key(pk)
-            obj = cache.get(key)
-
-            if obj is None:
-                obj = super(CachedManager, self).get(*args, **kwargs)
-                self.cache_obj(obj)
-            else:
-                d = obj.__dict__
-
-            return obj
-        
-        return super(CachedManager, self).get(*args, **kwargs)
 
     def get_or_create(self, *args, **kwargs):
         try:

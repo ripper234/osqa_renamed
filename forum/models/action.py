@@ -4,28 +4,27 @@ from threading import Thread
 from base import *
 import re
 
+class ActionQuerySet(models.query.QuerySet):
+    def get(self, *args, **kwargs):
+        action = super(ActionQuerySet, self).get(*args, **kwargs)
+        if self.model == Action:
+            return action.leaf()
+        return action
+
 class ActionManager(models.Manager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        qs = super(ActionManager, self).get_query_set().filter(canceled=False)
+        qs = ActionQuerySet(self.model).filter(canceled=False)
 
         if self.model is not Action:
             return qs.filter(action_type=self.model.get_type())
         else:
             return qs
 
-    def get(self, *args, **kwargs):
-        action = super(ActionManager, self).get(*args, **kwargs)
-        if self.model == Action:
-            return action.leaf()
-        return action
-
     def get_for_types(self, types, *args, **kwargs):
         kwargs['action_type__in'] = [t.get_type() for t in types]
         return self.get(*args, **kwargs)
-
-        
 
 class Action(models.Model):
     user = models.ForeignKey('User', related_name="actions")
