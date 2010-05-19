@@ -1368,3 +1368,7 @@ div.comment-tools a:hover {
     color: orange;    
 }
 
+#ask-related-questions {
+    max-height: 150px;
+    overflow-y: auto;
+}

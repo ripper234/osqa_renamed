@@ -71,7 +71,7 @@ INSTALLED_APPS = [
     'forum',
 ]
 
-if DEBUG and False:
+if DEBUG:
     try:
         import debug_toolbar
         MIDDLEWARE_CLASSES.append('debug_toolbar.middleware.DebugToolbarMiddleware')

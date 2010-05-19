@@ -2,7 +2,7 @@ import datetime
 from forum import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import simplejson
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext
@@ -409,6 +409,14 @@ def matching_tags(request):
         tag_output += (tag.name + "|" + tag.name + "." + tag.used_count.__str__() + "\n")
         
     return HttpResponse(tag_output, mimetype="text/plain")
+
+def related_questions(request):
+    if request.POST and request.POST.get('title', None):
+        return HttpResponse(simplejson.dumps(
+                [dict(title=q.title, url=q.get_absolute_url(), score=q.score, summary=q.summary)
+                 for q in Question.objects.search(request.POST['title'])[0:10]]), mimetype="application/json")
+    else:
+        raise Http404()
 
 
 

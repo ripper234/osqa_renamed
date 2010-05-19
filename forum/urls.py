@@ -3,6 +3,7 @@ import startup
 import os.path
 from forum import settings
 from django.conf.urls.defaults import *
+from django.conf import settings as djsettings
 from django.contrib import admin
 from forum import views as app
 from forum.feed import RssLastestQuestionsFeed
@@ -37,6 +38,7 @@ urlpatterns += patterns('',
     #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/media/images/favicon.ico'}),
     #(r'^favicon\.gif$', 'django.views.generic.simple.redirect_to', {'url': '/media/images/favicon.gif'}),
     (r'^favicon\.ico$', app.meta.favicon),
+
     url(r'^m/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': os.path.join(APP_PATH,'skins').replace('\\','/')},
         name='osqa_media',
@@ -56,6 +58,8 @@ urlpatterns += patterns('',
     url(r'^%s(?P<id>\d+)/$' % _('revisions/'), app.readers.revisions, name='revisions'),
     url(r'^%s$' % _('questions/'), app.readers.questions, name='questions'),
     url(r'^%s%s$' % (_('questions/'), _('ask/')), app.writers.ask, name='ask'),
+    url(r'^%s%s$' % (_('questions/'), _('related_questions/')), app.commands.related_questions, name='related_questions'),
+
     url(r'^%s%s$' % (_('questions/'), _('unanswered/')), app.readers.unanswered, name='unanswered'),
     url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('edit/')), app.writers.edit_question, name='edit_question'),
     url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('close/')), app.commands.close, kwargs=dict(close=True), name='close'),

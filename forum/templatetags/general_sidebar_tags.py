@@ -21,6 +21,7 @@ def sidebar_upper():
     return {
         'show': settings.SIDEBAR_UPPER_SHOW,
         'content': settings.SIDEBAR_UPPER_TEXT,
+        'wrap': not settings.SIDEBAR_UPPER_DONT_WRAP,
         'blockid': 'sidebar-upper'
     }
 
@@ -29,5 +30,6 @@ def sidebar_lower():
     return {
         'show': settings.SIDEBAR_LOWER_SHOW,
         'content': settings.SIDEBAR_LOWER_TEXT,
+        'wrap': not settings.SIDEBAR_LOWER_DONT_WRAP,
         'blockid': 'sidebar-lower'
     }

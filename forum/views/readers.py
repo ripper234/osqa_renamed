@@ -128,13 +128,9 @@ def search(request):
     else:
         return render_to_response("search.html", context_instance=RequestContext(request))
 
-@decoratable
-def do_question_search(keywords):
-    return Question.objects.filter(Q(title__icontains=keywords) | Q(body__icontains=keywords))
-
 @decorators.render('questions.html')
 def question_search(request, keywords):
-    initial = do_question_search(keywords)
+    initial = Question.objects.search(keywords)
 
     return question_list(request, initial, _("questions matching '%(keywords)s'") % {'keywords': keywords},
             base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)

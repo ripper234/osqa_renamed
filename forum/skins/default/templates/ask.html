@@ -7,6 +7,14 @@
         <script type='text/javascript' src='{% media  "/media/js/wmd/showdown.js" %}'></script>
         <script type='text/javascript' src='{% media  "/media/js/wmd/wmd.js" %}'></script>
         <link rel="stylesheet" type="text/css" href="{% media  "/media/js/wmd/wmd.css" %}" />
+        <script type="text/html" id="question-summary-template">
+            <div class="answer-summary">
+                <a href="%URL%"><div class="answer-votes">%SCORE%</div></a>
+                <div class="answer-link">
+                    <a class="question-hyperlink" href="%URL%" title="%SUMMARY%">%TITLE%</a>
+                </div>
+            </div>
+        </script>
         <script type="text/javascript">
         $().ready(function(){
             //set current module button style
@@ -47,6 +55,46 @@
                 }
 
             });
+
+            var $input = $('#id_title');
+            var $box = $('#ask-related-questions');
+            var template = $('#question-summary-template').html()
+
+            function reload_suggestion_box(q) {
+                $.post('{% url related_questions %}', {title: q}, function(data) {
+                    if (data) {
+                        var html = '';
+                        for (var i = 0; i < data.length; i++) {
+                            var item = template.replace(new RegExp('%URL%', 'g'), data[i].url)
+                                               .replace(new RegExp('%SCORE%', 'g'), data[i].score)
+                                               .replace(new RegExp('%TITLE%', 'g'), data[i].title)
+                                               .replace(new RegExp('%SUMMARY%', 'g'), data[i].summary);
+
+                            html += item;
+
+                        }
+                        $('#ask-related-questions').html(html);
+                    }
+                }, 'json');
+            }
+
+            $input.keyup(function(e) {
+                var q = $input.val().trim();
+
+                if (e.which == 32 && q.length > 8 && q.split(' ').length > 2) {
+                    reload_suggestion_box(q);
+                }
+
+                return true;
+            });
+
+            $input.change(function() {
+                var q = $input.val().trim();
+
+                if (q.length > 8) {
+                    reload_suggestion_box(q);
+                }
+            });
         });
         </script>
 {% endblock %}
@@ -80,11 +128,10 @@
                     {{ form.title.help_text }}
                 </div>
             </div>
-
+            <div id="ask-related-questions"></div>
             <div class="form-item">
                 <div id="wmd-button-bar" class="wmd-panel"></div>
                 {{ form.text }} {{ form.text.errors }}
-
                 <div class="preview-toggle">
                     <table width="100%">
                         <tr>

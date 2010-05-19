@@ -273,7 +273,7 @@ class CancelableContent(models.Model):
         app_label = 'forum'
 
 
-from node import Node, NodeRevision
+from node import Node, NodeRevision, NodeManager
 
 
 

@@ -53,10 +53,11 @@ begin
         return new;
     END IF;
 
-    doc :=
-      setweight(to_tsvector('english', coalesce(new.tagnames,'')), 'A') ||
-      setweight(to_tsvector('english', coalesce(new.title,'')), 'B') ||
-      setweight(to_tsvector('english', coalesce(new.body,'')), 'C');
+    SELECT
+      setweight(to_tsvector('english', coalesce(tagnames,'')), 'A') ||
+      setweight(to_tsvector('english', coalesce(title,'')), 'B') ||
+      setweight(to_tsvector('english', coalesce(body,'')), 'C') INTO doc
+      FROM forum_node WHERE id = root_id;
 
     SELECT count(*)::int INTO rcount FROM forum_node WHERE abs_parent_id = root_id AND deleted_id IS NULL;
 

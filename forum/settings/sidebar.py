@@ -20,6 +20,10 @@ label = "Show Upper Block",
 help_text = "Check if your pages should display the upper sidebar block.",
 required=False))
 
+SIDEBAR_UPPER_DONT_WRAP = Setting('SIDEBAR_UPPER_DONT_WRAP', False, SIDEBAR_SET, dict(
+label = "Don't Wrap Upper Block",
+help_text = "Don't wrap upper block with the standard style.",
+required=False))
 
 SIDEBAR_UPPER_TEXT = Setting('SIDEBAR_UPPER_TEXT',
 u"""
@@ -40,6 +44,11 @@ widget=Textarea(attrs={'rows': '10'})))
 SIDEBAR_LOWER_SHOW = Setting('SIDEBAR_LOWER_SHOW', True, SIDEBAR_SET, dict(
 label = "Show Lower Block",
 help_text = "Check if your pages should display the lower sidebar block.",
+required=False))
+
+SIDEBAR_LOWER_DONT_WRAP = Setting('SIDEBAR_LOWER_DONT_WRAP', False, SIDEBAR_SET, dict(
+label = "Don't Wrap Lower Block",
+help_text = "Don't wrap lower block with the standard style.",
 required=False))
 
 SIDEBAR_LOWER_TEXT = Setting('SIDEBAR_LOWER_TEXT',

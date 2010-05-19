@@ -1,8 +1,14 @@
 from base import *
 from tag import Tag
 from django.utils.translation import ugettext as _
+from forum.modules.decorators import decoratable
 
 question_view = django.dispatch.Signal(providing_args=['instance', 'user'])
+
+class QuestionManager(NodeManager):
+    @decoratable.method
+    def search(self, keywords):
+        return self.filter(models.Q(title__icontains=keywords) | models.Q(body__icontains=keywords))
 
 class Question(Node):
     class Meta(Node.Meta):
@@ -12,6 +18,7 @@ class Question(Node):
     favorite_count = DenormalizedField("actions", action_type="favorite", canceled=False)
 
     friendly_name = _("question")
+    objects = QuestionManager()
 
     @property   
     def closed(self):

@@ -372,30 +372,61 @@ def user_var(parser, token):
     return UserVarNode(tokens)
 
 
-class VariablesNode(template.Node):
-    def __init__(self, nodelist, var_name):
-        self.nodelist = nodelist
-        self.var_name = var_name
+class SimpleVarNode(template.Node):
+    def __init__(self, name, value):
+        self.name = name
+        self.value = template.Variable(value)
 
     def render(self, context):
-        source = self.nodelist.render(context)
-        context[self.var_name] = simplejson.loads(source)
+        context[self.name] = self.value.resolve(context)
         return ''
 
-@register.tag(name='var')
-def do_variables(parser, token):
-    try:
-        tag_name, arg = token.contents.split(None, 1)
-    except ValueError:
-        msg = '"%s" tag requires arguments' % token.contents.split()[0]
-        raise template.TemplateSyntaxError(msg)
-    m = re.search(r'as (\w+)', arg)
-    if m:
-        var_name, = m.groups()
-    else:
-        msg = '"%s" tag had invalid arguments' % tag_name
-        raise template.TemplateSyntaxError(msg)
+class BlockVarNode(template.Node):
+    def __init__(self, name, block):
+        self.name = name
+        self.block = block
 
-    nodelist = parser.parse(('endvar',))
+    def render(self, context):
+        source = self.block.render(context)
+        context[self.name] = source.strip()
+        return ''
+
+
+@register.tag(name='var')
+def do_var(parser, token):
+    tokens = token.split_contents()[1:]
+
+    if not len(tokens) or not re.match('^\w+$', tokens[0]):
+        raise template.TemplateSyntaxError("Expected variable name")
+
+    if len(tokens) == 1:
+        nodelist = parser.parse(('endvar',))
+        parser.delete_first_token()
+        return BlockVarNode(tokens[0], nodelist)
+    elif len(tokens) == 3:
+        return SimpleVarNode(tokens[0], tokens[2])
+
+    raise template.TemplateSyntaxError("Invalid number of arguments")
+
+class DeclareNode(template.Node):
+    dec_re = re.compile('^\s*(\w+)\s*(:?=)\s*(.*)$')
+
+    def __init__(self, block):
+        self.block = block
+
+    def render(self, context):
+        source = self.block.render(context)
+
+        for line in source.splitlines():
+            m = self.dec_re.search(line)
+            if m and m.group(2) == '=':
+                context[m.group(1).strip()] = m.group(3).strip()
+            elif m and m.group(2) == ':=':
+                context[m.group(1).strip()] = template.Variable(m.group(3).strip()).resolve(context)
+        return ''
+
+@register.tag(name='declare')
+def do_declare(parser, token):
+    nodelist = parser.parse(('enddeclare',))
     parser.delete_first_token()
-    return VariablesNode(nodelist, var_name)
+    return DeclareNode(nodelist)
