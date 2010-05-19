@@ -64,7 +64,7 @@ class AwardAction(ActionProxy):
         if award.badge.type == Badge.SILVER:
             self.user.silver += 1
         if award.badge.type == Badge.BRONZE:
-            self.user.silver += 1
+            self.user.bronze += 1
 
         self.user.save()
 
