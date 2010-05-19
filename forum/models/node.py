@@ -78,24 +78,26 @@ class NodeMetaClass(BaseMetaClass):
         Node.add_to_class(name, property(parent))
 
 
+class NodeQuerySet(CachedQuerySet):
+    def get(self, *args, **kwargs):
+        node = super(NodeQuerySet, self).get(*args, **kwargs)
+        cls = NodeMetaClass.types.get(node.node_type, None)
+
+        if cls and (node.__class__ is not cls):
+            return node.leaf
+        return node
+
+
 class NodeManager(CachedManager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        qs = super(NodeManager, self).get_query_set()
+        qs = NodeQuerySet(self.model)
 
         if self.model is not Node:
             return qs.filter(node_type=self.model.get_type())
         else:
             return qs
-
-    def get(self, *args, **kwargs):
-        node = super(NodeManager, self).get(*args, **kwargs)
-        cls = NodeMetaClass.types.get(node.node_type, None)
-
-        if cls and node.__class__ is not cls:
-            return node.leaf
-        return node
 
     def get_for_types(self, types, *args, **kwargs):
         kwargs['node_type__in'] = [t.get_type() for t in types]
