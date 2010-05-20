@@ -105,4 +105,15 @@ select case when public.doc_table_exists()=0 then public.build_doc_table()end;
 drop function build_doc_table();
 drop function doc_table_exists();
 
+CREATE OR REPLACE FUNCTION rank_exact_matches(rank float) RETURNS float AS $$
+begin
+	IF rank = 0 THEN
+		return 1;
+	ELSE
+		return rank;
+	END IF;
+
+end
+$$ LANGUAGE plpgsql;
+
 UPDATE forum_noderevision SET id = id WHERE TRUE;

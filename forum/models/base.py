@@ -54,8 +54,6 @@ class CachedQuerySet(models.query.QuerySet):
             if obj is None:
                 obj = super(CachedQuerySet, self).get(*args, **kwargs)
                 obj.__class__.objects.cache_obj(obj)
-            else:
-                d = obj.__dict__
 
             return obj
 

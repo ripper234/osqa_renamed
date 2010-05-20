@@ -16,7 +16,7 @@
             </div>
         </script>
         <script type="text/javascript">
-        $().ready(function(){
+        $(function(){
             //set current module button style
             $("#nav_ask").attr('className',"on");
             $('#editor').TextAreaResizer();
@@ -55,48 +55,11 @@
                 }
 
             });
-
-            var $input = $('#id_title');
-            var $box = $('#ask-related-questions');
-            var template = $('#question-summary-template').html()
-
-            function reload_suggestion_box(q) {
-                $.post('{% url related_questions %}', {title: q}, function(data) {
-                    if (data) {
-                        var html = '';
-                        for (var i = 0; i < data.length; i++) {
-                            var item = template.replace(new RegExp('%URL%', 'g'), data[i].url)
-                                               .replace(new RegExp('%SCORE%', 'g'), data[i].score)
-                                               .replace(new RegExp('%TITLE%', 'g'), data[i].title)
-                                               .replace(new RegExp('%SUMMARY%', 'g'), data[i].summary);
-
-                            html += item;
-
-                        }
-                        $('#ask-related-questions').html(html);
-                    }
-                }, 'json');
-            }
-
-            $input.keyup(function(e) {
-                var q = $input.val().trim();
-
-                if (e.which == 32 && q.length > 8 && q.split(' ').length > 2) {
-                    reload_suggestion_box(q);
-                }
-
-                return true;
-            });
-
-            $input.change(function() {
-                var q = $input.val().trim();
-
-                if (q.length > 8) {
-                    reload_suggestion_box(q);
-                }
-            });
         });
+
+        var related_questions_url = "{% url related_questions %}";
         </script>
+        <script src="{% media "/media/js/osqa.ask.js" %}" type="text/javascript"></script>
 {% endblock %}
 
 {% block content %}
