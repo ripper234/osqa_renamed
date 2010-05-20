@@ -171,15 +171,13 @@ class FavoriteAction(ActionProxy):
 
 class DeleteAction(ActionProxy):
     def process_action(self):
-        self.node.deleted = self
-        self.node.save()
+        self.node.mark_deleted(self)
         
         if self.node.node_type == "answer":
             self.node.question.reset_answer_count_cache()
 
     def cancel_action(self):
-        self.node.deleted = None
-        self.node.save()
+        self.node.mark_deleted(None)
 
         if self.node.node_type == "answer":
             self.node.question.reset_answer_count_cache()

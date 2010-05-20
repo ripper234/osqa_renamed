@@ -203,45 +203,70 @@ class Node(BaseModel, NodeContent):
 
         self.save()
 
-    def get_tag_list_if_changed(self):
+    def _list_changes_in_tags(self):
         dirty = self.get_dirty_fields()
-        active_user = self.last_edited and self.last_edited.by or self.author
 
-        if 'tagnames' in dirty:
-            new_tags = self.tagname_list()
-            old_tags = dirty['tagnames']
-
-            if old_tags is None or not old_tags:
-                old_tags = []
+        if not 'tagnames' in dirty:
+            return None
+        else:
+            if dirty['tagnames']:
+                old_tags = set(name for name in dirty['tagnames'].split(u' '))
             else:
-                old_tags = [name for name in dirty['tagnames'].split(u' ')]
+                old_tags = set()
+            new_tags = set(name for name in self.tagnames.split(u' ') if name)
 
-            tag_list = []
+            return dict(
+                current=list(new_tags),
+                added=list(new_tags - old_tags),
+                removed=list(old_tags - new_tags)
+            )
 
-            for name in new_tags:
+    def _last_active_user(self):
+        return self.last_edited and self.last_edited.by or self.author
+
+    def _process_changes_in_tags(self):
+        tag_changes = self._list_changes_in_tags()
+
+        if tag_changes is not None:
+            for name in tag_changes['added']:
                 try:
                     tag = Tag.objects.get(name=name)
                 except:
-                    tag = Tag.objects.create(name=name, created_by=active_user or self.author)
+                    tag = Tag.objects.create(name=name, created_by=self._last_active_user())
 
-                tag_list.append(tag)
-
-                if not name in old_tags:
-                    tag.used_count = tag.used_count + 1
-                    if tag.deleted:
-                        tag.unmark_deleted()
+                if not self.deleted:
+                    tag.used_count = models.F('used_count') + 1
                     tag.save()
 
-            for name in [n for n in old_tags if not n in new_tags]:
-                tag = Tag.objects.get(name=name)
-                tag.used_count = tag.used_count - 1
-                if tag.used_count == 0:
-                    tag.mark_deleted(active_user)
+            if not self.deleted:
+                for name in tag_changes['removed']:
+                    try:
+                        tag = Tag.objects.get(name=name)
+                        tag.used_count = models.F('used_count') - 1
+                        tag.save()
+                        if tag.used_count == 0:
+                            tag.mark_deleted(self._last_active_user())
+                    except:
+                        pass
+
+            return True
+
+        return False
+
+    def mark_deleted(self, action):
+        self.deleted = action
+        self.save()
+
+        if action:
+            for tag in self.tags.all():
+                tag.used_count = models.F('used_count') - 1
                 tag.save()
-
-            return tag_list
-
-        return None
+                if tag.used_count == 0:
+                    tag.mark_deleted(self._last_active_user())
+        else:
+            for tag in Tag.objects.filter(name__in=self.tagname_list()):
+                tag.used_count = models.F('used_count') + 1
+                tag.save()
 
     def save(self, *args, **kwargs):
         if not self.id:
@@ -252,10 +277,11 @@ class Node(BaseModel, NodeContent):
 
         if self.parent_id and not self.abs_parent_id:
             self.abs_parent = self.parent.absolute_parent
-        
-        tags = self.get_tag_list_if_changed()
+
+        tags_changed = self._process_changes_in_tags()
+
         super(Node, self).save(*args, **kwargs)
-        if tags is not None: self.tags = tags
+        if tags_changed: self.tags = list(Tag.objects.filter(name__in=self.tagname_list()))
 
     class Meta:
         app_label = 'forum'
