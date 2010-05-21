@@ -1,8 +1,10 @@
+import os
 from itertools import groupby
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader
 from django.http import HttpResponseRedirect, HttpResponse
+from django.views.static import serve
 from forum import settings
 from forum.forms import FeedbackForm
 from django.core.urlresolvers import reverse
@@ -20,6 +22,10 @@ def favicon(request):
 
 def static(request, title, content):
     return render_to_response('static.html', {'content' : content, 'title': title}, context_instance=RequestContext(request))
+
+def media(request, skin, path):
+    return serve(request, "%s/media/%s" % (skin, path), 
+                 document_root=os.path.join(os.path.dirname(os.path.dirname(__file__)),'skins').replace('\\','/'))
 
 def markdown_help(request):
     # md = markdown.Markdown([SettingsExtension({})])

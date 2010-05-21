@@ -35,19 +35,15 @@ for pattern_file in module_patterns:
 urlpatterns += patterns('',
     url(r'^$', app.readers.index, name='index'),
     url(r'^sitemap.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}, name='sitemap'),
-    #(r'^favicon\.ico$', 'django.views.generic.simple.redirect_to', {'url': '/media/images/favicon.ico'}),
-    #(r'^favicon\.gif$', 'django.views.generic.simple.redirect_to', {'url': '/media/images/favicon.gif'}),
+
     (r'^favicon\.ico$', app.meta.favicon),
 
-    url(r'^m/(?P<path>.*)$', 'django.views.static.serve',
-        {'document_root': os.path.join(APP_PATH,'skins').replace('\\','/')},
-        name='osqa_media',
-    ),
+    url(r'^m/(?P<skin>\w+)/media/(?P<path>.*)$', app.meta.media , name='osqa_media'),
     url(r'^%s(?P<path>.*)$' % _('upfiles/'), 'django.views.static.serve',
         {'document_root': os.path.join(APP_PATH,'upfiles').replace('\\','/')},
         name='uploaded_file',
     ),
-    #url(r'^%s/$' % _('signin/'), 'django_authopenid.views.signin', name='signin'),
+
     url(r'^%s$' % _('faq/'), app.meta.static, {'content': settings.FAQ_PAGE_TEXT, 'title': _('FAQ')}, name='faq'),
     url(r'^%s$' % _('about/'), app.meta.static, {'content': settings.ABOUT_PAGE_TEXT, 'title': _('About')}, name='about'),
     url(r'^%s$' % _('markdown_help/'), app.meta.markdown_help, name='markdown_help'),
