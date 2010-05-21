@@ -45,9 +45,11 @@
         </div>
         <div id="content" class="colMS">
             <div id="content-main">
+            {% autoescape off %}
                 {% for message in user_messages %}
                     <p class="admin_message">{{ message }}</p>
                 {% endfor %}
+            {% endautoescape %}
                 {% block admincontent %}{% endblock %}
             </div>
             <div id="content-related">
