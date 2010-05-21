@@ -236,7 +236,7 @@ def temp_signin(request, user, code):
     user = get_object_or_404(User, id=user)
 
     if (ValidationHash.objects.validate(code, user, 'templogin', [user.id])):
-        return login_and_forward(request,  user, reverse('user_authsettings'),
+        return login_and_forward(request,  user, reverse('user_authsettings', kwargs={'id': user.id}),
                 _("You are logged in with a temporary access key, please take the time to fix your issue with authentication."))
     else:
         raise Http404()
