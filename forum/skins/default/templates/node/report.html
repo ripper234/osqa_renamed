@@ -7,10 +7,7 @@
             <option value="{{ type }}">{{ type }}</option>
         {% endfor %}
     </select>
-    <textarea>{{ types|first }}</textarea>
-    <div class="prompt-buttons">
-        <button class="prompt-cancel">{% trans "Cancel" %}</button><button class="prompt-submit">{% trans "Send" %}</button>
-    </div>
+    <textarea class="prompt-return">{{ types|first }}</textarea>
 </div>
 <script>
 $('.user-prompt .prompt-examples').change(function() {

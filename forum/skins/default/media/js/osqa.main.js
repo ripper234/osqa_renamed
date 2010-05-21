@@ -124,78 +124,129 @@ var response_commands = {
     }
 }
 
-function show_message(object, msg, callback) {
-    var div = $('<div class="vote-notification"><h3>' + msg + '</h3>(' +
-    'click to close' + ')</div>');
+function show_dialog (extern) {
+    var default_close_function = function($diag) {
+        $diag.fadeOut('fast', function() {
+            $diag.remove();
+        });
+    }
 
-    div.click(function(event) {
-        $(".vote-notification").fadeOut("fast", function() {
-            $(this).remove();
+    var options = {
+        extra_class: '',
+        pos: {
+            x: ($(window).width() / 2) + $(window).scrollLeft(),
+            y: ($(window).height() / 2) + $(window).scrollTop()
+        },
+        dim: false, 
+        yes_text: messages.ok,
+        yes_callback: default_close_function,
+        no_text: messages.cancel,
+        show_no: false,
+        close_on_clickoutside: false
+    }
+
+    $.extend(options, extern);
+
+    if (options.event != undefined) {
+        options.pos = {x: options.event.pageX, y: options.event.pageY};
+    }
+
+    var html = '<div class="dialog ' + options.extra_class + '" style="display: none;">'
+             + '<div class="dialog-content">' + options.html + '</div><div class="dialog-buttons">';
+
+    if (options.show_no) {
+        html += '<button class="dialog-no">' + options.no_text + '</button>';
+    }
+
+    html += '<button class="dialog-yes">' + options.yes_text + '</button>'
+            + '</div></div>';
+
+    $dialog = $(html);
+    $('body').append($dialog);
+
+    if (options.dim === false) {
+        $dialog.css({
+            visibility: 'hidden',
+            display: 'block'
+        });
+
+        options.dim = {w: $dialog.width(), h: $dialog.height()};
+
+        $dialog.css({
+            width: 1,
+            height: 1,
+            visibility: 'visible'
+        });
+    }
+
+    $dialog.css({
+        top: options.pos.y,
+        left: options.pos.x
+    });
+
+    $dialog.animate({
+        top: "-=" + (options.dim.h / 2),
+        left: "-=" + (options.dim.w / 2),
+        width: options.dim.w,
+        height: options.dim.h
+    }, 200);
+    
+    $dialog.find('.dialog-no').click(function() {
+        default_close_function($dialog);
+    });
+
+    $dialog.find('.dialog-yes').click(function() {
+        options.yes_callback($dialog);
+    });
+
+    if (options.close_on_clickoutside) {
+        $dialog.one('clickoutside', function() {
+            default_close_function($dialog);
+        });
+    }
+
+    return $dialog;
+}
+
+function show_message(evt, msg, callback) {
+    var $dialog = show_dialog({
+        html: msg,
+        extra_class: 'warning',
+        event: evt,
+        yes_callback: function() {
+            $dialog.fadeOut('fast', function() {
+                $dialog.remove();
+            });
             if (callback) {
                 callback();
             }
-        });
+        },
+        close_on_clickoutside: true
     });
-
-    object.parent().append(div);
-    div.fadeIn("fast");
 }
 
-function load_prompt(object, url) {
-    var $box = $('<div class="vote-notification">' +
-            '<img src="/m/default/media/images/indicator.gif" />' +
-            '</div>');
-
-
-    object.parent().append($box);
-    $box.fadeIn("fast");
-
-    $box.load(url, function() {
-        $box.find('.prompt-cancel').click(function() {
-            $box.fadeOut('fast', function() {
-                $box.remove();
-            });
-            return false;
-        });
-
-        $box.find('.prompt-submit').click(function() {
-            start_command();
-            $.post(url, {prompt: $box.find('textarea').val()}, function(data) {
-                $box.fadeOut('fast', function() {
-                    $box.remove();
-                });
-                process_ajax_response(data, object);
-            }, 'json');
-            return false;
+function load_prompt(evt, url) {
+    $.get(url, function(data) {
+        var $dialog = show_dialog({
+            html: data,
+            //extra_class: 'warning',
+            event: evt,
+            yes_callback: function() {
+                $.post(url, {prompt: $dialog.find('.prompt-return').val()}, function(data) {
+                    $dialog.fadeOut('fast', function() {
+                        $dialog.remove();
+                    });
+                    process_ajax_response(data, evt);
+                }, 'json');
+            },
+            show_no: true
         });
     });
 }
 
-function show_prompt(object, msg, callback) {
-    var div = $('<div class="vote-notification">' + msg + '<br />' +
-            '<textarea class="command-prompt"></textarea><br />' +
-            '<button class="prompt-cancel">Cancel</button>' +
-            '<button class="prompt-ok">OK</button>' +
-            '</div>');
-
-    function fade_out() {
-        div.fadeOut("fast", function() { div.remove(); });
-    }
-
-    div.find('.prompt-cancel').click(fade_out);
-
-    div.find('.prompt-ok').click(function(event) {
-        callback(div.find('.command-prompt').val());
-        fade_out();
-    });
-
-    object.parent().append(div);
-    div.fadeIn("fast");    
-}
-
-function process_ajax_response(data, el, callback) {
+function process_ajax_response(data, evt, callback) {
     if (!data.success && data['error_message'] != undefined) {
-        show_message(el, data.error_message, function() {if (callback) callback(true);});
+        show_message(evt, data.error_message, function() {if (callback) callback(true);});
         end_command(false);
     } else if (typeof data['commands'] != undefined){
         for (var command in data.commands) {
@@ -203,7 +254,7 @@ function process_ajax_response(data, el, callback) {
         }
 
         if (data['message'] != undefined) {
-            show_message(el, data.message, function() {if (callback) callback(false);})
+            show_message(evt, data.message, function() {if (callback) callback(false);})
         } else {
             if (callback) callback(false);
         }
@@ -232,17 +283,17 @@ function end_command(success) {
 }
 
 $(function() {
-    $('a.ajax-command').live('click', function() {
+    $('a.ajax-command').live('click', function(evt) {
         if (running) return false;
 
         var el = $(this);
 
         if (el.is('.withprompt')) {
-            load_prompt(el, el.attr('href'));
+            load_prompt(evt, el.attr('href'));
         } else {
             start_command();
             $.getJSON(el.attr('href'), function(data) {
-                process_ajax_response(data, el);
+                process_ajax_response(data, evt);
             });
         }
 
@@ -385,7 +436,7 @@ $(function() {
             return false;
         });
 
-        $button.click(function() {
+        $button.click(function(evt) {
             if (running) return false;
 
             var post_data = {
@@ -398,7 +449,7 @@ $(function() {
 
             start_command();
             $.post($form.attr('action'), post_data, function(data) {
-                process_ajax_response(data, $button, function(error) {
+                process_ajax_response(data, evt, function(error) {
                     if (!error) {
                         cleanup_form();
                         hide_comment_form();
@@ -925,10 +976,6 @@ var notify = function() {
             visible = true;
         },
         close: function(doPostback) {
-            if (doPostback) {
-               $.post(scriptUrl + $.i18n._("messages/") +
-                $.i18n._("markread/"), { formdata: "required" });
-            }
             $(".notify").fadeOut("fast");
             $("body").css("margin-top", "0");
             visible = false;
@@ -936,3 +983,13 @@ var notify = function() {
         isVisible: function() { return visible; }
     };
 } ();
+
+/*
+ * jQuery outside events - v1.1 - 3/16/2010
+ * http://benalman.com/projects/jquery-outside-events-plugin/
+ *
+ * Copyright (c) 2010 "Cowboy" Ben Alman
+ * Dual licensed under the MIT and GPL licenses.
+ * http://benalman.com/about/license/
+ */
+(function($,c,b){$.map("click dblclick mousemove mousedown mouseup mouseover mouseout change select submit keydown keypress keyup".split(" "),function(d){a(d)});a("focusin","focus"+b);a("focusout","blur"+b);$.addOutsideEvent=a;function a(g,e){e=e||g+b;var d=$(),h=g+"."+e+"-special-event";$.event.special[e]={setup:function(){d=d.add(this);if(d.length===1){$(c).bind(h,f)}},teardown:function(){d=d.not(this);if(d.length===0){$(c).unbind(h)}},add:function(i){var j=i.handler;i.handler=function(l,k){l.target=k;j.apply(this,arguments)}}};function f(i){$(d).each(function(){var j=$(this);if(this!==i.target&&!j.has(i.target).length){j.triggerHandler(e,[i.target])}})}}})(jQuery,document,"outside");

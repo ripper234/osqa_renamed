@@ -9,9 +9,9 @@ $(function () {
     $('div#editor_side_bar').hide();
     $('div#tags_side_bar').hide();
 
-    $('input#id_title').focus(function(){changeSideBar('div#title_side_bar')});
-    $('textarea#editor').focus(function(){changeSideBar('div#editor_side_bar')});
-    $('input#id_tags').focus(function(){changeSideBar('div#tags_side_bar')});
+    $('#id_title').focus(function(){changeSideBar('div#title_side_bar')});
+    $('#editor').focus(function(){changeSideBar('div#editor_side_bar')});
+    $('#id_tags').focus(function(){changeSideBar('div#tags_side_bar')});
 });
 
 $(function() {

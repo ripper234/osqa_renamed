@@ -14,7 +14,6 @@
 {% endblock %}
 {% block forejs %}
     {% if request.user.is_superuser or request.user == view_user %}
-        <script type='text/javascript' src='{% media  "/media/js/jquery.form.js" %}'></script>
         <script type="text/javascript">google.load("jquery", "1.4.2");google.load("jqueryui", "1.8.1");</script>
         <script src="{% media "/media/js/osqa.user.js" %}" type="text/javascript"></script>
 

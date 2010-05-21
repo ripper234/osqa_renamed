@@ -4,16 +4,15 @@
 {% load extra_tags %}
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title>{% block title %}{% endblock %} - {{ settings.APP_TITLE }}</title>
+        <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
+        {% block meta %}{% endblock %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         {% if settings.GOOGLE_SITEMAP_CODE %}
         <meta name="google-site-verification" content="{{ settings.GOOGLE_SITEMAP_CODE }}" />
         {% endif %}
         <link rel="shortcut icon" href="{{ settings.APP_FAVICON }}" />
         <link href="{% media  "/media/style/style.css" %}" rel="stylesheet" type="text/css" />
-        {% spaceless %}
         {% block forestyle %}{% endblock %}
-        {% endspaceless %}
         <script src="http://www.google.com/jsapi" type="text/javascript"></script>
         <script type="text/javascript">google.load("jquery", "1.4.2");</script>
         <script type="text/javascript">
@@ -21,24 +20,34 @@
             var i18nLang = '{{settings.LANGUAGE_CODE}}';
             var scriptUrl = '/{{settings.FORUM_SCRIPT_ALIAS}}'
             var osqaSkin = '{{settings.OSQA_SKIN}}';
+
+            var messages = {
+                username: '{{ user.username }}',
+                confirm: "{% trans "Are you sure?" %}",
+                yes: "{% trans "Yes" %}",
+                no: "{% trans "No" %}",
+                message: "{% trans "Message:" %}",
+                cancel: "{% trans "Cancel" %}",
+                close: "{% trans "Close" %}",
+                ok: "{% trans "Ok" %}"
+            }
         /* ]] */
         </script>
-        <script type='text/javascript' src='{% media  "/media/js/osqa.main.min.js" %}'></script>
+        <script type='text/javascript' src='{% media  "/media/js/osqa.main.js" %}'></script>
         {% if user_messages %}
         <style type="text/css">
             body { margin-top:2.4em; }
         </style>
         <script type="text/javascript">
             $(document).ready(function() {
-                var element = $('#validate_email_alert')
-                element.click(function(){notify.close(true);setTimeout(function(){},1000)})
+                var element = $('#validate_email_alert');
+                element.click(function(){notify.close(true);})
                 notify.show();
             });
         </script>
         {% endif %}
-      
-        {% block forejs %}
-        {% endblock %}
+        {% block forejs %}{% endblock %}
+        <link rel="search" type="application/opensearchdescription+xml" href="{% url opensearch %}" title="{{ settings.APP_SHORT_NAME }} Search" />
     </head>
     <body>
         <div class="notify" style="display:none">
@@ -52,6 +61,7 @@
             <a id="close-notify" onclick="notify.close(true)">&times;</a>
         </div>
         {% include "header.html" %}
+        {% block page_center %}
         <div id="wrapper">
             <div id="room">
                 <div id="CAFull">
@@ -66,9 +76,23 @@
             </div>
             <div class="spacer3"></div>
         </div>
+        {% endblock %}
         {% include "footer.html" %}
         {% block endjs %}
         {% endblock %}
+        {% if settings.GOOGLE_ANALYTICS_KEY %}
+            <script type="text/javascript">
+                var _gaq = _gaq || [];
+                _gaq.push(['_setAccount', '{{ settings.GOOGLE_ANALYTICS_KEY }}']);
+                _gaq.push(['_trackPageview']);
+
+                (function() {
+                    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+                    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+                    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+                })();
+            </script>
+        {% endif %}
     </body>
 </html>
 <!-- end template base_content.html -->
