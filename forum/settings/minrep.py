@@ -43,6 +43,10 @@ REP_TO_EDIT_WIKI = Setting('REP_TO_EDIT_WIKI', 750, MIN_REP_SET, dict(
 label = _("Minimum reputation to edit wiki posts"),
 help_text = _("The minimum reputation an user must have to be allowed to edit community wiki posts.")))
 
+REP_TO_WIKIFY = Setting('REP_TO_WIKIFY', 2000, MIN_REP_SET, dict(
+label = _("Minimum reputation to mark post as community wiki"),
+help_text = _("The minimum reputation an user must have to be allowed to mark a post as community wiki.")))
+
 REP_TO_EDIT_OTHERS = Setting('REP_TO_EDIT_OTHERS', 2000, MIN_REP_SET, dict(
 label = _("Minimum reputation to edit others posts"),
 help_text = _("The minimum reputation an user must have to be allowed to edit others posts.")))
@@ -54,6 +58,10 @@ help_text = _("The minimum reputation an user must have to be allowed to close o
 REP_TO_DELETE_COMMENTS = Setting('REP_TO_DELETE_COMMENTS', 2000, MIN_REP_SET, dict(
 label = _("Minimum reputation to delete comments"),
 help_text = _("The minimum reputation an user must have to be allowed to delete comments.")))
+
+REP_TO_CONVERT_TO_COMMENT = Setting('REP_TO_CONVERT_TO_COMMENT', 2000, MIN_REP_SET, dict(
+label = _("Minimum reputation to convert answers to comment"),
+help_text = _("The minimum reputation an user must have to be allowed to convert an answer into a comment.")))
 
 REP_TO_VIEW_FLAGS = Setting('REP_TO_VIEW_FLAGS', 2000, MIN_REP_SET, dict(
 label = _("Minimum reputation to view offensive flags"),

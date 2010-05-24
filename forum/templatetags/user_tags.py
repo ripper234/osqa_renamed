@@ -42,6 +42,7 @@ class ActivityNode(template.Node):
             describe = mark_safe(action.describe(viewer))
             return self.template.render(template.Context(dict(action=action, describe=describe)))
         except Exception, e:
+            #return action.action_type + ":" + str(e)
             logging.error("Error in %s action describe: %s" % (action.action_type, str(e)))
 
 @register.tag

@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext
 from forum.models import *
+from forum.models.node import NodeMetaClass
 from forum.actions import *
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
@@ -69,9 +70,9 @@ def vote_post(request, id, vote_type):
     new_vote_cls = (vote_type == 'up') and VoteUpAction or VoteDownAction
     score_inc = 0
 
-    try:
-        old_vote = Action.objects.get_for_types((VoteUpAction, VoteDownAction), node=post, user=user)
+    old_vote = VoteAction.get_action_for(node=post, user=user)
 
+    if old_vote:
         if old_vote.action_date < datetime.datetime.now() - datetime.timedelta(days=int(settings.DENY_UNVOTE_DAYS)):
             raise CommandException(
                     _("Sorry but you cannot cancel a vote after %(ndays)d %(tdays)s from the original vote") %
@@ -80,8 +81,6 @@ def vote_post(request, id, vote_type):
 
         old_vote.cancel(ip=request.META['REMOTE_ADDR'])
         score_inc += (old_vote.__class__ == VoteDownAction) and 1 or -1
-    except ObjectDoesNotExist:
-        old_vote = None
 
     if old_vote.__class__ != new_vote_cls:
         new_vote_cls(user=user, node=post, ip=request.META['REMOTE_ADDR']).save()
@@ -127,7 +126,7 @@ def flag_post(request, id):
         raise NotEnoughLeftException(_('flags'), str(settings.MAX_FLAGS_PER_DAY))
 
     try:
-        current = FlagAction.objects.get(user=user, node=post)
+        current = FlagAction.objects.get(canceled=False, user=user, node=post)
         raise CommandException(_("You already flagged this post with the following reason: %(reason)s") % {'reason': current.extra})
     except ObjectDoesNotExist:
         reason = request.POST.get('prompt', '').strip()
@@ -153,11 +152,12 @@ def like_comment(request, id):
     if not user.can_like_comment(comment):
         raise NotEnoughRepPointsException( _('like comments'))    
 
-    try:
-        like = VoteUpCommentAction.objects.get(node=comment, user=user)
+    like = VoteAction.get_action_for(node=comment, user=user)
+
+    if like:
         like.cancel(ip=request.META['REMOTE_ADDR'])
         likes = False
-    except ObjectDoesNotExist:
+    else:
         VoteUpCommentAction(node=comment, user=user, ip=request.META['REMOTE_ADDR']).save()
         likes = True
 
@@ -196,7 +196,7 @@ def mark_favorite(request, id):
         raise AnonymousNotAllowedException(_('mark a question as favorite'))
 
     try:
-        favorite = FavoriteAction.objects.get(node=question, user=request.user)
+        favorite = FavoriteAction.objects.get(canceled=False, node=question, user=request.user)
         favorite.cancel(ip=request.META['REMOTE_ADDR'])
         added = False
     except ObjectDoesNotExist:
@@ -351,6 +351,45 @@ def close(request, id, close):
             raise CommandException(_("Reason is empty"))
 
         CloseAction(node=question, user=user, extra=reason, ip=request.META['REMOTE_ADDR']).save()
+
+    return {
+        'commands': {
+            'refresh_page': []
+        }
+    }
+
+@command
+def wikify(request, id):
+    pass
+
+@command
+def convert_to_comment(request, id):
+    user = request.user
+    answer = get_object_or_404(Answer, id=id)
+    question = answer.question
+
+    if not request.POST:
+        description = lambda a: _("Answer by %(uname)s: %(snippet)s...") % {'uname': a.author.username, 'snippet': a.summary[:10]}
+        nodes = [(question.id, _("Question"))]
+        [nodes.append((a.id, description(a))) for a in question.answers.filter(deleted=None).exclude(id=answer.id)]
+
+        return render_to_response('node/convert_to_comment.html', {'answer': answer, 'nodes': nodes})
+
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_("convert answers to comments"))
+
+    if not user.can_convert_to_comment(answer):
+        raise NotEnoughRepPointsException(_("convert answers to comments"))
+
+    try:
+        new_parent = Node.objects.get(id=request.POST.get('under', None))
+    except:
+        raise CommandException(_("That is an invalid post to put the comment under"))
+
+    if not (new_parent == question or (new_parent.node_type == 'answer' and new_parent.parent == question)):
+        raise CommandException(_("That is an invalid post to put the comment under"))
+
+    AnswerToCommentAction(user=user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(new_parent=new_parent))
 
     return {
         'commands': {

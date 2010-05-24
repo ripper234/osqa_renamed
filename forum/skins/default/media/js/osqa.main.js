@@ -229,10 +229,14 @@ function load_prompt(evt, url) {
     $.get(url, function(data) {
         var $dialog = show_dialog({
             html: data,
-            //extra_class: 'warning',
+            extra_class: 'prompt',
             event: evt,
             yes_callback: function() {
-                $.post(url, {prompt: $dialog.find('.prompt-return').val()}, function(data) {
+                var postvars = {};
+                $dialog.find('input, textarea, select').each(function() {
+                    postvars[$(this).attr('name')] = $(this).val();
+                });
+                $.post(url, postvars, function(data) {
                     $dialog.fadeOut('fast', function() {
                         $dialog.remove();
                     });
@@ -298,6 +302,22 @@ $(function() {
         }
 
         return false
+    });
+
+    $('.context-menu').each(function() {
+        var $menu = $(this);
+        var $trigger = $menu.find('.context-menu-trigger');
+        var $dropdown = $menu.find('.context-menu-dropdown');
+
+        $trigger.click(function() {
+            $dropdown.slideToggle('fast', function() {
+                if ($dropdown.is(':visible')) {
+                   $dropdown.one('clickoutside', function() {
+                        $dropdown.slideUp('fast')
+                    });
+                }
+            });    
+        });
     });
 
     $('div.comment-form-container').each(function() {

@@ -29,7 +29,7 @@ def accept_button(answer, user):
 @register.inclusion_tag('node/favorite_mark.html')
 def favorite_mark(question, user):
     try:
-        FavoriteAction.objects.get(node=question, user=user)
+        FavoriteAction.objects.get(canceled=False, node=question, user=user)
         favorited = True
     except:
         favorited = False
@@ -42,6 +42,7 @@ def post_control(text, url, command=False, withprompt=False, title=""):
 @register.inclusion_tag('node/post_controls.html')
 def post_controls(post, user):
     controls = []
+    menu = []
 
     if user.is_authenticated():
         post_type = (post.__class__ is Question) and 'question' or 'answer'
@@ -78,7 +79,15 @@ def post_controls(post, user):
                 controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
                         command=True))
 
-    return {'controls': controls}
+        if user.can_wikify(post):
+            menu.append(post_control(_('mark as community wiki'), reverse('wikify', kwargs={'id': post.id}),
+                        command=True))
+
+        if post.node_type == "answer" and user.can_convert_to_comment(post):
+            menu.append(post_control(_('convert to comment'), reverse('convert_to_comment', kwargs={'id': post.id}),
+                        command=True, withprompt=True))
+
+    return {'controls': controls, 'menu': menu, 'post': post, 'user': user}
 
 @register.inclusion_tag('node/comments.html')
 def comments(post, user):
@@ -131,8 +140,8 @@ def contributors_info(node):
         'node': node,
     }
 
-
 @register.inclusion_tag("node/reviser_info.html")
 def reviser_info(revision):
     return {'revision': revision}
+
 

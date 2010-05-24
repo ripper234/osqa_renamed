@@ -73,9 +73,11 @@ urlpatterns += patterns('',
     url(r'^%s(?P<id>\d+)/$' % _('subscribe/'), app.commands.subscribe, name="subscribe"),
     url(r'^%s' % _('matching_tags/'), app.commands.matching_tags, name='matching_tags'),
     url(r'^%s(?P<id>\d+)/' % _('node_markdown/'), app.commands.node_markdown, name='node_markdown'),
+    url(r'^%s(?P<id>\d+)/' % _('convert/'), app.commands.convert_to_comment, name='convert_to_comment'),
+    url(r'^%s(?P<id>\d+)/' % _('wikify/'), app.commands.wikify, name='wikify'),
 
     #place general question item in the end of other operations
-    url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('question/'), app.readers.question, name='question'),
+    url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('questions/'), app.readers.question, name='question'),
     url(r'^%s$' % _('tags/'), app.readers.tags, name='tags'),
     url(r'^%s(?P<tag>.*)/$' % _('tags/'), app.readers.tag, name='tag_questions'),
 

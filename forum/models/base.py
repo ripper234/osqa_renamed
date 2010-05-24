@@ -40,6 +40,11 @@ class CachedQuerySet(models.query.QuerySet):
         else:
             return self
 
+    def obj_from_datadict(self, datadict):
+        obj = self.model()
+        obj.__dict__.update(datadict)
+        return obj
+
     def get(self, *args, **kwargs):
         try:
             pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact'
@@ -53,29 +58,20 @@ class CachedQuerySet(models.query.QuerySet):
 
             if obj is None:
                 obj = super(CachedQuerySet, self).get(*args, **kwargs)
-                obj.__class__.objects.cache_obj(obj)
+                obj.cache()
+            else:
+                obj = self.obj_from_datadict(obj)
+                obj.reset_original_state()
 
             return obj
 
         return super(CachedQuerySet, self).get(*args, **kwargs) 
 
-from action import Action
-
 class CachedManager(models.Manager):
     use_for_related_fields = True
-    int_cache_re = re.compile('^_[\w_]+cache$')
 
     def get_query_set(self):
         return CachedQuerySet(self.model)
-
-    def cache_obj(self, obj):
-        int_cache_keys = [k for k in obj.__dict__.keys() if self.int_cache_re.match(k)]
-        d = obj.__dict__
-        for k in int_cache_keys:
-            if not isinstance(obj.__dict__[k], Action):
-                del obj.__dict__[k]
-
-        cache.set(self.model.cache_key(obj.id), obj, 60 * 60)
 
     def get_or_create(self, *args, **kwargs):
         try:
@@ -90,7 +86,7 @@ class DenormalizedField(object):
         self.filter = kwargs
 
     def setup_class(self, cls, name):
-        dict_name = '_%s_cache_' % name
+        dict_name = '_%s_dencache_' % name
 
         def getter(inst):
             val = inst.__dict__.get(dict_name, None)
@@ -98,13 +94,13 @@ class DenormalizedField(object):
             if val is None:
                 val = getattr(inst, self.manager).filter(**self.filter).count()
                 inst.__dict__[dict_name] = val
-                inst.__class__.objects.cache_obj(inst)
+                inst.cache()
 
             return val
 
         def reset_cache(inst):
             inst.__dict__.pop(dict_name, None)
-            inst.__class__.objects.cache_obj(inst)
+            inst.uncache()
 
         cls.add_to_class(name, property(getter))
         cls.add_to_class("reset_%s_cache" % name, reset_cache)
@@ -139,20 +135,35 @@ class BaseModel(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(BaseModel, self).__init__(*args, **kwargs)
-        self._original_state = dict([(k, v) for k,v in self.__dict__.items() if not k in kwargs])
+        self.reset_original_state()
 
     @classmethod
     def cache_key(cls, pk):
-        return '%s.%s:%s' % (settings.APP_URL, cls.__name__, pk)
+        return '%s:%s:%s' % (settings.APP_URL, cls.__name__, pk)
+
+    def reset_original_state(self):
+        self._original_state = self._as_dict()
 
     def get_dirty_fields(self):
-        missing = object()
-        return dict([(k, self._original_state.get(k, None)) for k,v in self.__dict__.items()
-                 if self._original_state.get(k, missing) == missing or self._original_state[k] != v])
+        return [f.name for f in self._meta.fields if self._original_state[f.attname] != self.__dict__[f.attname]]
+
+    def _as_dict(self):
+        return dict([(name, getattr(self, name)) for name in
+                     ([f.attname for f in self._meta.fields] + [k for k in self.__dict__.keys() if k.endswith('_dencache_')])
+        ])
+
+    def _get_update_kwargs(self):
+        return dict([
+            (f.name, getattr(self, f.name)) for f in self._meta.fields if self._original_state[f.attname] != self.__dict__[f.attname]
+        ])
 
     def save(self, *args, **kwargs):
         put_back = [k for k, v in self.__dict__.items() if isinstance(v, models.expressions.ExpressionNode)]
-        super(BaseModel, self).save()
+
+        if self.id:
+            self.__class__.objects.filter(id=self.id).update(**self._get_update_kwargs())
+        else:
+            super(BaseModel, self).save()
 
         if put_back:
             try:
@@ -163,115 +174,23 @@ class BaseModel(models.Model):
                 logging.error("Unable to read %s from %s" % (", ".join(put_back), self.__class__.__name__))
                 self.uncache()
 
-        self._original_state = dict(self.__dict__)
+        self.reset_original_state()
         self.cache()
 
     def cache(self):
-        self.__class__.objects.cache_obj(self)
+        cache.set(self.cache_key(self.id), self._as_dict(), 60 * 60)
 
     def uncache(self):
-        cache.delete(self.cache_key(self.pk))
+        cache.delete(self.cache_key(self.id))
 
     def delete(self):
         self.uncache()
         super(BaseModel, self).delete()
 
 
-class ActiveObjectManager(models.Manager):
-    use_for_related_fields = True
-    def get_query_set(self):
-        return super(ActiveObjectManager, self).get_query_set().filter(canceled=False)
-
-class UndeletedObjectManager(models.Manager):
-    def get_query_set(self):
-        return super(UndeletedObjectManager, self).get_query_set().filter(deleted=False)
-
-class GenericContent(models.Model):
-    content_type   = models.ForeignKey(ContentType)
-    object_id      = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
-class MetaContent(BaseModel):
-    node = models.ForeignKey('Node', null=True, related_name='%(class)ss')
-
-    def __init__(self, *args, **kwargs):
-        if 'content_object' in kwargs:
-            kwargs['node'] = kwargs['content_object']
-            del kwargs['content_object']
-
-        super (MetaContent, self).__init__(*args, **kwargs)
-    
-    @property
-    def content_object(self):
-        return self.node.leaf
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
 from user import User
-
-class UserContent(models.Model):
-    user = models.ForeignKey(User, related_name='%(class)ss')
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
-
-class DeletableContent(models.Model):
-    deleted     = models.BooleanField(default=False)
-    deleted_at  = models.DateTimeField(null=True, blank=True)
-    deleted_by  = models.ForeignKey(User, null=True, blank=True, related_name='deleted_%(class)ss')
-
-    active = UndeletedObjectManager()
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
-    def mark_deleted(self, user):
-        if not self.deleted:
-            self.deleted = True
-            self.deleted_at = datetime.datetime.now()
-            self.deleted_by = user
-            self.save()
-            return True
-        else:
-            return False
-
-    def unmark_deleted(self):
-        if self.deleted:
-            self.deleted = False
-            self.save()
-            return True
-        else:
-            return False
-
-mark_canceled = django.dispatch.Signal(providing_args=['instance'])
-
-class CancelableContent(models.Model):
-    canceled = models.BooleanField(default=False)
-
-    def cancel(self):
-        if not self.canceled:
-            self.canceled = True
-            self.save()
-            mark_canceled.send(sender=self.__class__, instance=self)
-            return True
-            
-        return False
-
-    class Meta:
-        abstract = True
-        app_label = 'forum'
-
-
 from node import Node, NodeRevision, NodeManager
+from action import Action
 
 
 

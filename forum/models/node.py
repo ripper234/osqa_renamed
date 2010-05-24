@@ -79,13 +79,17 @@ class NodeMetaClass(BaseMetaClass):
 
 
 class NodeQuerySet(CachedQuerySet):
-    def get(self, *args, **kwargs):
-        node = super(NodeQuerySet, self).get(*args, **kwargs)
-        cls = NodeMetaClass.types.get(node.node_type, None)
+    def obj_from_datadict(self, datadict):
+        cls = NodeMetaClass.types.get(datadict.get("node_type", ""), None)
+        if cls:
+            obj = cls()
+            obj.__dict__.update(datadict)
+            return obj
+        else:
+            return super(NodeQuerySet, self).obj_from_datadict(datadict)
 
-        if cls and (node.__class__ is not cls):
-            return node.leaf
-        return node
+    def get(self, *args, **kwargs):
+        return super(NodeQuerySet, self).get(*args, **kwargs).leaf
 
 
 class NodeManager(CachedManager):
@@ -140,7 +144,7 @@ class Node(BaseModel, NodeContent):
 
     @classmethod
     def cache_key(cls, pk):
-        return '%s.node:%s' % (settings.APP_URL, pk)
+        return '%s:node:%s' % (settings.APP_URL, pk)
 
     @classmethod
     def get_type(cls):
@@ -209,8 +213,8 @@ class Node(BaseModel, NodeContent):
         if not 'tagnames' in dirty:
             return None
         else:
-            if dirty['tagnames']:
-                old_tags = set(name for name in dirty['tagnames'].split(u' '))
+            if self._original_state['tagnames']:
+                old_tags = set(name for name in self._original_state['tagnames'].split(u' '))
             else:
                 old_tags = set()
             new_tags = set(name for name in self.tagnames.split(u' ') if name)
@@ -269,6 +273,8 @@ class Node(BaseModel, NodeContent):
                 tag.save()
 
     def save(self, *args, **kwargs):
+        tags_changed = self._process_changes_in_tags()
+        
         if not self.id:
             self.node_type = self.get_type()
             super(BaseModel, self).save(*args, **kwargs)
@@ -277,8 +283,6 @@ class Node(BaseModel, NodeContent):
 
         if self.parent_id and not self.abs_parent_id:
             self.abs_parent = self.parent.absolute_parent
-
-        tags_changed = self._process_changes_in_tags()
 
         super(Node, self).save(*args, **kwargs)
         if tags_changed: self.tags = list(Tag.objects.filter(name__in=self.tagname_list()))

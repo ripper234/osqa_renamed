@@ -143,7 +143,7 @@ def get_recent_activity():
     return Action.objects.order_by('-action_date')[0:30]
 
 def get_flagged_posts():
-    return Action.objects.filter(action_type="flag").order_by('-action_date')[0:30]
+    return Action.objects.filter(canceled=False, action_type="flag").order_by('-action_date')[0:30]
 
 def get_statistics():
     return {

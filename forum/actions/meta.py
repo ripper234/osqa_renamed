@@ -27,6 +27,14 @@ class VoteAction(ActionProxy):
         except:
             return None
 
+    @classmethod
+    def get_action_for(cls, user, node):
+        try:
+            vote = Vote.objects.get(user=user, node=node)
+            return vote.action
+        except:
+            return None
+
     def describe_vote(self, vote_desc, viewer=None):
         return _("%(user)s %(vote_desc)s %(post_desc)s") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
@@ -183,9 +191,9 @@ class DeleteAction(ActionProxy):
             self.node.question.reset_answer_count_cache()
 
     def describe(self, viewer=None):
-        return _("%(user)s deleted %(post_desc)s: %(reason)s") % {
+        return _("%(user)s deleted %(post_desc)s") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'post_desc': self.describe_node(viewer, self.node), 'reason': self.reason(),
+            'post_desc': self.describe_node(viewer, self.node)
         }
 
     def reason(self):

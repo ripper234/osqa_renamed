@@ -15,7 +15,7 @@ from django.utils import simplejson
 from django.core.urlresolvers import reverse
 from forum.forms import *
 from forum.utils.html import sanitize_html
-from datetime import date
+from datetime import datetime, date
 import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction
 
@@ -96,9 +96,9 @@ def edit_user(request, id):
             user.real_name = sanitize_html(form.cleaned_data['realname'])
             user.website = sanitize_html(form.cleaned_data['website'])
             user.location = sanitize_html(form.cleaned_data['city'])
-            user.date_of_birth = sanitize_html(form.cleaned_data['birthday'])
+            user.date_of_birth = form.cleaned_data['birthday']
             if user.date_of_birth == "None":
-                user.date_of_birth = '1900-01-01'
+                user.date_of_birth = datetime(1900, 1, 1, 0, 0)
             user.about = sanitize_html(form.cleaned_data['about'])
 
             user.save()
@@ -233,7 +233,7 @@ def user_reputation(request, user):
 
 @user_view('users/questions.html', 'favorites', _('favorite questions'),  _('favorite questions'))
 def user_favorites(request, user):
-    favorites = FavoriteAction.objects.filter(user=user)
+    favorites = FavoriteAction.objects.filter(canceled=False, user=user)
 
     return {"favorites" : favorites, "view_user" : user}
 

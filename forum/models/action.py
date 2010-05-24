@@ -4,18 +4,24 @@ from threading import Thread
 from base import *
 import re
 
-class ActionQuerySet(models.query.QuerySet):
-    def get(self, *args, **kwargs):
-        action = super(ActionQuerySet, self).get(*args, **kwargs)
-        if self.model == Action:
-            return action.leaf()
-        return action
+class ActionQuerySet(CachedQuerySet):
+    def obj_from_datadict(self, datadict):
+        cls = ActionProxyMetaClass.types.get(datadict['action_type'], None)
+        if cls:
+            obj = cls()
+            obj.__dict__.update(datadict)
+            return obj
+        else:
+            return super(ActionQuerySet, self).obj_from_datadict(datadict)
 
-class ActionManager(models.Manager):
+    def get(self, *args, **kwargs):
+        return super(ActionQuerySet, self).get(*args, **kwargs).leaf()
+
+class ActionManager(CachedManager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        qs = ActionQuerySet(self.model).filter(canceled=False)
+        qs = ActionQuerySet(self.model)
 
         if self.model is not Action:
             return qs.filter(action_type=self.model.get_type())
@@ -26,7 +32,8 @@ class ActionManager(models.Manager):
         kwargs['action_type__in'] = [t.get_type() for t in types]
         return self.get(*args, **kwargs)
 
-class Action(models.Model):
+
+class Action(BaseModel):
     user = models.ForeignKey('User', related_name="actions")
     ip   = models.CharField(max_length=16)
     node = models.ForeignKey('Node', null=True, related_name="actions")
@@ -94,7 +101,9 @@ class Action(models.Model):
             return self
 
         leaf = leaf_cls()
-        leaf.__dict__ = self.__dict__
+        d = self._as_dict()
+        leaf.__dict__.update(self._as_dict())
+        l = leaf._as_dict()
         return leaf
 
     @classmethod
@@ -121,9 +130,9 @@ class Action(models.Model):
 
         return self
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         self.cancel_action()
-        super(Action, self).delete()
+        super(Action, self).delete(*args, **kwargs)
 
     def cancel(self, user=None, ip=None):
         if not self.canceled:
@@ -174,7 +183,7 @@ def trigger_hooks_threaded(action, hooks, new):
                 except Exception, e:
                     logging.error("Error in %s hook: %s" % (cls.__name__, str(e)))
 
-class ActionProxyMetaClass(models.Model.__metaclass__):
+class ActionProxyMetaClass(BaseMetaClass):
     types = {}
 
     def __new__(cls, *args, **kwargs):

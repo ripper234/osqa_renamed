@@ -3,6 +3,7 @@
 {% load extra_tags %}
 {% load extra_filters %}
 {% load humanize %}
+{% load user_tags %}
 {% block userjs %}
        <script type='text/javascript' src='{% media  "/media/js/excanvas.min.js" %}'></script>
        <script type='text/javascript' src='{% media  "/media/js/jquery.flot.min.js" %}'></script>
@@ -34,7 +35,7 @@
                         <div style="float:left;width:20px;color:red">{{ rep.negative }}</div>
                         
                     </div>
-                    {{ rep.action.describe|safe }}<br/><span class="small">({{ rep.date }})</span>
+                    {% activity_item rep.action request.user %}<br/>
                 </p>
                 {% endfor %}
             </div>

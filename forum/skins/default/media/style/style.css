@@ -1330,20 +1330,6 @@ div.comment-tools a:hover {
     background: url('/m/default/media/images/vote-accepted-on.png')
 }
 
-.user-prompt {
-    width: 300px;
-}
-
-.user-prompt select, .user-prompt textarea {
-    width: 100%;
-    padding: 0;
-    border: 0;
-}
-
-.user-prompt .prompt-buttons {
-    text-align: right;
-}
-
 .comment-form-buttons {
     width: 18%;
     height: 100%;
@@ -1373,13 +1359,60 @@ div.comment-tools a:hover {
     overflow-y: auto;
 }
 
-div.dialog {
+.context-menu {
+    position: relative;
+}
+
+div.dialog, .context-menu-dropdown {
     position: absolute;
     background-color: #EEEEEE;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-box-shadow: 2px 2px 5px #3060A8;
     -webkit-box-shadow: 2px 2px 5px #3060A8;
+}
+
+.context-menu-dropdown {
+    display: none;
+    right: 0px;
+    top: 1.5em;
+    text-align: left;
+    list-style-type: none;
+}
+
+.context-menu-dropdown li.item {
+    padding: 4px 8px 4px 8px;
+     -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.context-menu-dropdown li.item a {
+    color: inherit;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.context-menu-dropdown li.separator {
+    text-align: center;
+    padding: 10px 0 4px 0;
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.context-menu-dropdown li.item:hover {
+    background-color: #3060A8;
+    color: white;
+}
+
+.context-menu-dropdown span {
+    margin-right: 4px;
+    float: left;
+    width: 16px;
+    height: 16px;
+}
+
+.context-menu-trigger {
+    cursor: pointer;
 }
 
 div.dialog .dialog-content {
@@ -1415,4 +1448,18 @@ div.dialog.confirm, div.dialog.warning {
 div.dialog.confirm {
     font-size: 140%;
     font-weight: bold;
+}
+
+div.dialog.prompt {
+    width: 300px;
+}
+
+div.dialog.prompt .dialog-content select, div.dialog.prompt .dialog-content textarea, div.dialog.prompt .dialog-content input[type=text] {
+    width: 100%;
+    padding: 0;
+    border: 0;
+}
+
+.user-prompt .prompt-buttons {
+    text-align: right;
 }

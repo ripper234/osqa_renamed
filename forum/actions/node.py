@@ -149,3 +149,27 @@ class CloseAction(ActionProxy):
             'post_desc': self.describe_node(viewer, self.node),
             'reason': self.extra
         }
+
+class AnswerToCommentAction(ActionProxy):
+    verb = _("converted")
+
+    def process_data(self, new_parent=None):
+        self.node.parent = new_parent
+        self.node.node_type = "comment"
+
+        for comment in self.node.comments.all():
+            comment.parent = new_parent
+            comment.save()
+
+        self.node.save()
+        try:
+            self.node.abs_parent.reset_answer_count_cache()
+        except AttributeError:
+            pass
+
+    def describe(self, viewer=None):
+        return _("%(user)s converted an answer to %(question)s into a comment") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'question': self.describe_node(viewer, self.node.abs_parent),
+        }
+

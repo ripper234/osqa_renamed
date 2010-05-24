@@ -55,10 +55,16 @@ class AnonymousUser(DjangoAnonymousUser):
     def can_delete_comment(self, comment):
         return False
 
+    def can_convert_to_comment(self, answer):
+        return False
+
     def can_accept_answer(self, answer):
         return False
 
     def can_edit_post(self, post):
+        return False
+
+    def can_wikify(self, post):
         return False
 
     def can_retag_questions(self):
@@ -201,6 +207,9 @@ class User(BaseModel, DjangoUser):
     def can_delete_comment(self, comment):
         return self == comment.author or self.reputation >= int(settings.REP_TO_DELETE_COMMENTS)
 
+    def can_convert_to_comment(self, answer):
+        return (not answer.marked) and (self.is_superuser or self.is_staff or answer.author == self or self.reputation >= int(settings.REP_TO_CONVERT_TO_COMMENT))
+
     @true_if_is_super_or_staff
     def can_accept_answer(self, answer):
         return self == answer.question.author
@@ -209,6 +218,10 @@ class User(BaseModel, DjangoUser):
     def can_edit_post(self, post):
         return self == post.author or self.reputation >= int(settings.REP_TO_EDIT_OTHERS
         ) or (post.wiki and self.reputation >= int(settings.REP_TO_EDIT_WIKI))
+
+    @true_if_is_super_or_staff
+    def can_wikify(self, post):
+        return self == post.author or self.reputation >= int(settings.REP_TO_WIKIFY)
 
     @true_if_is_super_or_staff
     def can_retag_questions(self):
