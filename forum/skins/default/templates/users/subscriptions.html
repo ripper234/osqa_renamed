@@ -8,15 +8,15 @@
     <h2>{% trans "Notifications and subscription settings" %}</h2>
     <p class="message">
         {% blocktrans %}
-        Here you can decide which types of notifications you wish to receive, and it's frequency.<br />
+        Here you can decide which types of notifications you wish to receive, and their frequency.<br />
         {% endblocktrans %}
         {% if notificatons_on %}
         {% blocktrans %}
-        Currently you have notifications enabled. You can always stop all notifications without loosing your settings and restart them afterwards.<br />
+        Currently you have notifications enabled. You can always stop all notifications without losing your settings and restart them afterwards.<br />
         {% endblocktrans %}
         {% else %}
         {% blocktrans %}
-        Currently you have notifications disabled. You can enable them clicking on the <strong>Start notifications</strong> button bellow.<br />
+        Currently you have notifications disabled. You can enable them by clicking on the <strong>Start notifications</strong> button bellow.<br />
         {% endblocktrans %}
         {% endif %}
     </p>
@@ -108,7 +108,7 @@
             </tr>
             <tr>
                 <td>
-                    {{ form.notify_reply_to_comments }}{% trans "Notify me when someone replys to one of my comments on any post using the <pre>@username</pre> notation" %}
+                    {{ form.notify_reply_to_comments }}{% trans "Notify me when someone replies to one of my comments on any post using the <pre>@username</pre> notation" %}
                 </td>
             </tr>
         </table>
