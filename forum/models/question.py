@@ -20,9 +20,9 @@ class Question(Node):
     friendly_name = _("question")
     objects = QuestionManager()
 
-    #@property
-    #def closed(self):
-    #    return self.nstate.closed
+    @property
+    def closed(self):
+        return self.nis.closed
 
     @property    
     def view_count(self):

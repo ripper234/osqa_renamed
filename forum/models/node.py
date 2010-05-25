@@ -178,9 +178,6 @@ class Node(BaseModel, NodeContent):
     score                 = models.IntegerField(default=0)
 
     state_string          = models.TextField(default='')
-
-    #deleted               = models.ForeignKey('Action', null=True, unique=True, related_name="deleted_node")
-    #in_moderation         = models.ForeignKey('Action', null=True, unique=True, related_name="moderated_node")
     last_edited           = models.ForeignKey('Action', null=True, unique=True, related_name="edited_node")
 
     last_activity_by       = models.ForeignKey(User, null=True)
@@ -191,10 +188,8 @@ class Node(BaseModel, NodeContent):
 
     extra_ref = models.ForeignKey('Node', null=True)
     extra_count = models.IntegerField(default=0)
-    #extra_action = models.ForeignKey('Action', null=True, related_name="extra_node")
-    
+
     marked = models.BooleanField(default=False)
-    #wiki = models.BooleanField(default=False)
 
     comment_count = DenormalizedField("children", node_type="comment", canceled=False)
     flag_count = DenormalizedField("flags")
@@ -242,9 +237,9 @@ class Node(BaseModel, NodeContent):
 
         return nis
 
-    #@property
-    #def deleted(self):
-    #    return self.nstate.deleted
+    @property
+    def deleted(self):
+        return self.nis.deleted
 
     @property    
     def absolute_parent(self):

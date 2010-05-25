@@ -217,7 +217,7 @@ class User(BaseModel, DjangoUser):
     @true_if_is_super_or_staff
     def can_edit_post(self, post):
         return self == post.author or self.reputation >= int(settings.REP_TO_EDIT_OTHERS
-        ) or (post.wiki and self.reputation >= int(settings.REP_TO_EDIT_WIKI))
+        ) or (post.nis.wiki and self.reputation >= int(settings.REP_TO_EDIT_WIKI))
 
     @true_if_is_super_or_staff
     def can_wikify(self, post):
