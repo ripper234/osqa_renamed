@@ -70,7 +70,12 @@ def ask(request):
         form = AskForm(request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                question = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data).node
+                ask_action = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                question = ask_action.node
+
+                if settings.WIKI_ON and request.POST.get('wiki', False):
+                    question.nstate.wiki = ask_action
+
                 return HttpResponseRedirect(question.get_absolute_url())
             else:
                 request.session['temp_node_data'] = request.POST
@@ -123,13 +128,19 @@ def _edit_question(request, question):
         revision = question.revisions.get(revision=revision_form.cleaned_data['revision'])
 
         if 'select_revision' in request.POST:
-            form = EditQuestionForm(question, revision)
+            form = EditQuestionForm(question, request.user, revision)
         else:
-            form = EditQuestionForm(question, revision, data=request.POST)
+            form = EditQuestionForm(question, request.user, revision, data=request.POST)
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                ReviseAction(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                action = ReviseAction(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+
+                if settings.WIKI_ON:
+                    if request.POST.get('wiki', False) and not question.nis.wiki:
+                        question.nstate.wiki = action
+                    elif question.nis.wiki and (not request.POST.get('wiki', False)) and request.user.can_cancel_wiki(question):
+                        question.nstate.wiki = None
             else:
                 if not revision == question.active_revision:
                     RollbackAction(user=request.user, node=question).save(data=dict(activate=revision))
@@ -137,7 +148,7 @@ def _edit_question(request, question):
             return HttpResponseRedirect(question.get_absolute_url())
     else:
         revision_form = RevisionForm(question)
-        form = EditQuestionForm(question)
+        form = EditQuestionForm(question, request.user)
 
     return render_to_response('question_edit.html', {
         'question': question,
@@ -160,13 +171,19 @@ def edit_answer(request, id):
         revision = answer.revisions.get(revision=revision_form.cleaned_data['revision'])
 
         if 'select_revision' in request.POST:
-            form = EditAnswerForm(answer, revision)
+            form = EditAnswerForm(answer, request.user, revision)
         else:
-            form = EditAnswerForm(answer, revision, data=request.POST)
+            form = EditAnswerForm(answer, request.user, revision, data=request.POST)
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                ReviseAction(user=request.user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                action = ReviseAction(user=request.user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+
+                if settings.WIKI_ON:
+                    if request.POST.get('wiki', False) and not answer.nis.wiki:
+                        answer.nstate.wiki = action
+                    elif answer.nis.wiki and (not request.POST.get('wiki', False)) and request.user.can_cancel_wiki(answer):
+                        answer.nstate.wiki = None
             else:
                 if not revision == answer.active_revision:
                     RollbackAction(user=request.user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(activate=revision))
@@ -175,7 +192,7 @@ def edit_answer(request, id):
 
     else:
         revision_form = RevisionForm(answer)
-        form = EditAnswerForm(answer)
+        form = EditAnswerForm(answer, request.user)
     return render_to_response('answer_edit.html', {
                               'answer': answer,
                               'revision_form': revision_form,
@@ -189,7 +206,12 @@ def answer(request, id):
         form = AnswerForm(question, request.POST)
         if form.is_valid():
             if request.user.is_authenticated():
-                answer = AnswerAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(dict(question=question, **form.cleaned_data)).node
+                answer_action = AnswerAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(dict(question=question, **form.cleaned_data))
+                answer = answer_action.node
+
+                if settings.WIKI_ON and request.POST.get('wiki', False):
+                    answer.nstate.wiki = answer_action
+
                 return HttpResponseRedirect(answer.get_absolute_url())
             else:
                 request.session['temp_node_data'] = request.POST

@@ -146,6 +146,7 @@
                                         </div>
                                         <div class="answer-controls post-controls">
                                             {% post_controls answer request.user %}
+                                            {% wiki_symbol request.user answer %}
                                         </div>
                                         <div class="post-update-info-container">
                                             {% contributors_info answer %}

@@ -97,13 +97,15 @@ class TagNamesField(forms.CharField):
         return u' '.join(list_temp)
 
 class WikiField(forms.BooleanField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, disabled=False, *args, **kwargs):
         super(WikiField, self).__init__(*args, **kwargs)
         self.required = False
         self.label  = _('community wiki')
         self.help_text = _('if you choose community wiki option, the question and answer do not generate points and name of author will not be shown')
+        if disabled:
+            self.widget=forms.CheckboxInput(attrs={'disabled': "disabled"})
     def clean(self,value):
-        return value and settings.WIKI_ON
+        return value
 
 class EmailNotifyField(forms.BooleanField):
     def __init__(self, *args, **kwargs):
@@ -131,8 +133,11 @@ class AskForm(forms.Form):
     title  = TitleField()
     text   = QuestionEditorField()
     tags   = TagNamesField()
-    wiki = WikiField()
 
+    def __init__(self, *args, **kwargs):
+        super(AskForm, self).__init__(*args, **kwargs)
+        if settings.WIKI_ON:
+            self.fields['wiki'] = WikiField()
 
 class AnswerForm(forms.Form):
     text   = AnswerEditorField()
@@ -141,8 +146,11 @@ class AnswerForm(forms.Form):
     def __init__(self, question, *args, **kwargs):
         super(AnswerForm, self).__init__(*args, **kwargs)
 
-        if question.nis.wiki and settings.WIKI_ON:
-            self.fields['wiki'].initial = True
+        if settings.WIKI_ON:
+            self.fields['wiki'] = WikiField()
+
+            if question.nis.wiki:
+                self.fields['wiki'].initial = True
 
 
 class RetagQuestionForm(forms.Form):
@@ -176,7 +184,7 @@ class EditQuestionForm(forms.Form):
     tags   = TagNamesField()
     summary = SummaryField()
 
-    def __init__(self, question, revision=None, *args, **kwargs):
+    def __init__(self, question, user, revision=None, *args, **kwargs):
         super(EditQuestionForm, self).__init__(*args, **kwargs)
 
         if revision is None:
@@ -185,22 +193,24 @@ class EditQuestionForm(forms.Form):
         self.fields['title'].initial = revision.title
         self.fields['text'].initial = revision.body
         self.fields['tags'].initial = revision.tagnames
-            
-        # Once wiki mode is enabled, it can't be disabled
-        if settings.WIKI_ON and not question.nis.wiki:
-            self.fields['wiki'] = WikiField()
+
+        if settings.WIKI_ON:
+            self.fields['wiki'] = WikiField(disabled=(question.nis.wiki and not user.can_cancel_wiki(question)), initial=question.nis.wiki)
 
 class EditAnswerForm(forms.Form):
     text = AnswerEditorField()
     summary = SummaryField()
 
-    def __init__(self, answer, revision=None, *args, **kwargs):
+    def __init__(self, answer, user, revision=None, *args, **kwargs):
         super(EditAnswerForm, self).__init__(*args, **kwargs)
 
         if revision is None:
             revision = answer.active_revision
 
         self.fields['text'].initial = revision.body
+
+        if settings.WIKI_ON:
+            self.fields['wiki'] = WikiField(disabled=(answer.nis.wiki and not user.can_cancel_wiki(answer)), initial=answer.nis.wiki)
 
 class EditUserForm(forms.Form):
     email = forms.EmailField(label=u'Email', help_text=_('this email does not have to be linked to gravatar'), required=True, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))

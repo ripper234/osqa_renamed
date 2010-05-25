@@ -1173,7 +1173,7 @@ a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accep
     color: #333;
     background: url("../images/wiki.png") no-repeat left center;
     padding-left: 36px;
-    margin: 6px 0 18px 0;
+    margin: 6px 0 0 0;
     min-height: 32px;
     line-height: 15px;
 }
@@ -1303,10 +1303,14 @@ div.comment-tools a:hover {
 	text-decoration: none;
 }
 
-.action-link a {
+.action-link {
 	color: #777777;
 	cursor: pointer;
 	padding: 3px;
+}
+
+.action-link a {
+    color: inherit;
 }
 
 .action-link a.ajax-command:hover {

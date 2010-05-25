@@ -361,19 +361,24 @@ def close(request, id, close):
 @command
 def wikify(request, id):
     node = get_object_or_404(Node, id=id)
-
-    if node.nis.wiki:
-        raise CommandException(_("This post is already marked as community wiky."))
-
     user = request.user
 
     if not user.is_authenticated():
         raise AnonymousNotAllowedException(_('mark posts as community wiki'))
 
-    if not user.can_wikify(node):
-        raise NotEnoughRepPointsException(_('mark posts as community wiki'))
+    if node.nis.wiki:
+        if not user.can_cancel_wiki(node):
+            raise NotEnoughRepPointsException(_('cancel a community wiki post'))
 
-    WikifyAction(node=node, user=user, ip=request.META['REMOTE_ADDR']).save()
+        if node.nstate.wiki.action_type == "wikify":
+            node.nstate.wiki.cancel()
+        else:
+            node.nstate.wiki = None
+    else:
+        if not user.can_wikify(node):
+            raise NotEnoughRepPointsException(_('mark posts as community wiki'))
+
+        WikifyAction(node=node, user=user, ip=request.META['REMOTE_ADDR']).save()
 
     return {
         'commands': {

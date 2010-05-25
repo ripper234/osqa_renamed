@@ -67,6 +67,9 @@ class AnonymousUser(DjangoAnonymousUser):
     def can_wikify(self, post):
         return False
 
+    def can_cancel_wiki(self, post):
+        return False
+
     def can_retag_questions(self):
         return False
 
@@ -222,6 +225,10 @@ class User(BaseModel, DjangoUser):
     @true_if_is_super_or_staff
     def can_wikify(self, post):
         return self == post.author or self.reputation >= int(settings.REP_TO_WIKIFY)
+
+    @true_if_is_super_or_staff
+    def can_cancel_wiki(self, post):
+        return self == post.author
 
     @true_if_is_super_or_staff
     def can_retag_questions(self):

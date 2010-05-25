@@ -96,9 +96,14 @@ def post_controls(post, user):
                 controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
                         command=True, confirm=True))
 
-        if (not post.nis.wiki) and user.can_wikify(post):
-            menu.append(post_control(_('mark as community wiki'), reverse('wikify', kwargs={'id': post.id}),
-                        command=True, confirm=True))
+        if settings.WIKI_ON:
+            if (not post.nis.wiki) and user.can_wikify(post):
+                menu.append(post_control(_('mark as community wiki'), reverse('wikify', kwargs={'id': post.id}),
+                            command=True, confirm=True))
+
+            elif post.nis.wiki and user.can_cancel_wiki(post):
+                menu.append(post_control(_('cancel community wiki'), reverse('wikify', kwargs={'id': post.id}),
+                            command=True, confirm=True))
 
         if post.node_type == "answer" and user.can_convert_to_comment(post):
             menu.append(post_control(_('convert to comment'), reverse('convert_to_comment', kwargs={'id': post.id}),
