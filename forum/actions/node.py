@@ -136,6 +136,7 @@ class CloseAction(ActionProxy):
     def process_action(self):
         self.node.marked = True
         self.node.nstate.closed = self
+        self.node.last_edited = self
         self.node.update_last_activity(self.user, save=True)
 
     def cancel_action(self):
