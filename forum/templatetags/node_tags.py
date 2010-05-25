@@ -26,6 +26,22 @@ def accept_button(answer, user):
         'user': user
     }
 
+@register.inclusion_tag('node/wiki_symbol.html')
+def wiki_symbol(user, post):
+    context = {
+        'is_wiki': post.nis.wiki,
+        'post_type': post.friendly_name
+    }
+
+    if post.nis.wiki:
+        if user.can_edit_post(post):
+            context['can_edit'] = True
+            context['edit_url'] = reverse('edit_' + post.node_type, kwargs={'id': post.id})
+        context['by'] = post.nstate.wiki.by.username
+        context['at'] = post.nstate.wiki.at
+
+    return context
+
 @register.inclusion_tag('node/favorite_mark.html')
 def favorite_mark(question, user):
     try:
@@ -46,7 +62,7 @@ def post_controls(post, user):
     menu = []
 
     if user.is_authenticated():
-        post_type = (post.__class__ is Question) and 'question' or 'answer'
+        post_type = post.node_type
 
         if post_type == "answer":
             controls.append(post_control(_('permanent link'), '#%d' % post.id, title=_("answer permanent link")))

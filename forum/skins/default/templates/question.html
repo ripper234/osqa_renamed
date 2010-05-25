@@ -76,14 +76,15 @@
                             <div class="question-body">
                                 {{ question.html|safe }}
                             </div>
-                            <div id="question-controls" class="post-controls">
-                                <div id="question-tags" class="tags">
-                                    {% for tag in question.tagname_list %}
-                                        <a href="{% url tag_questions tag|urlencode %}" class="post-tag"
-                                            title="{% blocktrans with tag as tagname %}see questions tagged '{{ tagname }}'{% endblocktrans %}" rel="tag">{{ tag }}</a>
-                                    {% endfor %}
-                                </div>
+                            <div id="question-tags" class="tags-container tags">
+                                {% for tag in question.tagname_list %}
+                                    <a href="{% url tag_questions tag|urlencode %}" class="post-tag"
+                                        title="{% blocktrans with tag as tagname %}see questions tagged '{{ tagname }}'{% endblocktrans %}" rel="tag">{{ tag }}</a>
+                                {% endfor %}
+                            </div>
+                            <div id="question-controls" class="post-controls">                            
                                 {% post_controls question request.user %}
+                                {% wiki_symbol request.user question %}
                             </div>
                             <div class="post-update-info-container">
                                     {% contributors_info question %}

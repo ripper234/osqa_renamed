@@ -638,22 +638,6 @@ a.medal:hover {
 	text-align: center;
 }
 
-.vote-notification {
-	background-color: darkred;
-	color: White;
-	cursor: pointer;
-	display: none;
-	padding: 15px;
-	position: absolute;
-	text-align: center;
-	z-index: 1;
-}
-
-.vote-notification a {
-	color: White;
-	text-decoration: underline;
-}
-
 span.form-error {
 	color: #990000;
 	font-weight: normal;
@@ -1115,11 +1099,19 @@ ul.form-horizontal-rows li input {
 	padding-bottom: 10px;
 }
 
-.post-controls {
+.post-controls, .tags-container {
 	font-size: 11px;
 	line-height: 12px;
 	margin-bottom: 5px;
 	min-width: 200px;
+}
+
+.tags-container {
+    margin: 0 0 16px 0;    
+}
+
+.post-controls {
+    float: left;
 }
 
 #question-controls .tags { margin: 0 0 3px; }
@@ -1175,6 +1167,16 @@ a.post-vote.down { background: url("../images/vote-arrow-down.png") no-repeat sc
 a.post-vote.down.on,a.post-vote.down:hover { background: url("../images/vote-arrow-down-on.png") no-repeat scroll center center transparent; }
 a.accept-answer { background: url("../images/vote-accepted.png") no-repeat scroll center center transparent; }
 a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accepted-on.png") no-repeat scroll center center transparent; }
+
+.community-wiki {
+    font-size: 11px;
+    color: #333;
+    background: url("../images/wiki.png") no-repeat left center;
+    padding-left: 46px;
+    margin: 12px 0 32px 0;
+    min-height: 32px;
+    line-height: 14px;
+}
 
 .post-score, .comments-char-left-count {
 	color: #777777;
