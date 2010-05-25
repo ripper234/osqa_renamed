@@ -461,7 +461,7 @@ def matching_tags(request):
     if len(request.GET['q']) == 0:
        raise CommandException(_("Invalid request"))
 
-    possible_tags = Tag.objects.filter(name__istartswith = request.GET['q'])
+    possible_tags = Tag.active.filter(name__istartswith = request.GET['q'])
     tag_output = ''
     for tag in possible_tags:
         tag_output += (tag.name + "|" + tag.name + "." + tag.used_count.__str__() + "\n")
@@ -472,7 +472,7 @@ def related_questions(request):
     if request.POST and request.POST.get('title', None):
         return HttpResponse(simplejson.dumps(
                 [dict(title=q.title, url=q.get_absolute_url(), score=q.score, summary=q.summary)
-                 for q in Question.objects.search(request.POST['title'])[0:10]]), mimetype="application/json")
+                 for q in Question.objects.search(request.POST['title']).filter_state(deleted=False)[0:10]]), mimetype="application/json")
     else:
         raise Http404()
 
