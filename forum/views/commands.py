@@ -362,7 +362,7 @@ def close(request, id, close):
 def wikify(request, id):
     node = get_object_or_404(Node, id=id)
 
-    if node.nis.wiky:
+    if node.nis.wiki:
         raise CommandException(_("This post is already marked as community wiky."))
 
     user = request.user

@@ -178,12 +178,12 @@ class WikifyAction(ActionProxy):
     verb = _("wikified")
 
     def process_action(self):
-        self.node.nstate.wiky = self
+        self.node.nstate.wiki = self
         self.node.last_edited = self
         self.node.update_last_activity(self.user, save=True)
 
     def cancel_action(self):
-        self.node.nstate.wiky = None
+        self.node.nstate.wiki = None
         self.node.update_last_activity(self.user, save=True)
 
     def describe(self, viewer=None):
