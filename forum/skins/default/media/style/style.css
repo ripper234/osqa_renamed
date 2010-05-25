@@ -1172,10 +1172,10 @@ a.accept-answer.on,a.accept-answer:hover { background: url("../images/vote-accep
     font-size: 11px;
     color: #333;
     background: url("../images/wiki.png") no-repeat left center;
-    padding-left: 46px;
-    margin: 12px 0 32px 0;
+    padding-left: 36px;
+    margin: 6px 0 18px 0;
     min-height: 32px;
-    line-height: 14px;
+    line-height: 15px;
 }
 
 .post-score, .comments-char-left-count {
