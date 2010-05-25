@@ -5,7 +5,7 @@ import django.dispatch
 
 class ActiveTagManager(models.Manager):
     def get_query_set(self):
-        return super(ActiveTagManager, self).get_query_set().exclude(deleted=False, used_count=0)
+        return super(ActiveTagManager, self).get_query_set().exclude(used_count__lt=1)
 
 
 class Tag(BaseModel):
@@ -15,29 +15,8 @@ class Tag(BaseModel):
     # Denormalised data
     used_count = models.PositiveIntegerField(default=0)
 
-    deleted     = models.BooleanField(default=False)
-    deleted_at  = models.DateTimeField(null=True, blank=True)
-    deleted_by  = models.ForeignKey(User, null=True, blank=True, related_name='deleted_%(class)ss')
-
     active = ActiveTagManager()
 
-    def mark_deleted(self, user):
-        if not self.deleted:
-            self.deleted = True
-            self.deleted_at = datetime.datetime.now()
-            self.deleted_by = user
-            self.save()
-            return True
-        else:
-            return False
-
-    def unmark_deleted(self):
-        if self.deleted:
-            self.deleted = False
-            self.save()
-            return True
-        else:
-            return False
 
     class Meta:
         ordering = ('-used_count', 'name')

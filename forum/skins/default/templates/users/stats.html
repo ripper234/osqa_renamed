@@ -38,8 +38,8 @@
             <div class="answer-summary">
                 <a title="{{answer.question.title}}"
                     href="{{ answer.get_absolute_url }}">
-                    <span class="{% if answer.accepted %}answered-accepted {% endif %} answer-votes" 
-						title="{% blocktrans with answer.score as vote_count %}the answer has been voted for {{ vote_count }} times{% endblocktrans %} {% if answer.accepted %}{% trans "this answer has been selected as correct" %}{%endif%}">
+                    <span class="{% if answer.nis.accepted %}answered-accepted {% endif %} answer-votes" 
+						title="{% blocktrans with answer.score as vote_count %}the answer has been voted for {{ vote_count }} times{% endblocktrans %} {% if answer.nis.accepted %}{% trans "this answer has been selected as correct" %}{%endif%}">
                         {{ answer.score }}
                     </span>
                 </a>

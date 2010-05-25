@@ -2,8 +2,7 @@
 {% spaceless %}
 {% for control in controls %}
     <span class="action-link">
-        <a title="{{ control.title }}" class="{% if control.command %}ajax-command{% endif %}{% if control.withprompt %} withprompt{% endif %}"
-            href="{{ control.url }}">{{ control.text }}</a>
+        <a title="{{ control.title }}" class="{{ control.classes }}" href="{{ control.url }}">{{ control.text }}</a>
     </span>
     {% ifnotequal controls|last control %}
         <span class="action-link-separator">|</span>
@@ -14,8 +13,7 @@
         <span id="node-{{ node.id }}-menu-trigger" class="context-menu-trigger">{% trans "more" %} &#9660;</span>
         <ul id="node-{{ node.id }}-menu-dropdown" class="context-menu-dropdown">
             {% for item in menu %}
-            <li class="item"><a class="{% if item.command %}ajax-command{% endif %}{% if item.withprompt %} withprompt{% endif %}"
-                href="{{ item.url }}" title="{{ item.title }}" >{{ item.text }}</a></li>
+            <li class="item"><a class="{{ item.classes }}" href="{{ item.url }}" title="{{ item.title }}" >{{ item.text }}</a></li>
             {% endfor %}
         </ul>
     </span>

@@ -1,4 +1,5 @@
 from base import *
+import re
 from tag import Tag
 
 import markdown
@@ -91,6 +92,10 @@ class NodeQuerySet(CachedQuerySet):
     def get(self, *args, **kwargs):
         return super(NodeQuerySet, self).get(*args, **kwargs).leaf
 
+    def filter_state(self, **kwargs):
+        apply_bool = lambda q, b: b and q or ~q
+        return self.filter(*[apply_bool(models.Q(state_string__contains="(%s)" % s), b) for s, b in kwargs.items()])
+
 
 class NodeManager(CachedManager):
     use_for_related_fields = True
@@ -107,6 +112,60 @@ class NodeManager(CachedManager):
         kwargs['node_type__in'] = [t.get_type() for t in types]
         return self.get(*args, **kwargs)
 
+    def filter_state(self, **kwargs):
+        return self.all().filter_state(**kwargs)
+
+
+class NodeStateDict(object):
+    def __init__(self, node):
+        self.__dict__['_node'] = node
+
+    def __getattr__(self, name):
+        if self.__dict__.get(name, None):
+            return self.__dict__[name]
+
+        try:
+            node = self.__dict__['_node']
+            action = NodeState.objects.get(node=node, state_type=name).action
+            self.__dict__[name] = action
+            return action
+        except:
+            return None
+
+    def __setattr__(self, name, value):
+        current = self.__getattr__(name)
+
+        if value:
+            if current:
+                current.action = value
+                current.save()
+            else:
+                node = self.__dict__['_node']
+                state = NodeState(node=node, action=value, state_type=name)
+                state.save()
+                self.__dict__[name] = value
+
+                if not "(%s)" % name in node.state_string:
+                    node.state_string = "%s(%s)" % (node.state_string, name)
+                    node.save()
+        else:
+            if current:
+                node = self.__dict__['_node']
+                node.state_string = "".join("(%s)" % s for s in re.findall('\w+', node.state_string) if s != name)
+                node.save()
+                current.node_state.delete()
+                del self.__dict__[name]
+
+
+class NodeStateQuery(object):
+    def __init__(self, node):
+        self.__dict__['_node'] = node
+
+    def __getattr__(self, name):
+        node = self.__dict__['_node']
+        return "(%s)" % name in node.state_string
+
+
 
 class Node(BaseModel, NodeContent):
     __metaclass__ = NodeMetaClass
@@ -118,8 +177,10 @@ class Node(BaseModel, NodeContent):
     added_at             = models.DateTimeField(default=datetime.datetime.now)
     score                 = models.IntegerField(default=0)
 
-    deleted               = models.ForeignKey('Action', null=True, unique=True, related_name="deleted_node")
-    in_moderation         = models.ForeignKey('Action', null=True, unique=True, related_name="moderated_node")
+    state_string          = models.TextField(default='')
+
+    #deleted               = models.ForeignKey('Action', null=True, unique=True, related_name="deleted_node")
+    #in_moderation         = models.ForeignKey('Action', null=True, unique=True, related_name="moderated_node")
     last_edited           = models.ForeignKey('Action', null=True, unique=True, related_name="edited_node")
 
     last_activity_by       = models.ForeignKey(User, null=True)
@@ -130,10 +191,10 @@ class Node(BaseModel, NodeContent):
 
     extra_ref = models.ForeignKey('Node', null=True)
     extra_count = models.IntegerField(default=0)
-    extra_action = models.ForeignKey('Action', null=True, related_name="extra_node")
+    #extra_action = models.ForeignKey('Action', null=True, related_name="extra_node")
     
     marked = models.BooleanField(default=False)
-    wiki = models.BooleanField(default=False)
+    #wiki = models.BooleanField(default=False)
 
     comment_count = DenormalizedField("children", node_type="comment", canceled=False)
     flag_count = DenormalizedField("flags")
@@ -160,6 +221,30 @@ class Node(BaseModel, NodeContent):
         leaf = leaf_cls()
         leaf.__dict__ = self.__dict__
         return leaf
+
+    @property
+    def nstate(self):
+        state = self.__dict__.get('_nstate', None)
+
+        if state is None:
+            state = NodeStateDict(self)
+            self._nstate = state
+
+        return state
+
+    @property
+    def nis(self):
+        nis = self.__dict__.get('_nis', None)
+
+        if nis is None:
+            nis = NodeStateQuery(self)
+            self._nis = nis
+
+        return nis
+
+    #@property
+    #def deleted(self):
+    #    return self.nstate.deleted
 
     @property    
     def absolute_parent(self):
@@ -238,18 +323,16 @@ class Node(BaseModel, NodeContent):
                 except:
                     tag = Tag.objects.create(name=name, created_by=self._last_active_user())
 
-                if not self.deleted:
+                if not self.nis.deleted:
                     tag.used_count = models.F('used_count') + 1
                     tag.save()
 
-            if not self.deleted:
+            if not self.nis.deleted:
                 for name in tag_changes['removed']:
                     try:
                         tag = Tag.objects.get(name=name)
                         tag.used_count = models.F('used_count') - 1
                         tag.save()
-                        if tag.used_count == 0:
-                            tag.mark_deleted(self._last_active_user())
                     except:
                         pass
 
@@ -258,15 +341,13 @@ class Node(BaseModel, NodeContent):
         return False
 
     def mark_deleted(self, action):
-        self.deleted = action
+        self.nstate.deleted = action
         self.save()
 
         if action:
             for tag in self.tags.all():
                 tag.used_count = models.F('used_count') - 1
                 tag.save()
-                if tag.used_count == 0:
-                    tag.mark_deleted(self._last_active_user())
         else:
             for tag in Tag.objects.filter(name__in=self.tagname_list()):
                 tag.used_count = models.F('used_count') + 1
@@ -299,6 +380,16 @@ class NodeRevision(BaseModel, NodeContent):
 
     class Meta:
         unique_together = ('node', 'revision')
+        app_label = 'forum'
+
+
+class NodeState(models.Model):
+    node       = models.ForeignKey(Node, related_name='states')
+    state_type = models.CharField(max_length=16)
+    action     = models.OneToOneField('Action', related_name="node_state")
+
+    class Meta:
+        unique_together = ('node', 'state_type')
         app_label = 'forum'
 
 

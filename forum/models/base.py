@@ -81,9 +81,9 @@ class CachedManager(models.Manager):
 
 
 class DenormalizedField(object):
-    def __init__(self, manager, **kwargs):
+    def __init__(self, manager, *args, **kwargs):
         self.manager = manager
-        self.filter = kwargs
+        self.filter = (args, kwargs)
 
     def setup_class(self, cls, name):
         dict_name = '_%s_dencache_' % name
@@ -92,7 +92,7 @@ class DenormalizedField(object):
             val = inst.__dict__.get(dict_name, None)
 
             if val is None:
-                val = getattr(inst, self.manager).filter(**self.filter).count()
+                val = getattr(inst, self.manager).filter(*self.filter[0], **self.filter[1]).count()
                 inst.__dict__[dict_name] = val
                 inst.cache()
 
@@ -135,14 +135,17 @@ class BaseModel(models.Model):
 
     def __init__(self, *args, **kwargs):
         super(BaseModel, self).__init__(*args, **kwargs)
-        self.reset_original_state()
+        self.reset_original_state(kwargs.keys())
 
     @classmethod
     def cache_key(cls, pk):
         return '%s:%s:%s' % (settings.APP_URL, cls.__name__, pk)
 
-    def reset_original_state(self):
+    def reset_original_state(self, reset_fields=None):
         self._original_state = self._as_dict()
+        
+        if reset_fields:
+            self._original_state.update(dict([(f, None) for f in reset_fields]))
 
     def get_dirty_fields(self):
         return [f.name for f in self._meta.fields if self._original_state[f.attname] != self.__dict__[f.attname]]

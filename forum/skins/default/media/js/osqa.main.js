@@ -294,6 +294,24 @@ $(function() {
 
         if (el.is('.withprompt')) {
             load_prompt(evt, el.attr('href'));
+        } else if(el.is('.confirm')) {
+            $dialog = show_dialog({
+                html: messages.confirm,
+                extra_class: 'confirm',
+                event: evt,
+                yes_callback: function() {
+                    start_command();
+                    $.getJSON(el.attr('href'), function(data) {
+                        process_ajax_response(data, evt);
+                        $dialog.fadeOut('fast', function() {
+                            $dialog.remove();
+                        });
+                    });
+                },
+                yes_text: messages.yes,
+                show_no: true,
+                no_text: messages.no
+            });
         } else {
             start_command();
             $.getJSON(el.attr('href'), function(data) {

@@ -123,7 +123,7 @@ class Action(BaseModel):
         super(Action, self).save(*args, **kwargs)
 
         if isnew:
-            if (self.node is None) or (not self.node.wiki):
+            if (self.node is None) or (not self.node.nis.wiki):
                 self.repute_users()
             self.process_action()
             self.trigger_hooks(True)

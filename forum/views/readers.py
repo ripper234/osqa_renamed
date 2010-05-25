@@ -73,7 +73,7 @@ def tag(request, tag):
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, allowIgnoreTags=True):
-    questions = initial.filter(deleted=None, in_moderation=None)
+    questions = initial.filter_state(deleted=False)
 
     if request.user.is_authenticated() and allowIgnoreTags:
         questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
@@ -95,7 +95,7 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
     if request.GET.get("q"):
         keywords = request.GET.get("q").strip()
 
-    answer_count = Answer.objects.filter(deleted=None, parent__in=questions).count()   
+    answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()   
     answer_description = _("answers")
 
     return {
@@ -148,12 +148,12 @@ def tags(request):#view showing a listing of available tags - plain list
     if request.method == "GET":
         stag = request.GET.get("q", "").strip()
         if stag != '':
-            objects_list = Paginator(Tag.objects.filter(deleted=False).exclude(used_count=0).extra(where=['name like %s'], params=['%' + stag + '%']), DEFAULT_PAGE_SIZE)
+            objects_list = Paginator(Tag.active.filter(name__contains=stag), DEFAULT_PAGE_SIZE)
         else:
             if sortby == "name":
-                objects_list = Paginator(Tag.objects.all().filter(deleted=False).exclude(used_count=0).order_by("name"), DEFAULT_PAGE_SIZE)
+                objects_list = Paginator(Tag.active.order_by("name"), DEFAULT_PAGE_SIZE)
             else:
-                objects_list = Paginator(Tag.objects.all().filter(deleted=False).exclude(used_count=0).order_by("-used_count"), DEFAULT_PAGE_SIZE)
+                objects_list = Paginator(Tag.active.order_by("-used_count"), DEFAULT_PAGE_SIZE)
 
     try:
         tags = objects_list.page(page)
@@ -228,7 +228,7 @@ def question(request, id, slug):
     page = int(request.GET.get('page', 1))
     view_id, order_by = get_answer_sort_order(request)
 
-    if question.deleted and not request.user.can_view_deleted_post(question):
+    if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
 
     if request.POST:
@@ -240,7 +240,7 @@ def question(request, id, slug):
 
     if answers is not None:
         answers = [a for a in answers.order_by("-marked", order_by)
-                   if not a.deleted or a.author == request.user]
+                   if not a.nis.deleted or a.author == request.user]
 
     objects_list = Paginator(answers, ANSWERS_PAGE_SIZE)
     page_objects = objects_list.page(page)

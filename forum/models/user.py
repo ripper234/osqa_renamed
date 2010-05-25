@@ -26,7 +26,7 @@ class UserManager(CachedManager):
 
 class AnonymousUser(DjangoAnonymousUser):
     def get_visible_answers(self, question):
-        return question.answers.filter(deleted=None)
+        return question.answers.filter_state(deleted=False)
 
     def can_view_deleted_post(self, post):
         return False
@@ -147,7 +147,7 @@ class User(BaseModel, DjangoUser):
         return mark_safe(profile_link)
 
     def get_visible_answers(self, question):
-        return question.answers.filter(deleted=None, in_moderation=None)
+        return question.answers.filter_state(deleted=False)
 
     def get_vote_count_today(self):
         today = datetime.date.today()

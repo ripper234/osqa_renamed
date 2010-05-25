@@ -102,7 +102,7 @@ class FlagAction(ActionProxy):
 
         if self.node.flag_count == int(settings.FLAG_COUNT_TO_DELETE_POST):
             self.repute(self.node.author, -int(settings.REP_LOST_BY_FLAGGED_5_TIMES))
-            if not self.node.deleted:
+            if not self.node.nis.deleted:
                 DeleteAction(node=self.node, user=self.user, extra="BYFLAGGED").save()
 
     def cancel_action(self):
@@ -136,14 +136,14 @@ class AcceptAnswerAction(ActionProxy):
         self.node.parent.extra_ref = self.node
         self.node.parent.save()
         self.node.marked = True
-        self.node.extra_action = self
+        self.node.nstate.accepted = self
         self.node.save()
 
     def cancel_action(self):
         self.node.parent.extra_ref = None
         self.node.parent.save()
         self.node.marked = False
-        self.node.extra_action = None
+        self.node.nstate.accepted = None
         self.node.save()
 
     def describe(self, viewer=None):

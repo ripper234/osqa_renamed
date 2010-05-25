@@ -254,7 +254,7 @@ class Student(AbstractBadge):
     description = _('Asked first question with at least one up vote')
 
     def award_to(self, action):
-        if (action.node.node_type == "question") and (action.node.author.nodes.filter(node_type="question", deleted=None, score=1).count() == 1):
+        if (action.node.node_type == "question") and (action.node.author.nodes.filter_state(deleted=False).filter(node_type="question", score=1).count() == 1):
             return action.node.author
 
 
@@ -265,7 +265,7 @@ class Teacher(AbstractBadge):
     description = _('Answered first question with at least one up vote')
 
     def award_to(self, action):
-        if (action.node.node_type == "answer") and (action.node.author.nodes.filter(node_type="answer", deleted=None, score=1).count() == 1):
+        if (action.node.node_type == "answer") and (action.node.author.nodes.filter_state(deleted=False).filter(node_type="answer", score=1).count() == 1):
             return action.node.author
 
 

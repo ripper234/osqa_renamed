@@ -141,7 +141,7 @@ class AnswerForm(forms.Form):
     def __init__(self, question, *args, **kwargs):
         super(AnswerForm, self).__init__(*args, **kwargs)
 
-        if question.wiki and settings.WIKI_ON:
+        if question.nis.wiki and settings.WIKI_ON:
             self.fields['wiki'].initial = True
 
 
@@ -187,7 +187,7 @@ class EditQuestionForm(forms.Form):
         self.fields['tags'].initial = revision.tagnames
             
         # Once wiki mode is enabled, it can't be disabled
-        if not question.wiki:
+        if settings.WIKI_ON and not question.nis.wiki:
             self.fields['wiki'] = WikiField()
 
 class EditAnswerForm(forms.Form):

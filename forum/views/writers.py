@@ -91,7 +91,7 @@ def ask(request):
 @login_required
 def edit_question(request, id):
     question = get_object_or_404(Question, id=id)
-    if question.deleted and not request.user.can_view_deleted_post(question):
+    if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
     if request.user.can_edit_post(question):
         return _edit_question(request, question)

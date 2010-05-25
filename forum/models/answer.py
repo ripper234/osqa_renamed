@@ -7,9 +7,9 @@ class Answer(Node):
     class Meta(Node.Meta):
         proxy = True
 
-    @property    
-    def accepted(self):
-        return self.extra_action
+    #@property
+    #def accepted(self):
+    #    return self.nstate.accepted
 
     @property
     def headline(self):

@@ -179,7 +179,7 @@ def delete_comment(request, id):
     if not user.can_delete_comment(comment):
         raise NotEnoughRepPointsException( _('delete comments'))
 
-    if not comment.deleted:
+    if not comment.nis.deleted:
         DeleteAction(node=comment, user=user, ip=request.META['REMOTE_ADDR']).save()
 
     return {
@@ -288,13 +288,13 @@ def accept_answer(request, id):
 
     commands = {}
 
-    if answer.accepted:
-        answer.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
+    if answer.nis.accepted:
+        answer.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
         commands['unmark_accepted'] = [answer.id]
     else:
         if question.answer_accepted:
             accepted = question.accepted_answer
-            accepted.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
+            accepted.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
             commands['unmark_accepted'] = [accepted.id]
 
         AcceptAnswerAction(node=answer, user=user, ip=request.META['REMOTE_ADDR']).save()
@@ -315,8 +315,8 @@ def delete_post(request, id):
 
     ret = {'commands': {}}
 
-    if post.deleted:
-        post.deleted.cancel(user, ip=request.META['REMOTE_ADDR'])
+    if post.nis.deleted:
+        post.nstate.deleted.cancel(user, ip=request.META['REMOTE_ADDR'])
         ret['commands']['unmark_deleted'] = [post.node_type, id]
     else:
         DeleteAction(node=post, user=user, ip=request.META['REMOTE_ADDR']).save()
@@ -336,11 +336,11 @@ def close(request, id, close):
     if not user.is_authenticated():
         raise AnonymousNotAllowedException(_('close questions'))
 
-    if question.extra_action:
+    if question.nis.closed:
         if not user.can_reopen_question(question):
             raise NotEnoughRepPointsException(_('reopen questions'))
 
-        question.extra_action.cancel(user, ip=request.META['REMOTE_ADDR'])
+        question.nstate.closed.cancel(user, ip=request.META['REMOTE_ADDR'])
     else:
         if not request.user.can_close_question(question):
             raise NotEnoughRepPointsException(_('close questions'))
@@ -360,7 +360,26 @@ def close(request, id, close):
 
 @command
 def wikify(request, id):
-    pass
+    node = get_object_or_404(Node, id=id)
+
+    if node.nis.wiky:
+        raise CommandException(_("This post is already marked as community wiky."))
+
+    user = request.user
+
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_('mark posts as community wiki'))
+
+    if not user.can_wikify(node):
+        raise NotEnoughRepPointsException(_('mark posts as community wiki'))
+
+    WikifyAction(node=node, user=user, ip=request.META['REMOTE_ADDR']).save()
+
+    return {
+        'commands': {
+            'refresh_page': []
+        }
+    }
 
 @command
 def convert_to_comment(request, id):
@@ -371,7 +390,7 @@ def convert_to_comment(request, id):
     if not request.POST:
         description = lambda a: _("Answer by %(uname)s: %(snippet)s...") % {'uname': a.author.username, 'snippet': a.summary[:10]}
         nodes = [(question.id, _("Question"))]
-        [nodes.append((a.id, description(a))) for a in question.answers.filter(deleted=None).exclude(id=answer.id)]
+        [nodes.append((a.id, description(a))) for a in question.answers.filter_state(deleted=False).exclude(id=answer.id)]
 
         return render_to_response('node/convert_to_comment.html', {'answer': answer, 'nodes': nodes})
 

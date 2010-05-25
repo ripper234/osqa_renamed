@@ -134,13 +134,13 @@ class CloseAction(ActionProxy):
     verb = _("closed")
 
     def process_action(self):
-        self.node.extra_action = self
         self.node.marked = True
+        self.node.nstate.closed = self
         self.node.update_last_activity(self.user, save=True)
 
     def cancel_action(self):
-        self.node.extra_action = None
         self.node.marked = False
+        self.node.nstate.closed = None
         self.node.update_last_activity(self.user, save=True)
 
     def describe(self, viewer=None):
@@ -161,7 +161,8 @@ class AnswerToCommentAction(ActionProxy):
             comment.parent = new_parent
             comment.save()
 
-        self.node.save()
+        self.node.last_edited = self
+        self.node.update_last_activity(self.user, save=True)
         try:
             self.node.abs_parent.reset_answer_count_cache()
         except AttributeError:
@@ -171,5 +172,23 @@ class AnswerToCommentAction(ActionProxy):
         return _("%(user)s converted an answer to %(question)s into a comment") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
             'question': self.describe_node(viewer, self.node.abs_parent),
+        }
+
+class WikifyAction(ActionProxy):
+    verb = _("wikified")
+
+    def process_action(self):
+        self.node.nstate.wiky = self
+        self.node.last_edited = self
+        self.node.update_last_activity(self.user, save=True)
+
+    def cancel_action(self):
+        self.node.nstate.wiky = None
+        self.node.update_last_activity(self.user, save=True)
+
+    def describe(self, viewer=None):
+        return _("%(user)s marked %(node)s as community wiky.") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'node': self.describe_node(viewer, self.node),
         }
 

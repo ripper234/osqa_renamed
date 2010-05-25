@@ -63,10 +63,10 @@ def statistics(request):
     today = datetime.now()
     last_month = today - timedelta(days=30)
 
-    last_month_questions = Question.objects.filter(deleted=None, added_at__gt=last_month
+    last_month_questions = Question.objects.filter_state(deleted=False).filter(added_at__gt=last_month
                                                   ).order_by('added_at').values_list('added_at', flat=True)
 
-    last_month_n_questions = Question.objects.filter(deleted=None, added_at__lt=last_month).count()
+    last_month_n_questions = Question.objects.filter_state(deleted=False).filter(added_at__lt=last_month).count()
     qgraph_data = simplejson.dumps([
             (time.mktime(d.timetuple()) * 1000, i + last_month_n_questions)
             for i, d in enumerate(last_month_questions)
@@ -149,10 +149,10 @@ def get_statistics():
     return {
         'total_users': User.objects.all().count(),
         'users_last_24': User.objects.filter(date_joined__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_questions': Question.objects.filter(deleted=None).count(),
-        'questions_last_24': Question.objects.filter(deleted=None, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_answers': Answer.objects.filter(deleted=None).count(),
-        'answers_last_24': Answer.objects.filter(deleted=None, added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+        'total_questions': Question.objects.filter_state(deleted=False).count(),
+        'questions_last_24': Question.objects.filter_state(deleted=False).filter(added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+        'total_answers': Answer.objects.filter_state(deleted=False).count(),
+        'answers_last_24': Answer.objects.filter_state(deleted=False).filter(added_at__gt=(datetime.now() - timedelta(days=1))).count(),
     }
 
 @super_user_required

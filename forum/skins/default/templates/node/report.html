@@ -8,7 +8,7 @@
 </select>
 <textarea name="prompt">{{ types|first }}</textarea>
 <script>
-$('.user-prompt .prompt-examples').change(function() {
-    $('.user-prompt textarea').val($(this).val())            
+$('.prompt-examples').change(function() {
+    $('textarea[name=prompt]').val($(this).val())            
 })
 </script>

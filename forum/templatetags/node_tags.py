@@ -36,8 +36,9 @@ def favorite_mark(question, user):
 
     return {'favorited': favorited, 'favorite_count': question.favorite_count, 'question': question}
 
-def post_control(text, url, command=False, withprompt=False, title=""):
-    return {'text': text, 'url': url, 'command': command, 'withprompt': withprompt ,'title': title}
+def post_control(text, url, command=False, withprompt=False, confirm=False, title=""):
+    classes = (command and "ajax-command" or " ") + (withprompt and " withprompt" or " ") + (confirm and " confirm" or " ")
+    return {'text': text, 'url': url, 'classes': classes, 'title': title}
 
 @register.inclusion_tag('node/post_controls.html')
 def post_controls(post, user):
@@ -57,9 +58,9 @@ def post_controls(post, user):
             controls.append(post_control(_('retag'), edit_url))
 
         if post_type == 'question':
-            if post.closed and user.can_reopen_question(post):
+            if post.nis.closed and user.can_reopen_question(post):
                 controls.append(post_control(_('reopen'), reverse('reopen', kwargs={'id': post.id}), command=True))
-            elif not post.closed and user.can_close_question(post):
+            elif not post.nis.closed and user.can_close_question(post):
                 controls.append(post_control(_('close'), reverse('close', kwargs={'id': post.id}), command=True, withprompt=True))
 
         if user.can_flag_offensive(post):
@@ -72,16 +73,16 @@ def post_controls(post, user):
                     command=True, withprompt=True, title=_("report as offensive (i.e containing spam, advertising, malicious text, etc.)")))
 
         if user.can_delete_post(post):
-            if post.deleted:
+            if post.nis.deleted:
                 controls.append(post_control(_('undelete'), reverse('delete_post', kwargs={'id': post.id}),
-                        command=True))
+                        command=True, confirm=True))
             else:
                 controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
-                        command=True))
+                        command=True, confirm=True))
 
-        if user.can_wikify(post):
+        if (not post.nis.wiki) and user.can_wikify(post):
             menu.append(post_control(_('mark as community wiki'), reverse('wikify', kwargs={'id': post.id}),
-                        command=True))
+                        command=True, confirm=True))
 
         if post.node_type == "answer" and user.can_convert_to_comment(post):
             menu.append(post_control(_('convert to comment'), reverse('convert_to_comment', kwargs={'id': post.id}),
@@ -91,7 +92,7 @@ def post_controls(post, user):
 
 @register.inclusion_tag('node/comments.html')
 def comments(post, user):
-    all_comments = post.comments.filter(deleted=None).order_by('added_at')
+    all_comments = post.comments.filter_state(deleted=False).order_by('added_at')
 
     if len(all_comments) <= 5:
         top_scorers = all_comments

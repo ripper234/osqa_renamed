@@ -14,15 +14,15 @@ class Question(Node):
     class Meta(Node.Meta):
         proxy = True
 
-    answer_count = DenormalizedField("children", node_type="answer", deleted=None)
+    answer_count = DenormalizedField("children", ~models.Q(state_string__contains="(deleted)"), node_type="answer")
     favorite_count = DenormalizedField("actions", action_type="favorite", canceled=False)
 
     friendly_name = _("question")
     objects = QuestionManager()
 
-    @property   
-    def closed(self):
-        return self.extra_action
+    #@property
+    #def closed(self):
+    #    return self.nstate.closed
 
     @property    
     def view_count(self):
@@ -30,11 +30,11 @@ class Question(Node):
 
     @property
     def headline(self):
-        if self.marked:
-            return _('[closed] ') + self.title
-
-        if self.deleted:
+        if self.nis.deleted:
             return _('[deleted] ') + self.title
+
+        if self.nis.closed:
+            return _('[closed] ') + self.title
 
         return self.title
 
@@ -58,8 +58,8 @@ class Question(Node):
         related_list = cache.get(cache_key)
 
         if related_list is None:
-            related_list = Question.objects.values('id').filter(tags__id__in=[t.id for t in self.tags.all()]
-            ).exclude(id=self.id).filter(deleted=None).annotate(frequency=models.Count('id')).order_by('-frequency')[:count]
+            related_list = Question.objects.filter_state(deleted=False).values('id').filter(tags__id__in=[t.id for t in self.tags.all()]
+            ).exclude(id=self.id).annotate(frequency=models.Count('id')).order_by('-frequency')[:count]
             cache.set(cache_key, related_list, 60 * 60)
 
         return [Question.objects.get(id=r['id']) for r in related_list]

@@ -2,7 +2,7 @@ from question import Question ,QuestionRevision, QuestionSubscription
 from answer import Answer, AnswerRevision
 from tag import Tag, MarkedTag
 from user import User, ValidationHash, AuthKeyUserAssociation, SubscriptionSettings
-from node import Node, NodeRevision, NodeMetaClass
+from node import Node, NodeRevision, NodeState, NodeMetaClass
 from comment import Comment
 from action import Action, ActionRepute
 from meta import Vote, Flag, Badge, Award
@@ -17,7 +17,7 @@ except:
 from base import *
 
 __all__ = [
-        'Node', 'NodeRevision',  
+        'Node', 'NodeRevision', 'NodeState',  
         'Question', 'QuestionSubscription', 'QuestionRevision',
         'Answer', 'AnswerRevision',
         'Tag', 'Comment', 'MarkedTag', 'Badge', 'Award',

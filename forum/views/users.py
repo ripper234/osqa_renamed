@@ -174,8 +174,8 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
 
 @user_view('users/stats.html', 'stats', _('user profile'), _('user overview'))
 def user_stats(request, user):
-    questions = Question.objects.filter(author=user, deleted=None).order_by('-added_at')
-    answers = Answer.objects.filter(author=user, deleted=None).order_by('-added_at')
+    questions = Question.objects.filter_state(deleted=False).filter(author=user).order_by('-added_at')
+    answers = Answer.objects.filter_state(deleted=False).filter(author=user).order_by('-added_at')
 
     up_votes = user.vote_up_count
     down_votes = user.vote_down_count
@@ -211,7 +211,7 @@ def user_recent(request, user):
 
 @user_view('users/votes.html', 'votes', _('user vote record'), _('votes'), True)
 def user_votes(request, user):
-    votes = user.votes.filter(node__deleted=None, node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
+    votes = user.votes.exclude(node__state_string__contains="(deleted").filter(node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "votes" : votes}
 

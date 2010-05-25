@@ -63,7 +63,7 @@
 </div>
 <div id="main-body" class="">
     <div id="askform">
-            <table style="width:100%;" id="question-table" {% if question.deleted %}class="deleted"{%endif%}>
+            <table style="width:100%;" id="question-table" {% if question.nis.deleted %}class="deleted"{%endif%}>
                 <tr>
                     <td style="width:30px;vertical-align:top">
                         <div class="vote-buttons">
@@ -94,14 +94,14 @@
                     </td>
                 </tr>
             </table>
-            {% if question.marked %}
+            {% if question.nis.closed %}
             <div class="question-status" style="margin-bottom:15px">
             <h3>
-                {% blocktrans with question.closed.extra as close_reason %}
+                {% blocktrans with question.nstate.closed.extra as close_reason %}
                     The question has been closed for the following reason "{{ close_reason }}" by
                 {% endblocktrans %}
-                <a href="{{ question.closed.by.get_profile_url }}">{{ question.closed.by.username }}</a>
-                 {% diff_date question.closed.at %}
+                <a href="{{ question.nstate.closed.by.get_profile_url }}">{{ question.nstate.closed.by.username }}</a>
+                 {% diff_date question.nstate.closed.at %}
             </h3>
             </div>
             {% endif %}
@@ -129,7 +129,7 @@
   
                 {% for answer in answers %}
                     <a name="{{ answer.id }}"></a>
-                    <div id="answer-container-{{ answer.id }}" class="answer {% if answer.accepted %}accepted-answer{% endif %} {% ifequal answer.author_id question.author_id %} answered-by-owner{% endifequal %} {% if answer.deleted %}deleted{% endif %}">
+                    <div id="answer-container-{{ answer.id }}" class="answer {% if answer.nis.accepted %}accepted-answer{% endif %} {% ifequal answer.author_id question.author_id %} answered-by-owner{% endifequal %} {% if answer.nis.deleted %}deleted{% endif %}">
                         <table style="width:100%;">
                             <tr>
                                 <td style="width:30px;vertical-align:top">
