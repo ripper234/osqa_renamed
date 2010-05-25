@@ -15,7 +15,7 @@ def question_search(self, keywords):
                     },
                     where=["""
                            "forum_rootnode_doc"."node_id" = "forum_node"."id" AND ("forum_rootnode_doc"."document" @@ to_tsquery('english', %s) OR
-                           "forum_node"."title" ILIKE '""" + keywords + """%%')
+                           "forum_node"."title" ILIKE '""" + keywords.replace("'",r"\'") + """%%')
                            """],
                     params=[tsquery],
                     select_params=[tsquery],
