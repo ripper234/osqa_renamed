@@ -59,10 +59,10 @@ begin
       setweight(to_tsvector('english', coalesce(body,'')), 'C') INTO doc
       FROM forum_node WHERE id = root_id;
 
-    SELECT count(*)::int INTO rcount FROM forum_node WHERE abs_parent_id = root_id AND deleted_id IS NULL;
+    SELECT count(*)::int INTO rcount FROM forum_node WHERE abs_parent_id = root_id AND (NOT state_string LIKE '%%deleted%%');
 
     IF rcount > 0 THEN
-       FOR cv in SELECT setweight(to_tsvector('english', coalesce(body,'')), 'C') FROM forum_node WHERE abs_parent_id = root_id  AND deleted_id IS NULL LOOP
+       FOR cv in SELECT setweight(to_tsvector('english', coalesce(body,'')), 'C') FROM forum_node WHERE abs_parent_id = root_id  AND (NOT state_string LIKE '%%deleted%%') LOOP
            doc :=(doc || cv);
        END LOOP;
      END IF;
