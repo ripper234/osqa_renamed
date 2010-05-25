@@ -81,7 +81,7 @@ def command(func):
             if isinstance(e, CommandException):
                 response = {
                     'success': False,
-                    'error_message': str(e)
+                    'error_message': e.message
                 }
             else:
                 logging.error("%s: %s" % (func.__name__, str(e)))

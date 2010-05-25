@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson
+from django.utils.encoding import smart_str
 from django.shortcuts import render_to_response
 from forum.modules.decorators import decorate
 from forum import views
@@ -15,8 +16,8 @@ import settings
 def check_spam(param, comment_type):
     def wrapper(origin, request, *args, **kwargs):
         if (request.POST and request.POST.get(param, None) and WORDPRESS_API_KEY) and (not request.user.is_authenticated()
-             or not (request.user.is_staff and request.user.is_superuser and request.user.reputation >= REP_FOR_NO_SPAM_CHECK)):
-            comment = request.POST[param]
+             or not (request.user.is_staff or request.user.is_superuser or request.user.reputation >= REP_FOR_NO_SPAM_CHECK)):
+            comment = smart_str(request.POST[param])
 
             data = {
                 "user_ip":request.META["REMOTE_ADDR"],
@@ -27,7 +28,7 @@ def check_spam(param, comment_type):
 
             if request.user.is_authenticated():
                 data.update({
-                    "comment_author":request.user.username,
+                    "comment_author":smart_str(request.user.username),
                     "comment_author_email":request.user.email,
                     "comment_author_url":request.user.website,    
                 })
