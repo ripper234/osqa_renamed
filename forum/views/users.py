@@ -250,13 +250,13 @@ def user_subscriptions(request, user):
                 request.user.message_set.create(message=_('Notifications are now enabled'))
             else:
                 request.user.message_set.create(message=_('Notifications are now disabled'))
-        else:
-            form.is_valid()
-            for k,v in form.cleaned_data.items():
-                setattr(user.subscription_settings, k, v)
 
-            user.subscription_settings.save()
-            request.user.message_set.create(message=_('New subscription settings are now saved'))
+        form.is_valid()
+        for k,v in form.cleaned_data.items():
+            setattr(user.subscription_settings, k, v)
+
+        user.subscription_settings.save()
+        request.user.message_set.create(message=_('New subscription settings are now saved'))
     else:
         form = SubscriptionSettingsForm(user.subscription_settings.__dict__)
 
