@@ -79,11 +79,11 @@ if DEBUG:
     except:
         pass
 
-#try:
-#    import south
-#    INSTALLED_APPS.append('south')
-#except:
-#    pass
+try:
+    import south
+    INSTALLED_APPS.append('south')
+except:
+    pass
 
 if not DEBUG:
     try:
