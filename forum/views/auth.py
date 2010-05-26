@@ -147,6 +147,7 @@ def external_register(request):
 
             if User.objects.all().count() == 0:
                 user_.is_superuser = True
+                user_.is_staff = True
             
             user_.save()
             UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()

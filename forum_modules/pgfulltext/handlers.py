@@ -4,7 +4,7 @@ from forum.modules.decorators import decorate
 
 @decorate(QuestionManager.search, needs_origin=False)
 def question_search(self, keywords):
-    tsquery = " | ".join(keywords.split(' '))
+    tsquery = " | ".join([k for k in keywords.split(' ') if k])
     
     return self.extra(
                     tables = ['forum_rootnode_doc'],

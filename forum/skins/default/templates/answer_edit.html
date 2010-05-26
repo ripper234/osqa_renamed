@@ -51,7 +51,13 @@
                 {{ form.text }}
                 <span class="form-error"></span>
                 <div class="preview-toggle"><span id="pre-collapse" 
-					title="{% trans "Toggle the real time Markdown editor preview" %}">{% trans "toggle preview" %}</span></div>
+					title="{% trans "Toggle the real time Markdown editor preview" %}">{% trans "toggle preview" %}</span>
+				{% if settings.WIKI_ON %}
+                    <div style="float:right;">
+                        {{ form.wiki }} <span style="color:#000;cursor:help" title="{{form.wiki.help_text}}">{{ form.wiki.label_tag }} </span>
+                    </div>
+                    {% endif %}
+                </div>
                 <div id="previewer" class="wmd-preview"></div>
             </div>
             

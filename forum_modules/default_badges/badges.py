@@ -108,6 +108,7 @@ class FavoriteQuestion(FavoriteQuestionBadge):
     expected_count = settings.FAVORITE_QUESTION_FAVS
 
 class StellarQuestion(FavoriteQuestionBadge):
+    type = Badge.GOLD
     name = _("Stellar Question")
     expected_count = settings.STELLAR_QUESTION_FAVS
 
@@ -237,6 +238,7 @@ class SelfLearner(AbstractBadge):
 
 
 class StrunkAndWhite(AbstractBadge):
+    type = Badge.SILVER
     award_once = True
     listen_to = (ReviseAction,)
     name = _("Strunk & White")
