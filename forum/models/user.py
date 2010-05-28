@@ -255,6 +255,11 @@ class User(BaseModel, DjangoUser):
     def can_upload_files(self):
         return self.reputation >= int(settings.REP_TO_UPLOAD)
 
+    def check_password(self, old_passwd):
+        self.__dict__.update(self.__class__.objects.filter(id=self.id).values('password')[0])
+        return DjangoUser.check_password(self, old_passwd)
+
+
     class Meta:
         app_label = 'forum'
 

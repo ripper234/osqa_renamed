@@ -51,7 +51,7 @@ class Comment(Node):
         return False
 
     def get_absolute_url(self):
-        return self.absolute_parent.get_absolute_url() + "#%d" % self.id
+        return self.abs_parent.get_absolute_url() + "#%d" % self.id
 
     def __unicode__(self):
         return self.body

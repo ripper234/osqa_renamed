@@ -244,9 +244,9 @@ class Node(BaseModel, NodeContent):
     @property    
     def absolute_parent(self):
         if not self.abs_parent_id:
-            return self.leaf
+            return self
 
-        return self.abs_parent.leaf
+        return self.abs_parent
 
     @property
     def summary(self):
