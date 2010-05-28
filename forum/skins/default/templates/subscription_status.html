@@ -21,8 +21,9 @@
         {% endif %}
     </a></p>
     <p>
-        {% blocktrans with request.user.get_profile_url as profile_url %}
-            (you can adjust your notification settings on your <a href="{{ profile_url }}?sort=email_subscriptions">profile</a>)
+        {% url user_subscriptions id=request.user.id as subscriptions_url %}
+        {% blocktrans %}
+            (you can adjust your notification settings on your <a href="{{ subscriptions_url }}">profile</a>)
         {% endblocktrans %}
     </p>
 {% else %}
