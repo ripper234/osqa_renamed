@@ -252,9 +252,7 @@ class EditUserForm(forms.Form):
         self.user = user
 
     def clean_email(self):
-        """For security reason one unique email in database"""
         if self.user.email != self.cleaned_data['email']:
-            #todo dry it, there is a similar thing in openidauth
             if settings.EMAIL_UNIQUE == True:
                 if 'email' in self.cleaned_data:
                     try:
