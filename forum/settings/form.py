@@ -9,6 +9,11 @@ label = _("Enable community wiki"),
 help_text = _("Can questions or answers be marked as community wiki."),
 required=False))
 
+LIMIT_TAG_CREATION = Setting('LIMIT_TAG_CREATION', False, FORUM_SET, dict(
+label = _("Limit tag creation"),
+help_text = _("Limit tag creation to super users, staff or users with a minimum reputation."),
+required=False))
+
 
 """ settings for questions """
 FORM_MIN_QUESTION_TITLE = Setting('FORM_MIN_QUESTION_TITLE', 10, FORUM_SET, dict(

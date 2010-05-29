@@ -61,6 +61,9 @@ class AnonymousUser(DjangoAnonymousUser):
     def can_accept_answer(self, answer):
         return False
 
+    def can_create_tags(self):
+        return False
+
     def can_edit_post(self, post):
         return False
 
@@ -216,6 +219,10 @@ class User(BaseModel, DjangoUser):
     @true_if_is_super_or_staff
     def can_accept_answer(self, answer):
         return self == answer.question.author
+
+    @true_if_is_super_or_staff
+    def can_create_tags(self):
+        return self.reputation >= int(settings.REP_TO_CREATE_TAGS)
 
     @true_if_is_super_or_staff
     def can_edit_post(self, post):

@@ -27,6 +27,10 @@ REP_TO_UPLOAD = Setting('REP_TO_UPLOAD', 60, MIN_REP_SET, dict(
 label = _("Minimum reputation to upload"),
 help_text = _("The minimum reputation an user must have to be allowed to upload a file.")))
 
+REP_TO_CREATE_TAGS = Setting('REP_TO_CREATE_TAGS', 250, MIN_REP_SET, dict(
+label = _("Minimum reputation to create tags"),
+help_text = _("The minimum reputation an user must have to be allowed to create new tags.")))
+
 REP_TO_CLOSE_OWN = Setting('REP_TO_CLOSE_OWN', 250, MIN_REP_SET, dict(
 label = _("Minimum reputation to close own question"),
 help_text = _("The minimum reputation an user must have to be allowed to close his own question.")))

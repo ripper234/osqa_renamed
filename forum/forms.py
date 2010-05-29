@@ -61,7 +61,7 @@ class AnswerEditorField(EditorField):
 
 
 class TagNamesField(forms.CharField):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, user=None, *args, **kwargs):
         super(TagNamesField, self).__init__(*args, **kwargs)
         self.required = True
         self.widget = forms.TextInput(attrs={'size' : 50, 'autocomplete' : 'off'})
@@ -72,6 +72,7 @@ class TagNamesField(forms.CharField):
             'min': settings.FORM_MIN_NUMBER_OF_TAGS, 'max': settings.FORM_MAX_NUMBER_OF_TAGS    
         }
         self.initial = ''
+        self.user = user
 
     def clean(self, value):
         value = super(TagNamesField, self).clean(value)
@@ -93,6 +94,15 @@ class TagNamesField(forms.CharField):
             # only keep one same tag
             if tag not in list_temp and len(tag.strip()) > 0:
                 list_temp.append(tag)
+
+        if settings.LIMIT_TAG_CREATION and not self.user.can_create_tags():
+            existent = Tag.objects.filter(name__in=list_temp).values_list('name', flat=True)
+
+            if len(existent) < len(list_temp):
+                unexistent = [n for n in list_temp if not n in existent]
+                raise forms.ValidationError(_("You don't have enough reputation to create new tags. The following tags do not exist yet: %s") %
+                        ', '.join(unexistent))
+
 
         return u' '.join(list_temp)
 
@@ -132,10 +142,12 @@ class FeedbackForm(forms.Form):
 class AskForm(forms.Form):
     title  = TitleField()
     text   = QuestionEditorField()
-    tags   = TagNamesField()
 
-    def __init__(self, *args, **kwargs):
-        super(AskForm, self).__init__(*args, **kwargs)
+    def __init__(self, data=None, user=None, *args, **kwargs):
+        super(AskForm, self).__init__(data, *args, **kwargs)
+
+        self.fields['tags']   = TagNamesField(user)
+
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
 
@@ -181,7 +193,6 @@ class RevisionForm(forms.Form):
 class EditQuestionForm(forms.Form):
     title  = TitleField()
     text   = QuestionEditorField()
-    tags   = TagNamesField()
     summary = SummaryField()
 
     def __init__(self, question, user, revision=None, *args, **kwargs):
@@ -192,6 +203,8 @@ class EditQuestionForm(forms.Form):
 
         self.fields['title'].initial = revision.title
         self.fields['text'].initial = revision.body
+
+        self.fields['tags'] = TagNamesField(user)
         self.fields['tags'].initial = revision.tagnames
 
         if settings.WIKI_ON:

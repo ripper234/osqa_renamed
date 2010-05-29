@@ -191,6 +191,7 @@ def go_bootstrap(request):
     settings.REP_TO_COMMENT.set_value(0)
     settings.REP_TO_LIKE_COMMENT.set_value(0)
     settings.REP_TO_UPLOAD.set_value(0)
+    settings.REP_TO_CREATE_TAGS.set_value(0)
     settings.REP_TO_CLOSE_OWN.set_value(60)
     settings.REP_TO_REOPEN_OWN.set_value(120)
     settings.REP_TO_RETAG.set_value(150)

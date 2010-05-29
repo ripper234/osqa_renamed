@@ -67,7 +67,7 @@ def upload(request):#ajax upload file to a question or answer
 @decoratable
 def ask(request):
     if request.POST and "text" in request.POST:
-        form = AskForm(request.POST)
+        form = AskForm(request.POST, user=request.user)
         if form.is_valid():
             if request.user.is_authenticated():
                 ask_action = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
@@ -82,14 +82,12 @@ def ask(request):
                 request.session['temp_node_type'] = 'question'
                 return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
     elif request.method == "POST" and "go" in request.POST:
-        form = AskForm({'title': request.POST['q']})
+        form = AskForm({'title': request.POST['q']}, user=request.user)
     else:
-        form = AskForm()
+        form = AskForm(user=request.user)
 
-    #tags = _get_tags_cache_json()
     return render_to_response('ask.html', {
         'form' : form,
-        #'tags' : tags,
         'email_validation_faq_url':reverse('faq') + '#validate',
         }, context_instance=RequestContext(request))
 
