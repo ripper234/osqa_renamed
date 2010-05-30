@@ -42,10 +42,6 @@ class NodeScoreBadge(AbstractBadge):
     abstract = True
     listen_to = (VoteAction,)
 
-    @property
-    def description(self):
-        return _('Answer voted up %s times') % str(self.expected_score)
-
     def award_to(self, action):
         if (action.node.node_type == self.node_type) and (action.node.score == int(self.expected_score)):
             return action.node.author
@@ -54,6 +50,10 @@ class NodeScoreBadge(AbstractBadge):
 class QuestionScoreBadge(NodeScoreBadge):
     abstract = True
     node_type = "question"
+
+    @property
+    def description(self):
+        return _('Question voted up %s times') % str(self.expected_score)
 
 class NiceQuestion(QuestionScoreBadge):
     expected_score = settings.NICE_QUESTION_VOTES_UP
@@ -74,6 +74,10 @@ class AnswerScoreBadge(NodeScoreBadge):
     abstract = True
     node_type = "answer"
 
+    @property
+    def description(self):
+        return _('Answer voted up %s times') % str(self.expected_score)
+    
 class NiceAnswer(AnswerScoreBadge):
     expected_score = settings.NICE_ANSWER_VOTES_UP
     name = _("Nice Answer")
