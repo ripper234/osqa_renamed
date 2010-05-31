@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
-        <meta name="description" content="{{ settings.APP_DESCRIPTION }}">
-        <meta name="keywords" content="{{ settings.APP_KEYWORDS }}">
+        <meta name="description" content="{% block metadescription %}{{ settings.APP_DESCRIPTION }}{% endblock %}">
+        <meta name="keywords" content="{% block metakeywords %}{{ settings.APP_KEYWORDS }}{% endblock %}">
         {% block meta %}{% endblock %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         {% if settings.GOOGLE_SITEMAP_CODE %}
