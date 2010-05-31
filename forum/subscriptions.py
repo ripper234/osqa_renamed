@@ -124,7 +124,7 @@ def answer_accepted(action, new):
             subscription_settings__enable_notifications=True,
             subscription_settings__notify_accepted=True,
             subscription_settings__subscribed_questions='i'
-    ).exclude(id=action.node.accepted.by.id).distinct()
+    ).exclude(id=action.node.nstate.accepted.by.id).distinct()
     recipients = create_recipients_dict(subscribers)
 
     send_email(settings.EMAIL_SUBJECT_PREFIX + _("An answer to '%(question_title)s' was accepted") % dict(question_title=question.title),

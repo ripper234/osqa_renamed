@@ -1,11 +1,13 @@
+import re
 from django.db.models import Q
 from forum.models.question import Question, QuestionManager
 from forum.modules.decorators import decorate
 
 @decorate(QuestionManager.search, needs_origin=False)
 def question_search(self, keywords):
-    tsquery = " | ".join([k for k in keywords.split(' ') if k])
-    
+    repl_re = re.compile(r'[^\'-_\s\w]')
+    tsquery = " | ".join([k for k in repl_re.sub('', keywords).split(' ') if k])
+
     return self.extra(
                     tables = ['forum_rootnode_doc'],
                     select={

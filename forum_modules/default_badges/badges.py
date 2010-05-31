@@ -226,7 +226,7 @@ class Pundit(AbstractBadge):
     description = _('Left %s comments') % settings.PUNDIT_COMMENT_COUNT
 
     def award_to(self, action):
-        if (action.user.nodes.filter(node_type="comment", deleted=None)) == int(settings.CIVIC_DUTY_VOTES):
+        if action.user.nodes.filter_state(deleted=False).filter(node_type="comment").count() == int(settings.CIVIC_DUTY_VOTES):
             return action.user
 
 

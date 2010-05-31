@@ -3,7 +3,7 @@
 {% load extra_tags %}
 
 {% block content %}
-    {% var accepted_by = answer.accepted.by.username %}
+    {% var accepted_by = answer.nstate.accepted.by.username %}
     {% var answer_author = answer.author.username %}
     {% var app_url = settings.APP_URL %}
     {% var question_url = question.get_absolute_url %}

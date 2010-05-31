@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 
 #ADMINS and MANAGERS
-ADMINS = (('Forum Admin', 'forum@example.com'),)
+ADMINS = ()
 MANAGERS = ADMINS
 
 DEBUG = False
