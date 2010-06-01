@@ -40,8 +40,9 @@ label = _("Email subject prefix"),
 help_text = _("Every email sent through your website will have the subject prefixed by this string. It's usually a good idea to have such a prefix so your users can easilly set up a filter on theyr email clients."),
 required=False))
 
-EMAIL_CAN_SPAM = Setting(u'EMAIL_CAN_SPAM', '', EMAIL_SET, dict(
-label = _("Email Can Spam"),
-help_text = "Email Can Spam, usually the phisical address of the organization running the website. See <a href=\"http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003\">http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003</a> for more info."))
+EMAIL_FOOTER_TEXT = Setting(u'EMAIL_FOOTER_TEXT', '', EMAIL_SET, dict(
+label = _("Email Footer Text"),
+help_text = _("Email footer text, usually the Can Spam compliance, or the phisical address of the organization running the website. See <a href=\"http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003\">http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003</a> for more info."),
+required=False))
 
 EMAIL_DIGEST_CONTROL = Setting('EMAIL_DIGEST_CONTROL', None)
