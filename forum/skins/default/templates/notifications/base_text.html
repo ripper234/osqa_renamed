@@ -1,0 +1,18 @@
+{% load extra_filters extra_tags i18n email_tags %}
+
+{% declare %}
+    postal_address = "DZone, Inc. 140 Preston Executive Drive, Cary NC 27513, USA"
+{% enddeclare %}
+
+{% trans "Hello" %} {{ recipient.username }},
+
+{% block content %}
+{% endblock%}       
+
+Thanks,
+{{settings.APP_SHORT_NAME}}
+
+P.S. You can always fine-tune which notifications you receive here:
+{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}
+
+{{ postal_address }}

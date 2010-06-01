@@ -1,49 +1,33 @@
 {% load extra_filters extra_tags i18n email_tags %}
 
 {% declare %}
-    logo_location := os.path.join(str(settings.UPFILES_FOLDER), os.path.basename(str(settings.APP_LOGO)))
+    logo_location = "http://meta.osqa.net/upfiles/osqa_logo.png"
+    p_style = "color:#333333;font-family:'helvetica neue', arial, Helvetica, sans-serif;line-height:18px;font-size:14px;margin-top:10px;"
+    a_style = "text-decoration:none;color:#3060a8;font-weight:bold;"
+    hr_style = "color:#ccc;border:0;height:1px;background-color:#ccc;margin-bottom:20px;"
+    small_style = "color:#333333;font-family:'Lucida Grande', Trebuchet, Helvetica, sans-serif;font-size:12px;"
+    table_style = "border:20px #e5ebf8 solid;margin:10px auto 10px auto;width:750px;text-align:left;"
+    postal_address = "DZone, Inc. 140 Preston Executive Drive, Cary NC 27513, USA"
 {% enddeclare %}
-{% embedmedia logo_location as logo %}
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <style type="text/css">
-            body {
-                background: #FFF;
-                font-size: 12px;
-                line-height: 150%;
-                margin: 0;
-                padding: 0;
-                color: #000;
-                font-family: sans-serif;
-            }
-
-            #wrapper {
-                width: 600px;
-                margin: auto;
-                padding: 0;
-            }
-
-            a img {
-                border: none;
-            }
-        </style>
-    </head>
-    <body>
-        <a href="{% fullurl index %}">
-            <img src="cid:logo" title="{% trans "home" %}" alt="{{settings.APP_TITLE}} logo"/>
-        </a>
-        <br />
-        <p>{{ settings.APP_TITLE }}</p>
-    <br /><br />
-    <div id="wrapper">
-            <div id="room">
-                <div id="CALeft">
-                    {% block content%}
-                    {% endblock%}
-                </div>
-            </div>
-            <div class="spacer3"></div>
-        </div>
-    </body>
+<html>
+<head>
+</head>
+<body style="margin:0;">
+<center>
+<table style="{{ table_style }}">
+<tbody><tr><td style="padding:20px;">
+<img src="{{ logo_location }}" alt="{{settings.APP_TITLE}}" />
+<hr style="{{ hr_style }}" />
+<p style="{{ p_style }}">{% trans "Hello" %} {{ recipient.username }},</p>
+{% block content %}
+{% endblock%}                    
+<p style="{{ p_style }}">Thanks,<br />{{settings.APP_SHORT_NAME}}</p>
+<p style="{{ p_style }}">P.S. You can always fine-tune which notifications you receive
+<a href="{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}" style="{{ a_style }}">here</a>.
+</p>
+<hr style="{{ hr_style }}" />
+<p style="{{ p_style }}"><small style="{{ small_style }}">{{ postal_address }}</small></p>
+</td></tr></tbody></table>
+</center>
+</body>
 </html>

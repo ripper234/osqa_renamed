@@ -14,12 +14,10 @@
     {% subject %}{% blocktrans %}{{ prefix }} New question on {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        <p>{% trans "Hello" %} {{ recipient.username }},</p>
-
-        <p>
+        <p style="{{ p_style }}">
             {% blocktrans %}
             {{ question_author }} has just posted a new question on {{ app_name }}, with title
-            <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a> and tagged <em>{{ question_tags }}</em>:
+            <a style="{{ a_style }}" href="{{ app_url }}{{ question_url }}">{{ question_title }}</a> and tagged <em>{{ question_tags }}</em>:
             {% endblocktrans %}
         </p>
 
@@ -27,28 +25,18 @@
             {{ question.html|safe }}
         </blockquote>
 
-        <p>{% trans "Don't forget to come over and cast your vote." %}</p>
-
-        <p>{% blocktrans %}Sincerely,<br />
-        Forum Administrator{% endblocktrans %}</p>
+        <p style="{{ p_style }}">{% trans "Don't forget to come over and cast your vote." %}</p>        
     {% endhtmlcontent %}
 
-    {% textcontent %}
-        {% trans "Hello" %} {{ recipient.username }}
-    
-        {% blocktrans %}
-        {{ question_author }} has just posted a new question on {{ app_name }}, with title
-        "{{ question_title }}" and tagged {{ question_tags }}:
-        {% endblocktrans %}
+{% textcontent notifications/base_text.html %}
+{% blocktrans %}
+{{ question_author }} has just posted a new question on {{ app_name }}, with title
+"{{ question_title }}" and tagged {{ question_tags }}:
+{% endblocktrans %}
 
+{{ question.body|safe }}
 
-        {{ question.body|safe }}
-
-
-        {% trans "Don't forget to come over and cast your vote." %}
-
-        {% blocktrans %}Sincerely,
-        Forum Administrator{% endblocktrans %}
-    {% endtextcontent %}
+{% trans "Don't forget to come over and cast your vote." %}
+{% endtextcontent %}
 {% endemail %}
 
