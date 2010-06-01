@@ -181,7 +181,9 @@ def trigger_hooks_threaded(action, hooks, new):
                 try:
                     hook(action=action, new=new)
                 except Exception, e:
+                    import traceback
                     logging.error("Error in %s hook: %s" % (cls.__name__, str(e)))
+                    logging.error(traceback.format_exc())
 
 class ActionProxyMetaClass(BaseMetaClass):
     types = {}

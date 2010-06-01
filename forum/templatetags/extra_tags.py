@@ -427,7 +427,11 @@ class DeclareNode(template.Node):
                 d['os'] = os
                 for c in clist:
                     d.update(c)
-                context[m.group(1).strip()] = eval(m.group(3).strip(), d)
+                try:
+                    context[m.group(1).strip()] = eval(m.group(3).strip(), d)
+                except Exception, e:
+                    logging.error("Error in declare tag, when evaluating: %s" % m.group(3).strip())
+                    raise
         return ''
 
 @register.tag(name='declare')

@@ -1,27 +1,44 @@
-{% extends "email_base.html" %}
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags email_tags %}
 
-{% block content %}
-    <p>{% trans "Hello" %} {% user_var username %},</p>
+{% declare %}
+    prefix = settings.EMAIL_SUBJECT_PREFIX
+    app_name = settings.APP_SHORT_NAME
+    app_url = settings.APP_URL
+    answer_author = answer.author.username
+    question = answer.question
+    question_url = question.get_absolute_url()
+    question_title = question.title
+{% enddeclare %}
 
-    <p>
-        {% blocktrans with answer.author.username as author_name and settings.APP_SHORT_NAME as app_title and settings.APP_URL as app_url and question.get_absolute_url as question_url and question.title as question_title %}
-        {{ author_name }} has just posted a new answer on {{ app_title }} to the question
-        <a href="{{ app_url }}{{ question_url }}">{{ question_title }}"</a>:
-        {% endblocktrans %}
-    </p>
+{% email %}
+    {% subject %}{% blocktrans %}{{ prefix }} New answer to {{ question_title }}{% endblocktrans %}{% endsubject %}
 
-    <blockquote>
+    {% htmlcontent notifications/base.html %}
+        <p style="{{ p_style }}">
+            {% blocktrans %}
+            {{ answer_author }} has just posted a new answer on {{ app_name }} to the question
+            <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a>:
+            {% endblocktrans %}
+        </p>
+
+        <blockquote>
         {{ answer.html|safe }}
-    </blockquote>
+        </blockquote>
 
-    <p>
-    {% blocktrans %}
-        Don't forget to come over and cast your vote.
-    {% endblocktrans %}
-    </p>
+        <p style="{{ p_style }}">{% trans "Don't forget to come over and cast your vote." %}</p>
+    {% endhtmlcontent %}
 
-    <p>{% blocktrans %}Sincerely,<br />
-    Forum Administrator{% endblocktrans %}</p>
-{% endblock %}
+    {% textcontent notifications/base_text.html %}
+        {% blocktrans %}
+        {{ answer_author }} has just posted a new answer on {{ app_name }} to the question
+            "{{ question_title }}":
+        {% endblocktrans %}
+
+
+        {{ answer.body|safe }}
+
+        {% trans "Don't forget to come over and cast your vote." %} 
+    {% endtextcontent %}
+
+{% endemail %}
+

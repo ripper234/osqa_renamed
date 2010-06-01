@@ -29,14 +29,15 @@
     {% endhtmlcontent %}
 
 {% textcontent notifications/base_text.html %}
-{% blocktrans %}
-{{ question_author }} has just posted a new question on {{ app_name }}, with title
-"{{ question_title }}" and tagged {{ question_tags }}:
-{% endblocktrans %}
+    {% blocktrans %}
+        {{ question_author }} has just posted a new question on {{ app_name }}, with title
+        "{{ question_title }}" and tagged {{ question_tags }}:
+    {% endblocktrans %}
 
-{{ question.body|safe }}
+    {{ question.body|safe }}
 
-{% trans "Don't forget to come over and cast your vote." %}
+    {% trans "Don't forget to come over and cast your vote." %}
 {% endtextcontent %}
+
 {% endemail %}
 

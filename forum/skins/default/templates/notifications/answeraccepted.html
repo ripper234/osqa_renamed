@@ -1,23 +1,33 @@
-{% extends "email_base.html" %}
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags email_tags %}
 
-{% block content %}
-    {% var accepted_by = answer.nstate.accepted.by.username %}
-    {% var answer_author = answer.author.username %}
-    {% var app_url = settings.APP_URL %}
-    {% var question_url = question.get_absolute_url %}
-    {% var question_title = question.title %}
+{% declare %}
+    prefix = settings.EMAIL_SUBJECT_PREFIX
+    app_name = settings.APP_SHORT_NAME
+    app_url = settings.APP_URL
+    answer_author = answer.author.username
+    question = answer.question
+    question_url = question.get_absolute_url()
+    question_title = question.title
+    accepted_by = answer.nstate.accepted.by.username
+{% enddeclare %}
 
-    <p>{% trans "Hello" %} {% user_var username %},</p>
+{% email %}
+    {% subject %}{% blocktrans %}{{ prefix }} New answer to {{ question_title }}{% endblocktrans %}{% endsubject %}
 
-    <p>
+    {% htmlcontent notifications/base.html %}
+        <p style="{{ p_style }}">
+            {% blocktrans %}
+            {{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
+            <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a>.
+            {% endblocktrans %}
+        </p>
+    {% endhtmlcontent %}
+
+    {% textcontent notifications/base_text.html %}
         {% blocktrans %}
-        Just to let you know that {{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
-        <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a>:
+        {{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
+            "{{ question_title }}".
         {% endblocktrans %}
-    </p>
+    {% endtextcontent %}
 
-    <p>{% blocktrans %}Sincerely,<br />
-    Forum Administrator{% endblocktrans %}</p>
-{% endblock %}
+{% endemail %}

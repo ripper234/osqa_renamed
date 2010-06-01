@@ -15,12 +15,6 @@ def create_subscription_if_not_exists(question, user):
         subscription = QuestionSubscription(question=question, user=user)
         subscription.save()
 
-def apply_default_filters(queryset, excluded_id):
-    return queryset.values('email', 'username').exclude(id=excluded_id)
-
-def create_recipients_dict(usr_list):
-    return [(s['username'], s['email'], {'username': s['username']}) for s in usr_list]
-
 def question_posted(action, new):
     question = action.node
 
@@ -31,14 +25,7 @@ def question_posted(action, new):
               Q(tag_selections__reason='good'))
     ).exclude(id=question.author.id).distinct()
 
-    #recipients = create_recipients_dict(subscribers)
-
     send_template_email(subscribers, "notifications/newquestion.html", {'question': question})
-
-    #send_email(settings.EMAIL_SUBJECT_PREFIX + _("New question on %(app_name)s") % dict(app_name=settings.APP_SHORT_NAME),
-    #           recipients, "notifications/newquestion.html", {
-    #    'question': question,
-    #})
 
     if question.author.subscription_settings.questions_asked:
         subscription = QuestionSubscription(question=question, user=question.author)
@@ -60,18 +47,13 @@ def answer_posted(action, new):
     answer = action.node
     question = answer.question
 
-    subscribers = question.subscribers.values('email', 'username').filter(
+    subscribers = question.subscribers.filter(
             subscription_settings__enable_notifications=True,
             subscription_settings__notify_answers=True,
             subscription_settings__subscribed_questions='i'
     ).exclude(id=answer.author.id).distinct()
-    recipients = create_recipients_dict(subscribers)
 
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("New answer to '%(question_title)s'") % dict(question_title=question.title),
-               recipients, "notifications/newanswer.html", {
-        'question': question,
-        'answer': answer
-    }, threaded=False)
+    send_template_email(subscribers, "notifications/newanswer.html", {'answer': answer})
 
     if answer.author.subscription_settings.questions_answered:
         create_subscription_if_not_exists(question, answer.author)
@@ -81,37 +63,27 @@ AnswerAction.hook(answer_posted)
 
 def comment_posted(action, new):
     comment = action.node
-    post = comment.content_object
+    post = comment.parent
 
     if post.__class__ == Question:
         question = post
     else:
         question = post.question
 
-    subscribers = question.subscribers.values('email', 'username')
-
     q_filter = Q(subscription_settings__notify_comments=True) | Q(subscription_settings__notify_comments_own_post=True, id=post.author.id)
 
-    #inreply = re.search('@\w+', comment.comment)
-    #if inreply is not None:
-    #    q_filter = q_filter | Q(subscription_settings__notify_reply_to_comments=True,
-    #                            username__istartswith=inreply.group(0)[1:],
-    ##                            comments__object_id=post.id,
-    #                            comments__content_type=ContentType.objects.get_for_model(post.__class__)
-    #                            )
+    inreply = re.search('@\w+', comment.comment)
+    if inreply is not None:
+        q_filter = q_filter | Q(subscription_settings__notify_reply_to_comments=True,
+                                username__istartswith=inreply.group(0)[1:],
+                                nodes__parent=post, nodes__node_type="comment")
 
-    subscribers = subscribers.filter(
+    subscribers = question.subscribers.filter(
             q_filter, subscription_settings__subscribed_questions='i', subscription_settings__enable_notifications=True
     ).exclude(id=comment.user.id).distinct()
 
-    recipients = create_recipients_dict(subscribers)
 
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("New comment on %(question_title)s") % dict(question_title=question.title),
-               recipients, "notifications/newcomment.html", {
-                'comment': comment,
-                'post': post,
-                'question': question,
-    }, threaded=False)
+    send_template_email(subscribers, "notifications/newcomment.html", {'comment': comment})
 
     if comment.user.subscription_settings.questions_commented:
         create_subscription_if_not_exists(question, comment.user)
@@ -122,34 +94,24 @@ CommentAction.hook(comment_posted)
 def answer_accepted(action, new):
     question = action.node.question
 
-    subscribers = question.subscribers.values('email', 'username').filter(
+    subscribers = question.subscribers.filter(
             subscription_settings__enable_notifications=True,
             subscription_settings__notify_accepted=True,
             subscription_settings__subscribed_questions='i'
     ).exclude(id=action.node.nstate.accepted.by.id).distinct()
-    recipients = create_recipients_dict(subscribers)
 
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("An answer to '%(question_title)s' was accepted") % dict(question_title=question.title),
-               recipients, "notifications/answeraccepted.html", {
-        'question': question,
-        'answer': action.node
-    }, threaded=False)
+    send_template_email(subscribers, "notifications/answeraccepted.html", {'answer': action.node})
 
 AcceptAnswerAction.hook(answer_accepted)
 
 
 def member_joined(action, new):
-    subscribers = User.objects.values('email', 'username').filter(
+    subscribers = User.objects.filter(
             subscription_settings__enable_notifications=True,
             subscription_settings__member_joins='i'
     ).exclude(id=action.user.id).distinct()
 
-    recipients = create_recipients_dict(subscribers)
-
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("%(username)s is a new member on %(app_name)s") % dict(username=action.user.username, app_name=settings.APP_SHORT_NAME),
-               recipients, "notifications/newmember.html", {
-        'newmember': action.user,
-    }, threaded=False)
+    send_template_email(subscribers, "notifications/newmember.html", {'newmember': action.user})
 
 UserJoinsAction.hook(member_joined)
 

@@ -1,13 +1,11 @@
 {% load extra_filters extra_tags i18n email_tags %}
 
 {% declare %}
-    logo_location = "http://meta.osqa.net/upfiles/osqa_logo.png"
     p_style = "color:#333333;font-family:'helvetica neue', arial, Helvetica, sans-serif;line-height:18px;font-size:14px;margin-top:10px;"
     a_style = "text-decoration:none;color:#3060a8;font-weight:bold;"
     hr_style = "color:#ccc;border:0;height:1px;background-color:#ccc;margin-bottom:20px;"
     small_style = "color:#333333;font-family:'Lucida Grande', Trebuchet, Helvetica, sans-serif;font-size:12px;"
     table_style = "border:20px #e5ebf8 solid;margin:10px auto 10px auto;width:750px;text-align:left;"
-    postal_address = "DZone, Inc. 140 Preston Executive Drive, Cary NC 27513, USA"
 {% enddeclare %}
 <html>
 <head>
@@ -16,7 +14,7 @@
 <center>
 <table style="{{ table_style }}">
 <tbody><tr><td style="padding:20px;">
-<img src="{{ logo_location }}" alt="{{settings.APP_TITLE}}" />
+<img src="{{ settings.APP_URL }}{{ settings.APP_LOGO }}" alt="{{settings.APP_TITLE}}" />
 <hr style="{{ hr_style }}" />
 <p style="{{ p_style }}">{% trans "Hello" %} {{ recipient.username }},</p>
 {% block content %}
@@ -26,7 +24,7 @@
 <a href="{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}" style="{{ a_style }}">here</a>.
 </p>
 <hr style="{{ hr_style }}" />
-<p style="{{ p_style }}"><small style="{{ small_style }}">{{ postal_address }}</small></p>
+<p style="{{ p_style }}"><small style="{{ small_style }}">{{ settings.EMAIL_CAN_SPAM }}</small></p>
 </td></tr></tbody></table>
 </center>
 </body>
