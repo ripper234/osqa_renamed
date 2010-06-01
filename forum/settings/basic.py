@@ -8,7 +8,7 @@ from django.forms.widgets import Textarea
 
 BASIC_SET = SettingSet('basic', _('Basic settings'), _("The basic settings for your application"), 1)
 
-APP_LOGO = Setting('APP_LOGO', '/m/default/media/images/logo.png', BASIC_SET, dict(
+APP_LOGO = Setting('APP_LOGO', '/upfiles/logo.png', BASIC_SET, dict(
 label = _("Application logo"),
 help_text = _("Your site main logo."),
 widget=ImageFormWidget))

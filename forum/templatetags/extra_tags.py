@@ -419,10 +419,15 @@ class DeclareNode(template.Node):
 
         for line in source.splitlines():
             m = self.dec_re.search(line)
-            if m and m.group(2) == '=':
-                context[m.group(1).strip()] = m.group(3).strip()
-            elif m and m.group(2) == ':=':
-                context[m.group(1).strip()] = template.Variable(m.group(3).strip()).resolve(context)
+            if m:
+                clist = list(context)
+                clist.reverse()
+                d = {}
+                d['_'] = _
+                d['os'] = os
+                for c in clist:
+                    d.update(c)
+                context[m.group(1).strip()] = eval(m.group(3).strip(), d)
         return ''
 
 @register.tag(name='declare')
