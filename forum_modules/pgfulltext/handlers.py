@@ -5,7 +5,7 @@ from forum.modules.decorators import decorate
 
 @decorate(QuestionManager.search, needs_origin=False)
 def question_search(self, keywords):
-    repl_re = re.compile(r'[^\'-_\s\w]')
+    repl_re = re.compile(r"[^\'\-_\s\w]")
     tsquery = " | ".join([k for k in repl_re.sub('', keywords).split(' ') if k])
 
     return self.extra(
