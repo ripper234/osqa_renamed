@@ -158,7 +158,7 @@ class User(BaseModel, DjangoUser):
     def get_vote_count_today(self):
         today = datetime.date.today()
         return self.actions.filter(canceled=False, action_type__in=("voteup", "votedown"),
-                action_date__range=(today - datetime.timedelta(days=1), today)).count()
+                action_date__gte=(today - datetime.timedelta(days=1))).count()
 
     def get_reputation_by_upvoted_today(self):
         today = datetime.datetime.now()
@@ -170,7 +170,7 @@ class User(BaseModel, DjangoUser):
     def get_flagged_items_count_today(self):
         today = datetime.date.today()
         return self.actions.filter(canceled=False, action_type="flag",
-                action_date__range=(today - datetime.timedelta(days=1), today)).count()
+                action_date__gte=(today - datetime.timedelta(days=1))).count()
 
     @true_if_is_super_or_staff
     def can_view_deleted_post(self, post):

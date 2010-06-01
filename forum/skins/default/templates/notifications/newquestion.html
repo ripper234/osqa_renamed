@@ -1,27 +1,54 @@
-{% extends "email_base.html" %}
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags email_tags %}
 
-{% block content %}
-    <p>{% trans "Hello" %} {% user_var username %},</p>
+{% declare %}
+    prefix = settings.EMAIL_SUBJECT_PREFIX
+    app_name = settings.APP_SHORT_NAME
+    question_author = question.author.username
+    app_url = settings.APP_URL
+    question_url = question.get_absolute_url()
+    question_title = question.title
+    question_tags = question.tagnames
+{% enddeclare %}
 
-    <p>
-        {% blocktrans with question.author.username as author_name and settings.APP_SHORT_NAME as app_title and settings.APP_URL as app_url and question.get_absolute_url as question_url and question.title as question_title and question.tagnames as question_tags %}
-        {{ author_name }} has just posted a new question on {{ app_title }}, with title
-        <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a> and tagged <em>{{ question_tags }}</em>:
+{% email %}
+    {% subject %}{% blocktrans %}{{ prefix }} New question on {{ app_name }}{% endblocktrans %}{% endsubject %}
+
+    {% htmlcontent notifications/base.html %}
+        <p>{% trans "Hello" %} {{ recipient.username }},</p>
+
+        <p>
+            {% blocktrans %}
+            {{ question_author }} has just posted a new question on {{ app_name }}, with title
+            <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a> and tagged <em>{{ question_tags }}</em>:
+            {% endblocktrans %}
+        </p>
+
+        <blockquote>
+            {{ question.html|safe }}
+        </blockquote>
+
+        <p>{% trans "Don't forget to come over and cast your vote." %}</p>
+
+        <p>{% blocktrans %}Sincerely,<br />
+        Forum Administrator{% endblocktrans %}</p>
+    {% endhtmlcontent %}
+
+    {% textcontent %}
+        {% trans "Hello" %} {{ recipient.username }}
+    
+        {% blocktrans %}
+        {{ question_author }} has just posted a new question on {{ app_name }}, with title
+        "{{ question_title }}" and tagged {{ question_tags }}:
         {% endblocktrans %}
-    </p>
 
-    <blockquote>
-        {{ question.html|safe }}
-    </blockquote>
 
-    <p>
-    {% blocktrans %}
-        Don't forget to come over and cast your vote.
-    {% endblocktrans %}
-    </p>
+        {{ question.body|safe }}
 
-    <p>{% blocktrans %}Sincerely,<br />
-    Forum Administrator{% endblocktrans %}</p>
-{% endblock %}
+
+        {% trans "Don't forget to come over and cast your vote." %}
+
+        {% blocktrans %}Sincerely,
+        Forum Administrator{% endblocktrans %}
+    {% endtextcontent %}
+{% endemail %}
+

@@ -2,7 +2,7 @@ import os
 import re
 import datetime
 from forum.models import User, Question, Comment, QuestionSubscription, SubscriptionSettings, Answer
-from forum.utils.mail import send_email
+from forum.utils.mail import send_email, send_template_email
 from django.utils.translation import ugettext as _
 from forum.actions import AskAction, AnswerAction, CommentAction, AcceptAnswerAction, UserJoinsAction, QuestionViewAction
 from forum import settings
@@ -24,19 +24,21 @@ def create_recipients_dict(usr_list):
 def question_posted(action, new):
     question = action.node
 
-    subscribers = User.objects.values('email', 'username').filter(
+    subscribers = User.objects.filter(
             Q(subscription_settings__enable_notifications=True, subscription_settings__new_question='i') |
             (Q(subscription_settings__new_question_watched_tags='i') &
               Q(marked_tags__name__in=question.tagnames.split(' ')) &
               Q(tag_selections__reason='good'))
     ).exclude(id=question.author.id).distinct()
 
-    recipients = create_recipients_dict(subscribers)
+    #recipients = create_recipients_dict(subscribers)
 
-    send_email(settings.EMAIL_SUBJECT_PREFIX + _("New question on %(app_name)s") % dict(app_name=settings.APP_SHORT_NAME),
-               recipients, "notifications/newquestion.html", {
-        'question': question,
-    })
+    send_template_email(subscribers, "notifications/newquestion.html", {'question': question})
+
+    #send_email(settings.EMAIL_SUBJECT_PREFIX + _("New question on %(app_name)s") % dict(app_name=settings.APP_SHORT_NAME),
+    #           recipients, "notifications/newquestion.html", {
+    #    'question': question,
+    #})
 
     if question.author.subscription_settings.questions_asked:
         subscription = QuestionSubscription(question=question, user=question.author)

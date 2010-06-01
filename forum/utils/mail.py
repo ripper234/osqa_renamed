@@ -2,9 +2,9 @@ import email
 import socket
 import os
 
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEText import MIMEText
-from email.MIMEImage import MIMEImage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.image import MIMEImage
 
 from django.core.mail import DNS_NAME
 from smtplib import SMTP
@@ -131,3 +131,59 @@ def send_email(subject, recipients, template, context={}, sender=None, images=[]
         thread.start()
     else:
         send_msg_list(msgs)
+
+
+def send_template_email(recipients, template, context):
+    t = loader.get_template(template)
+    context.update(dict(recipients=recipients, settings=settings))
+    t.render(Context(context))
+
+def create_and_send_mail_messages(messages):
+    sender = '%s <%s>' % (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))
+
+    connection = SMTP(str(settings.EMAIL_HOST), str(settings.EMAIL_PORT),
+                local_hostname=DNS_NAME.get_fqdn())
+
+    try:
+        if (bool(settings.EMAIL_USE_TLS)):
+            connection.ehlo()
+            connection.starttls()
+            connection.ehlo()
+
+        if settings.EMAIL_HOST_USER and settings.EMAIL_HOST_PASSWORD:
+            connection.login(str(settings.EMAIL_HOST_USER), str(settings.EMAIL_HOST_PASSWORD))
+
+        if sender is None:
+            sender = str(settings.DEFAULT_FROM_EMAIL)
+
+        for recipient, subject, html, text, media in messages:
+            msgRoot = MIMEMultipart('related')
+            msgRoot['Subject'] = subject
+            msgRoot['From'] = sender
+            msgRoot['To'] =  '%s <%s>' % (recipient.username, recipient.email)
+            msgRoot.preamble = 'This is a multi-part message from %s.' % unicode(settings.APP_SHORT_NAME).encode('utf8')
+
+            msgAlternative = MIMEMultipart('alternative')
+            msgRoot.attach(msgAlternative)
+
+            msgAlternative.attach(MIMEText(text, _charset='utf-8'))
+            msgAlternative.attach(MIMEText(html, 'html', _charset='utf-8'))
+
+            for alias, location in media.items():
+                fp = open(location, 'rb')
+                msgImage = MIMEImage(fp.read())
+                fp.close()
+                msgImage.add_header('Content-ID', '<'+alias+'>')
+                msgRoot.attach(msgImage)
+
+            try:
+                connection.sendmail(sender, [recipient.email], msgRoot.as_string())
+            except Exception, e:
+                pass
+
+        try:
+            connection.quit()
+        except socket.sslerror:
+            connection.close()
+    except Exception, e:
+        print e
