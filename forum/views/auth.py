@@ -276,15 +276,17 @@ def auth_settings(request, id):
     if request.POST:
         form = FormClass(request.POST, user=user_)
         if form.is_valid():
-            if user_.has_usable_password():
-                request.user.message_set.create(message=_("Your password was changed"))
-            else:
+            is_new_pass = not user_.has_usable_password()
+            user_.set_password(form.cleaned_data['password1'])
+            user_.save()
+
+            if is_new_pass:
                 request.user.message_set.create(message=_("New password set"))
                 if not request.user.is_superuser:
                     form = ChangePasswordForm(user=user_)
-                
-            user_.set_password(form.cleaned_data['password1'])
-            user_.save()
+            else:
+                request.user.message_set.create(message=_("Your password was changed"))
+
             return HttpResponseRedirect(reverse('user_authsettings', kwargs={'id': user_.id}))
     else:
         form = FormClass(user=user_)

@@ -92,7 +92,7 @@ class ClassicLoginForm(forms.Form):
             error_list.append(_('Please enter user name'))
         if len(error_list) > 0:
             self._errors['__all__'] = forms.util.ErrorList(error_list)
-            
+
         return self.cleaned_data
 
     def get_user(self):
