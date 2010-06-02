@@ -42,7 +42,7 @@ required=False))
 
 EMAIL_FOOTER_TEXT = Setting(u'EMAIL_FOOTER_TEXT', '', EMAIL_SET, dict(
 label = _("Email Footer Text"),
-help_text = _("Email footer text, usually the Can Spam compliance, or the phisical address of the organization running the website. See <a href=\"http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003\">http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003</a> for more info."),
+help_text = _("Email footer text, usually \"CAN SPAM\" compliance, or the physical address of the organization running the website. See <a href=\"http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003\">this Wikipedia article</a> for more info."),
 required=False))
 
 EMAIL_DIGEST_CONTROL = Setting('EMAIL_DIGEST_CONTROL', None)
