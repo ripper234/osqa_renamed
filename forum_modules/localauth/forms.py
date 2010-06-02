@@ -47,7 +47,7 @@ class ClassicLoginForm(forms.Form):
     def _clean_nonempty_field(self,field):
         value = None
         if field in self.cleaned_data:
-            value = str(self.cleaned_data[field]).strip()
+            value = self.cleaned_data[field].strip()
             if value == '':
                 value = None
         self.cleaned_data[field] = value
