@@ -4,20 +4,27 @@
     prefix = settings.EMAIL_SUBJECT_PREFIX
     app_name = settings.APP_SHORT_NAME
     question_author = question.author.username
-    app_url = settings.APP_URL
-    question_url = question.get_absolute_url()
+    question_url = settings.APP_URL + question.get_absolute_url()
     question_title = question.title
     question_tags = question.tagnames
+    safe_body = html.html2text(question.html)
 {% enddeclare %}
 
 {% email %}
     {% subject %}{% blocktrans %}{{ prefix }} New question on {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
+        {% declare %}
+            author_link = html.objlink(question.author, style=a_style)
+            question_link = html.objlink(question, style=a_style)
+            tag_links = html.mark_safe(" ".join([html.objlink(t, style=a_style) for t in question.tags.all()]))
+        {% enddeclare %}
+
         <p style="{{ p_style }}">
             {% blocktrans %}
-            {{ question_author }} has just posted a new question on {{ app_name }}, with title
-            <a style="{{ a_style }}" href="{{ app_url }}{{ question_url }}">{{ question_title }}</a> and tagged <em>{{ question_tags }}</em>:
+            {{ author_link }} has just posted a new question on {{ app_name }}, entitled
+            {{ question_link }}
+             and tagged "<em>{{ tag_links }}</em>". Here's what it says:
             {% endblocktrans %}
         </p>
 
@@ -29,14 +36,13 @@
     {% endhtmlcontent %}
 
 {% textcontent notifications/base_text.html %}
-    {% blocktrans %}
-        {{ question_author }} has just posted a new question on {{ app_name }}, with title
-        "{{ question_title }}" and tagged {{ question_tags }}:
-    {% endblocktrans %}
+{% blocktrans %}
+{{ question_author }} has just posted a new question on {{ app_name }}, entitled
+"{{ question_title }}" and tagged {{ question_tags }}:
+{% endblocktrans %}
+{{ safe_body }}
 
-    {{ question.body|safe }}
-
-    {% trans "Don't forget to come over and cast your vote." %}
+{% trans "Don't forget to come over and cast your vote." %}
 {% endtextcontent %}
 
 {% endemail %}

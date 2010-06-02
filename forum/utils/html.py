@@ -1,6 +1,9 @@
 """Utilities for working with HTML."""
 import html5lib
 from html5lib import sanitizer, serializer, tokenizer, treebuilders, treewalkers
+from forum.utils.html2text import HTML2Text
+from django.template import mark_safe
+from forum import settings
 
 class HTMLSanitizerMixin(sanitizer.HTMLSanitizerMixin):
     acceptable_elements = ('a', 'abbr', 'acronym', 'address', 'b', 'big',
@@ -44,3 +47,25 @@ def sanitize_html(html):
                                   quote_attr_values=True)
     output_generator = s.serialize(stream)
     return u''.join(output_generator)
+
+
+def html2text(s, ignore_tags=(), indent_width=4, page_width=80):
+    ignore_tags = [t.lower() for t in ignore_tags]
+    parser = HTML2Text(ignore_tags, indent_width, page_width)
+    parser.feed(s)
+    parser.close()
+    parser.generate()
+    return parser.result
+
+def buildtag(name, content, **attrs):
+    return mark_safe('<%s %s>%s</a>' % (name, " ".join('%s="%s"' % i for i in attrs.items()), content))
+
+def hyperlink(url, title, **attrs):
+    return mark_safe('<a href="%s" %s>%s</a>' % (url, " ".join('%s="%s"' % i for i in attrs.items()), title))
+
+def objlink(obj, **attrs):
+    return hyperlink(settings.APP_URL + obj.get_absolute_url(), unicode(obj), **attrs)
+
+    
+
+

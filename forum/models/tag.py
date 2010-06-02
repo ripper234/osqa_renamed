@@ -25,6 +25,10 @@ class Tag(BaseModel):
     def __unicode__(self):
         return self.name
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('tag_questions', (), {'tag': self.name})
+
 class MarkedTag(models.Model):
     TAG_MARK_REASONS = (('good',_('interesting')),('bad',_('ignored')))
     tag = models.ForeignKey(Tag, related_name='user_selections')

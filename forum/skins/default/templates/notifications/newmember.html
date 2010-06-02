@@ -5,27 +5,30 @@
     app_name = settings.APP_SHORT_NAME
     app_url = settings.APP_URL
     newmember_name = newmember.username
-    newmember_url = newmember.get_profile_url
+    newmember_url = newmember.get_profile_url()
 {% enddeclare %}
 
 {% email %}
-    {% subject %}{% blocktrans %}{{ newmember_name }} is a new member on {{ app_name }}{% endblocktrans %}{% endsubject %}
+    {% subject %}{% blocktrans %}{{ prefix }}{{ newmember_name }} is a new member on {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
+        {% declare %}
+            newmember_link = html.objlink(newmember, style=a_style)
+        {% enddeclare %}
         <p style="{{ p_style }}">
             {% blocktrans %}
-            {{ newmember_name }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following link: <br />
+            {{ newmember_link }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following link: <br />
             <a href="{{ app_url }}{{ newmember_url }}">{{ newmember_name }} profile</a>
             {% endblocktrans %}
         </p>
     {% endhtmlcontent %}
 
-    {% textcontent notifications/base_text.html %}
-        {% blocktrans %}
-        {{ newmember_name }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following url: <br />
-            {{ app_url }}{{ newmember_url }}
-        {% endblocktrans %}
-    {% endtextcontent %}
+{% textcontent notifications/base_text.html %}
+{% blocktrans %}
+{{ newmember_name }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following url: <br />
+{{ app_url }}{{ newmember_url }}
+{% endblocktrans %}
+{% endtextcontent %}
 
 {% endemail %}
 

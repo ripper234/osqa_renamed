@@ -158,6 +158,7 @@ def create_and_send_mail_messages(messages):
 
         for recipient, subject, html, text, media in messages:
             msgRoot = MIMEMultipart('related')
+            msgRoot.set_charset('utf-8')
             msgRoot['Subject'] = subject
             msgRoot['From'] = sender
             msgRoot['To'] =  '%s <%s>' % (recipient.username, recipient.email)
@@ -166,8 +167,8 @@ def create_and_send_mail_messages(messages):
             msgAlternative = MIMEMultipart('alternative')
             msgRoot.attach(msgAlternative)
 
-            msgAlternative.attach(MIMEText(text, _charset='utf-8'))
-            msgAlternative.attach(MIMEText(html, 'html', _charset='utf-8'))
+            msgAlternative.attach(MIMEText(text))
+            msgAlternative.attach(MIMEText(html, 'html'))
 
             for alias, location in media.items():
                 fp = open(location, 'rb')
@@ -185,5 +186,5 @@ def create_and_send_mail_messages(messages):
             connection.quit()
         except socket.sslerror:
             connection.close()
-    except Exception, e:
-        print e
+    except:
+        pass

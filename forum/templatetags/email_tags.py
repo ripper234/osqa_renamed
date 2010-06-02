@@ -1,6 +1,7 @@
 from django import template
 from forum import settings
 from forum.utils.mail import create_and_send_mail_messages
+from django.template.defaulttags import url as default_url
 
 register = template.Library()
 
@@ -90,6 +91,21 @@ def embedmedia(parser, token):
         raise template.TemplateSyntaxError, "%r tag requires exactly four arguments" % token.contents.split()[0]
 
     return EmbedMediaNode(location, alias)
+
+
+class FullUrlNode(template.Node):
+    def __init__(self, default_node):
+        self.default_node = default_node
+
+    def render(self, context):
+        domain = settings.APP_URL
+        path = self.default_node.render(context)
+        return "%s%s" % (domain, path)
+
+@register.tag(name='fullurl')
+def fullurl(parser, token):
+    default_node = default_url(parser, token)
+    return FullUrlNode(default_node)
 
 
 

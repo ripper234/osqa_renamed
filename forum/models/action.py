@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext as _
 from utils import PickledObjectField
 from threading import Thread
+from forum.utils import html
 from base import *
 import re
 
@@ -211,7 +212,7 @@ class ActionProxy(Action):
         return (viewer == user) and viewer_verb or user_verb    
 
     def hyperlink(self, url, title, **attrs):
-        return '<a href="%s" %s>%s</a>' % (url, " ".join('%s="%s"' % i for i in attrs.items()), title)
+        return html.hyperlink(url, title, **attrs)
 
     def describe_node(self, viewer, node):
         node_link = self.hyperlink(node.get_absolute_url(), node.headline)
@@ -223,7 +224,8 @@ class ActionProxy(Action):
 
         return _("%(user)s %(node_name)s %(node_desc)s") % {
             'user': self.hyperlink(node.author.get_profile_url(), self.friendly_ownername(viewer, node.author)),
-            'node_name': node.friendly_name, 'node_desc': node_desc,
+            'node_name': node.friendly_name,
+            'node_desc': node_desc,
         }
     
     class Meta:

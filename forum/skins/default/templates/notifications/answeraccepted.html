@@ -3,10 +3,8 @@
 {% declare %}
     prefix = settings.EMAIL_SUBJECT_PREFIX
     app_name = settings.APP_SHORT_NAME
-    app_url = settings.APP_URL
     answer_author = answer.author.username
     question = answer.question
-    question_url = question.get_absolute_url()
     question_title = question.title
     accepted_by = answer.nstate.accepted.by.username
 {% enddeclare %}
@@ -15,19 +13,24 @@
     {% subject %}{% blocktrans %}{{ prefix }} New answer to {{ question_title }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
+        {% declare %}
+            accepted_by_link = html.objlink(answer.nstate.accepted.by, style=a_style)
+            answer_author_link = html.objlink(answer.author, style=a_style)
+            question_link = html.objlink(question, style=a_style)
+        {% enddeclare %}
         <p style="{{ p_style }}">
             {% blocktrans %}
-            {{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
-            <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a>.
+            {{ accepted_by_link }} has just accepted {{ answer_author_link }}'s answer on his question
+            {{ question_link }}.
             {% endblocktrans %}
         </p>
     {% endhtmlcontent %}
 
-    {% textcontent notifications/base_text.html %}
-        {% blocktrans %}
-        {{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
-            "{{ question_title }}".
-        {% endblocktrans %}
-    {% endtextcontent %}
+{% textcontent notifications/base_text.html %}
+{% blocktrans %}
+{{ accepted_by }} has just accepted {{ answer_author }}'s answer on his question
+"{{ question_title }}".
+{% endblocktrans %}
+{% endtextcontent %}
 
 {% endemail %}

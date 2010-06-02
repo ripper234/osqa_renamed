@@ -3,25 +3,29 @@
 {% declare %}
     prefix = settings.EMAIL_SUBJECT_PREFIX
     app_name = settings.APP_SHORT_NAME
-    app_url = settings.APP_URL
     post = comment.parent
     question = post.question and post.question or post
     post_author = post.author.username
     comment_author = comment.author
     question_url = question.get_absolute_url()
     question_title = question.title
+    safe_body = html.html2text(comment.comment)
 {% enddeclare %}
 
 {% email %}
     {% subject %}{% blocktrans %}{{ prefix }} New comment on {{ question_title }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
+        {% declare %}
+            author_link = html.objlink(comment.author, style=a_style)
+            question_link = html.objlink(question, style=a_style)
+        {% enddeclare %}
         <p style="{{ p_style }}">
-            {% blocktrans %}{{ comment_author }} has just posted a comment on {% endblocktrans %}
+            {% blocktrans %}{{ author_link }} has just posted a comment on {% endblocktrans %}
             {% ifnotequal post question %}
                 {% blocktrans %}the answer posted by {{ post_author }} to {% endblocktrans %}
             {% endifnotequal %}
-            {% blocktrans %}the question <a href="{{ app_url }}{{ question_url }}">{{ question_title }}</a>{% endblocktrans %}
+            {% blocktrans %}the question {{ question_link }}{% endblocktrans %}
         </p>
 
         <blockquote>
@@ -31,17 +35,15 @@
         <p style="{{ p_style }}">{% trans "Don't forget to come over and cast your vote." %}</p>
     {% endhtmlcontent %}
 
-    {% textcontent notifications/base_text.html %}
-        {% blocktrans %}{{ comment_author }} has just posted a comment on {% endblocktrans %}
-        {% ifnotequal post question %}
-            {% blocktrans %}the answer posted by {{ post_author }} to {% endblocktrans %}
-        {% endifnotequal %}
-        {% blocktrans %}the question "{{ question_title }}"{% endblocktrans %}
+{% textcontent notifications/base_text.html %}
+{% blocktrans %}{{ comment_author }} has just posted a comment on {% endblocktrans %}
+{% ifnotequal post question %}
+{% blocktrans %}the answer posted by {{ post_author }} to {% endblocktrans %}
+{% endifnotequal %}
+{% blocktrans %}the question "{{ question_title }}"{% endblocktrans %}
+{{ safe_body }}
 
-
-        {{ comment.body }}
-
-        {% trans "Don't forget to come over and cast your vote." %}
-    {% endtextcontent %}
+{% trans "Don't forget to come over and cast your vote." %}
+{% endtextcontent %}
 
 {% endemail %}

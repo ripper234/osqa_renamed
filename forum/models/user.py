@@ -116,6 +116,9 @@ class User(BaseModel, DjangoUser):
    
     objects = UserManager()
 
+    def __unicode__(self):
+        return self.username
+
     @property
     def gravatar(self):
         return md5(self.email).hexdigest()
@@ -147,6 +150,9 @@ class User(BaseModel, DjangoUser):
     @models.permalink
     def get_profile_url(self):
         return ('user_profile', (), {'id': self.id, 'slug': slugify(self.username)})
+
+    def get_absolute_url(self):
+        return self.get_profile_url()
 
     def get_profile_link(self):
         profile_link = u'<a href="%s">%s</a>' % (self.get_profile_url(),self.username)

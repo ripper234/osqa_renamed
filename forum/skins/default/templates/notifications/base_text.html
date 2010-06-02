@@ -9,10 +9,10 @@
 {% block content %}
 {% endblock%}       
 
-Thanks,
+{% trans "Thanks" %},
 {{settings.APP_SHORT_NAME}}
 
-P.S. You can always fine-tune which notifications you receive here:
+{% trans "P.S. You can always fine-tune which notifications you receive here:" %}
 {{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}
 
 {{ postal_address }}

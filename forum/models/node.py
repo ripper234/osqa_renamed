@@ -198,6 +198,9 @@ class Node(BaseModel, NodeContent):
 
     objects = NodeManager()
 
+    def __unicode__(self):
+        return self.headline
+
     @classmethod
     def cache_key(cls, pk):
         return '%s:node:%s' % (settings.APP_URL, pk)
