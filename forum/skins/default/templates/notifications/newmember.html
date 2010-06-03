@@ -6,15 +6,13 @@
     app_url = settings.APP_URL
     newmember_name = newmember.username
     newmember_url = newmember.get_profile_url()
+    newmember_link = html.objlink(newmember, style=settings.EMAIL_ANCHOR_STYLE)
 {% enddeclare %}
 
 {% email %}
     {% subject %}{% blocktrans %}{{ prefix }}{{ newmember_name }} is a new member on {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        {% declare %}
-            newmember_link = html.objlink(newmember, style=a_style)
-        {% enddeclare %}
         <p style="{{ p_style }}">
             {% blocktrans %}
             {{ newmember_link }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following link: <br />

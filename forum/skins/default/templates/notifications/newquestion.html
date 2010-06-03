@@ -8,18 +8,15 @@
     question_title = question.title
     question_tags = question.tagnames
     safe_body = html.html2text(question.html)
+    author_link = html.objlink(question.author, style=settings.EMAIL_ANCHOR_STYLE)
+    question_link = html.objlink(question, style=settings.EMAIL_ANCHOR_STYLE)
+    tag_links = html.mark_safe(" ".join([html.objlink(t, style=settings.EMAIL_ANCHOR_STYLE) for t in question.tags.all()]))
 {% enddeclare %}
 
 {% email %}
     {% subject %}{% blocktrans %}{{ prefix }} New question on {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        {% declare %}
-            author_link = html.objlink(question.author, style=a_style)
-            question_link = html.objlink(question, style=a_style)
-            tag_links = html.mark_safe(" ".join([html.objlink(t, style=a_style) for t in question.tags.all()]))
-        {% enddeclare %}
-
         <p style="{{ p_style }}">
             {% blocktrans %}
             {{ author_link }} has just posted a new question on {{ app_name }}, entitled

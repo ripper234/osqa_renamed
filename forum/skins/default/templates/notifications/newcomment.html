@@ -10,16 +10,14 @@
     question_url = question.get_absolute_url()
     question_title = html.mark_safe(question.title)
     safe_body = html.html2text(comment.comment)
+    author_link = html.objlink(comment.author, style=settings.EMAIL_ANCHOR_STYLE)
+    question_link = html.objlink(question, style=settings.EMAIL_ANCHOR_STYLE)
 {% enddeclare %}
 
 {% email %}
     {% subject %}{% blocktrans %}{{ prefix }} New comment on {{ question_title }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        {% declare %}
-            author_link = html.objlink(comment.author, style=a_style)
-            question_link = html.objlink(question, style=a_style)
-        {% enddeclare %}
         <p style="{{ p_style }}">
             {% blocktrans %}{{ author_link }} has just posted a comment on {% endblocktrans %}
             {% ifnotequal post question %}

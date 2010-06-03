@@ -45,4 +45,21 @@ label = _("Email Footer Text"),
 help_text = _("Email footer text, usually \"CAN SPAM\" compliance, or the physical address of the organization running the website. See <a href=\"http://en.wikipedia.org/wiki/CAN-SPAM_Act_of_2003\">this Wikipedia article</a> for more info."),
 required=False))
 
+EMAIL_BORDER_COLOR = Setting('EMAIL_BORDER_COLOR', '#e5ebf8', EMAIL_SET, dict(
+label = _("Email Border color"),
+help_text = _("The outter border color of the email base template"),
+required=False))
+
+EMAIL_PARAGRAPH_STYLE = Setting('EMAIL_PARAGRAPH_STYLE', "color:#333333;font-family:'helvetica neue', arial, Helvetica, sans-serif;line-height:18px;font-size:14px;margin-top:10px;", EMAIL_SET, dict(
+label = _("Email Paragraph style"),
+help_text = _("A valid css string to be used to style email paragraphs (the P tag)."),
+required=False))
+
+EMAIL_ANCHOR_STYLE = Setting('EMAIL_ANCHOR_STYLE', "text-decoration:none;color:#3060a8;font-weight:bold;", EMAIL_SET, dict(
+label = _("Email link style"),
+help_text = _("A valid css string to be used to style email links (the A tag)."),
+required=False))
+
+
+
 EMAIL_DIGEST_CONTROL = Setting('EMAIL_DIGEST_CONTROL', None)

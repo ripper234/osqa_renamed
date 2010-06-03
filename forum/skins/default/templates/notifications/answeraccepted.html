@@ -7,17 +7,15 @@
     question = answer.question
     question_title = html.mark_safe(question.title)
     accepted_by = answer.nstate.accepted.by.username
+    accepted_by_link = html.objlink(answer.nstate.accepted.by, style=settings.EMAIL_ANCHOR_STYLE)
+    answer_author_link = html.objlink(answer.author, style=settings.EMAIL_ANCHOR_STYLE)
+    question_link = html.objlink(question, style=settings.EMAIL_ANCHOR_STYLE)
 {% enddeclare %}
 
 {% email %}
-    {% subject %}{% blocktrans %}{{ prefix }} New answer to {{ question_title }}{% endblocktrans %}{% endsubject %}
+    {% subject %}{% blocktrans %}{{ prefix }} An answer to {{ question_title }} has been accepted{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        {% declare %}
-            accepted_by_link = html.objlink(answer.nstate.accepted.by, style=a_style)
-            answer_author_link = html.objlink(answer.author, style=a_style)
-            question_link = html.objlink(question, style=a_style)
-        {% enddeclare %}
         <p style="{{ p_style }}">
             {% blocktrans %}
             {{ accepted_by_link }} has just accepted {{ answer_author_link }}'s answer on his question
