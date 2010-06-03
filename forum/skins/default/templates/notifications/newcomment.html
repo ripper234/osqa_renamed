@@ -8,7 +8,7 @@
     post_author = post.author.username
     comment_author = comment.author
     question_url = question.get_absolute_url()
-    question_title = question.title
+    question_title = html.mark_safe(question.title)
     safe_body = html.html2text(comment.comment)
 {% enddeclare %}
 

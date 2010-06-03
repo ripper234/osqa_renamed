@@ -5,7 +5,7 @@
     app_name = settings.APP_SHORT_NAME
     answer_author = answer.author.username
     question = answer.question
-    question_title = question.title
+    question_title = html.mark_safe(question.title)
     accepted_by = answer.nstate.accepted.by.username
 {% enddeclare %}
 

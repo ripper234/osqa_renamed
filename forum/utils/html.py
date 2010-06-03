@@ -55,7 +55,7 @@ def html2text(s, ignore_tags=(), indent_width=4, page_width=80):
     parser.feed(s)
     parser.close()
     parser.generate()
-    return parser.result
+    return mark_safe(parser.result)
 
 def buildtag(name, content, **attrs):
     return mark_safe('<%s %s>%s</a>' % (name, " ".join('%s="%s"' % i for i in attrs.items()), content))

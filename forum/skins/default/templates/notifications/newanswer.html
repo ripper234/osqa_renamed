@@ -5,7 +5,7 @@
     app_name = settings.APP_SHORT_NAME
     answer_author = answer.author.username
     question = answer.question
-    question_title = question.title
+    question_title = html.mark_safe(question.title)
     safe_body = html.html2text(answer.html)
 {% enddeclare %}
 

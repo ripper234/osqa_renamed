@@ -158,7 +158,7 @@ def create_and_send_mail_messages(messages):
 
         for recipient, subject, html, text, media in messages:
             msgRoot = MIMEMultipart('related')
-            msgRoot.set_charset('utf-8')
+            #msgRoot.set_charset('utf-8')
             msgRoot['Subject'] = subject
             msgRoot['From'] = sender
             msgRoot['To'] =  '%s <%s>' % (recipient.username, recipient.email)
@@ -167,8 +167,8 @@ def create_and_send_mail_messages(messages):
             msgAlternative = MIMEMultipart('alternative')
             msgRoot.attach(msgAlternative)
 
-            msgAlternative.attach(MIMEText(text))
-            msgAlternative.attach(MIMEText(html, 'html'))
+            msgAlternative.attach(MIMEText(text.encode('utf-8'), _charset='utf-8'))
+            msgAlternative.attach(MIMEText(html.encode('utf-8'), 'html', _charset='utf-8'))
 
             for alias, location in media.items():
                 fp = open(location, 'rb')
