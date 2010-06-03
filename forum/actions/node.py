@@ -42,7 +42,7 @@ class AnswerAction(NodeEditAction):
 
     def describe(self, viewer=None):
         question = self.node.parent
-        return _("%(user)s answered %(asker)s %(question)s") % {
+        return _("%(user)s answered %(asker)s on %(question)s") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
             'asker': self.hyperlink(question.author.get_profile_url(), self.friendly_username(viewer, question.author)),
             'question': self.hyperlink(self.node.get_absolute_url(), question.title)
@@ -188,7 +188,7 @@ class WikifyAction(ActionProxy):
         self.node.update_last_activity(self.user, save=True)
 
     def describe(self, viewer=None):
-        return _("%(user)s marked %(node)s as community wiky.") % {
+        return _("%(user)s marked %(node)s as community wiki.") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
             'node': self.describe_node(viewer, self.node),
         }
