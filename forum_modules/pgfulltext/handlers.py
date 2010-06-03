@@ -5,8 +5,9 @@ from forum.modules.decorators import decorate
 
 @decorate(QuestionManager.search, needs_origin=False)
 def question_search(self, keywords):
-    repl_re = re.compile(r"[^\'\-_\s\w]")
+    repl_re = re.compile(r"[^\'\-_\s\w]", re.UNICODE)
     tsquery = " | ".join([k for k in repl_re.sub('', keywords).split(' ') if k])
+    ilike = keywords + u"%%"
 
     return self.extra(
                     tables = ['forum_rootnode_doc'],
@@ -17,9 +18,9 @@ def question_search(self, keywords):
                     },
                     where=["""
                            "forum_rootnode_doc"."node_id" = "forum_node"."id" AND ("forum_rootnode_doc"."document" @@ to_tsquery('english', %s) OR
-                           "forum_node"."title" ILIKE '""" + keywords.replace("'",r"\'") + """%%')
+                           "forum_node"."title" ILIKE %s)
                            """],
-                    params=[tsquery],
+                    params=[tsquery, ilike],
                     select_params=[tsquery],
                     order_by=['-ranking']
                 )

@@ -120,9 +120,9 @@ def search(request):
         if not keywords:
             return HttpResponseRedirect(reverse(index))
         if search_type == 'tag':
-            return HttpResponseRedirect(reverse('tags') + '?q=%s' % (keywords.strip()))
+            return HttpResponseRedirect(reverse('tags') + '?q=%s' % urlquote(keywords.strip()))
         elif search_type == "user":
-            return HttpResponseRedirect(reverse('users') + '?q=%s' % (keywords.strip()))
+            return HttpResponseRedirect(reverse('users') + '?q=%s' % urlquote(keywords.strip()))
         elif search_type == "question":
             return question_search(request, keywords)
     else:
