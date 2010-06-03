@@ -25,11 +25,11 @@ OSQA: Open Source Q&A Forum is a question and answer site - it is not a discussi
 
 The short answer is: you. This website is moderated by the users. Karma system allows users to earn rights to perform a variety of moderation tasks
 
-**How does karma system work?**
+**How does the karma system work?**
 
 When a question or answer is upvoted, the user who posted them will gain some points, which are called "karma points". These points serve as a rough measure of the community trust to him/her. Various moderation tasks are gradually assigned to the users based on those points.
 
-For example, if you ask an interesting question or give a helpful answer, your input will be upvoted. On the other hand if the answer is misleading - it will be downvoted. Each vote in favor will generate 10 points, each vote against will subtract 2 points. There is a limit of 200 points that can be accumulated per question or answer. The table below explains reputation point requirements for each type of moderation task.
+For example, if you ask an interesting question or give a helpful answer, your input will be upvoted. On the other hand if the answer is misleading - it will be downvoted. Each vote in favor will generate |REP_GAIN_BY_UPVOTED| points, each vote against will subtract |REP_LOST_BY_DOWNVOTED| points. There is a limit of 200 points that can be accumulated per question or answer. The table below explains karma requirements for each type of moderation task.
 
 * add comments ->  |REP_TO_COMMENT|
 * delete comments -> |REP_TO_DELETE_COMMENTS|
@@ -48,7 +48,7 @@ Gravatar means globally recognized avatar - your unique avatar image associated 
 
 No, you don't have to. You can login through any service that supports OpenID, e.g. Google, Yahoo, AOL, etc. Login now!
 
-**Why other people can edit my questions/answers?**
+**Why can other people can edit my questions/answers?**
 
 Goal of this site is... So questions and answers can be edited like wiki pages by experienced users of this site and this improves the overall quality of the knowledge base content. If this approach is not for you, we respect your choice.
 
