@@ -1,6 +1,7 @@
 import django.dispatch
 from django.utils.encoding import force_unicode
 from datetime import datetime, timedelta
+import logging
 
 TMP_MINICACHE_SECONDS = 5
 
@@ -54,22 +55,28 @@ class BaseSetting(object):
             v = kv.value
             self._temp = (v, datetime.now() + timedelta(seconds=TMP_MINICACHE_SECONDS))
             return v
+        except KeyValue.DoesNotExist:
+            self._temp = (self.default, datetime.now() + timedelta(seconds=TMP_MINICACHE_SECONDS))
         except Exception, e:
-                return self.default
+            logging.error("Error retrieving setting from database (%s): %s" % (self.name, str(e)))
+            
+        return self.default
 
     def set_value(self, new_value):
         new_value = self._parse(new_value)
+        self._temp = None
         self.save(new_value)
 
     def save(self, value):
-        self._temp = None
-        
         from forum.models import KeyValue
 
         try:
             kv = KeyValue.objects.get(key=self.name)
-        except:
+        except KeyValue.DoesNotExist:
             kv = KeyValue(key=self.name)
+        except Exception, e:
+            logging.error("Error savin setting to database (%s): %s" % (self.name, str(e)))
+            return
 
         kv.value = value
         kv.save()

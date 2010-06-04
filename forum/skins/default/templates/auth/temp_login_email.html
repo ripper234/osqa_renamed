@@ -1,21 +1,31 @@
-{% extends "email_base.html" %}
-{% load i18n %}
-{% load extra_tags %}
-{% load email_tags %}
+{% load i18n extra_tags email_tags %}
 
-{% block content %}
-    <p>{% trans "Greetings from the Q&A forum" %},</p>
+{% declare %}
+    prefix = settings.EMAIL_SUBJECT_PREFIX
+    app_name = settings.APP_SHORT_NAME
 
-    <p>{% trans "You're seeing this because someone requested a temporary login link" %}</p>
+    exclude_finetune = True
+{% enddeclare %}
 
-    <a href="{% fullurl auth_tempsignin user=user.id,code=temp_login_code %}">{% fullurl auth_tempsignin user=user.id,code=temp_login_code %}</a>
+{% email %}
+    {% subject %}{% blocktrans %}{{ prefix }} Temporary login link{% endblocktrans %}{% endsubject %}
 
-    <p>{% trans "Following the link above will give you access to your account." %}</p>
+    {% htmlcontent notifications/base.html %}
+        <p style="{{ p_style }}">
+            {% blocktrans %}The following link grants you a one time access to your account at {{ app_name }}.{% endblocktrans %}
+        </p>
+        <a  style="{{ a_style }}}" href="{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}">{% trans "Go to your account" %}</a>
 
-    <p>{% blocktrans %}If you beleive that this message was sent in mistake -
-    no further action is needed. Just ingore this email, we apologize
-    for any inconvenience{% endblocktrans %}</p>
+        <p style="{{ p_style }}}">{% trans "If the above link is not clickable, copy and paste this url into your web browser's address bar:" %}</p>
 
-    <p>{% blocktrans %}Sincerely,<br />
-    Forum Administrator{% endblocktrans %}</p>
-{% endblock %}
+        <p style="{{ p_style }}">{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}</p>
+    {% endhtmlcontent %}
+
+{% textcontent notifications/base_text.html %}
+{% blocktrans %}The following url grants you a one time access to your account at {{ app_name }}.{% endblocktrans %}
+
+{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}
+{% endtextcontent %}
+
+{% endemail %}
+

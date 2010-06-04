@@ -215,10 +215,7 @@ def request_temp_login(request):
             except:
                 hash = ValidationHash.objects.create_new(user, 'templogin', [user.id])
 
-            send_email(_("Temporary login link"), [(user.username, user.email)], "auth/temp_login_email.html", {
-                'temp_login_code': hash,
-                'user': user
-            })
+            send_template_email([user], "auth/temp_login_email.html", {'temp_login_code': hash})
 
             request.user.message_set.create(message=_("An email has been sent with your temporary login key"))
 

@@ -28,9 +28,6 @@ def media(request, skin, path):
                  document_root=os.path.join(os.path.dirname(os.path.dirname(__file__)),'skins').replace('\\','/'))
 
 def markdown_help(request):
-    # md = markdown.Markdown([SettingsExtension({})])
-    # text = md.convert(settings.FAQ_PAGE_TEXT.value)
-
     return render_to_response('markdown_help.html', context_instance=RequestContext(request))
 
 
