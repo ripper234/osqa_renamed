@@ -14,7 +14,7 @@ from forum.utils.forms import get_next_url
 from forum.models import Badge, Award, User
 from forum.badges.base import BadgesMeta
 from forum import settings
-from forum.utils.mail import send_email
+from forum.utils.mail import send_template_email
 import re
 
 def favicon(request):
@@ -50,10 +50,8 @@ def feedback(request):
             context['name'] = form.cleaned_data.get('name',None)
             context['ip'] = request.META['REMOTE_ADDR']
 
-            recipients = [(adm.username, adm.email) for adm in User.objects.filter(is_superuser=True)]
-
-            send_email(settings.EMAIL_SUBJECT_PREFIX + _("Feedback message from %(site_name)s") % {'site_name': settings.APP_SHORT_NAME},
-                       recipients, "notifications/feedback.html", context)
+            recipients = User.objects.filter(is_superuser=True)
+            send_template_email(recipients, "notifications/feedback.html", context)
             
             msg = _('Thanks for the feedback!')
             request.user.message_set.create(message=msg)
