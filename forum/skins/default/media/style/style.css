@@ -67,16 +67,19 @@ a:hover { text-decoration: underline; }
 h1 {
 	font-size: 160%;
 	padding: 5px 0;
+    line-height: 110%;
 }
 
 h2 {
 	font-size: 140%;
 	padding: 3px 0;
+    line-height: 110%;
 }
 
 h3 {
 	font-size: 120%;
 	padding: 3px 0;
+    line-height: 110%;    
 }
 
 ul {
