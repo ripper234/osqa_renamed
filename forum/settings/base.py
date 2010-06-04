@@ -1,5 +1,8 @@
 import django.dispatch
 from django.utils.encoding import force_unicode
+from datetime import datetime, timedelta
+
+TMP_MINICACHE_SECONDS = 5
 
 class SettingSet(list):
     def __init__(self, name, title, description, weight=1000, markdown=False):
@@ -8,7 +11,7 @@ class SettingSet(list):
         self.description = description
         self.weight = weight
         self.markdown = markdown
-        
+
 
 class BaseSetting(object):
     @classmethod
@@ -22,6 +25,8 @@ class BaseSetting(object):
         self.name = name
         self.default = default
         self.field_context = field_context or {}
+
+        self._temp = None
 
         if set is not None:
             if not set.name in Setting.sets:
@@ -37,21 +42,28 @@ class BaseSetting(object):
 
     @property
     def value(self):
+        if self._temp:
+            v, exp = self._temp
+            if exp + timedelta(seconds=TMP_MINICACHE_SECONDS) > datetime.now():
+                return v
+
         from forum.models import KeyValue
 
         try:
             kv = KeyValue.objects.get(key=self.name)
-        except:
-            kv = KeyValue(key=self.name, value=self._parse(self.default))
-            kv.save()
-
-        return kv.value
+            v = kv.value
+            self._temp = (v, datetime.now() + timedelta(seconds=TMP_MINICACHE_SECONDS))
+            return v
+        except Exception, e:
+                return self.default
 
     def set_value(self, new_value):
         new_value = self._parse(new_value)
         self.save(new_value)
 
     def save(self, value):
+        self._temp = None
+        
         from forum.models import KeyValue
 
         try:
