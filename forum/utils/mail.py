@@ -5,10 +5,11 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
+from email.header import Header
+import email.Charset
 
 from django.core.mail import DNS_NAME
 from smtplib import SMTP
-import email.Charset
 from forum import settings
 from django.template import loader, Context, Template
 from forum.utils.html import sanitize_html
@@ -139,7 +140,9 @@ def send_template_email(recipients, template, context):
     t.render(Context(context))
 
 def create_and_send_mail_messages(messages):
-    sender = '%s <%s>' % (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))
+    sender = Header(unicode(settings.APP_SHORT_NAME), 'utf-8')
+    sender.append('<%s>' % unicode(settings.DEFAULT_FROM_EMAIL))
+    sender = u'%s <%s>' % (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))
 
     connection = SMTP(str(settings.EMAIL_HOST), str(settings.EMAIL_PORT),
                 local_hostname=DNS_NAME.get_fqdn())
@@ -158,10 +161,14 @@ def create_and_send_mail_messages(messages):
 
         for recipient, subject, html, text, media in messages:
             msgRoot = MIMEMultipart('related')
-            #msgRoot.set_charset('utf-8')
-            msgRoot['Subject'] = subject
+
+            msgRoot['Subject'] = Header(subject, 'utf-8')
             msgRoot['From'] = sender
-            msgRoot['To'] =  '%s <%s>' % (recipient.username, recipient.email)
+
+            to = Header(recipient.username, 'utf-8')
+            to.append('<%s>' % recipient.email)
+            msgRoot['To'] = to
+            
             msgRoot.preamble = 'This is a multi-part message from %s.' % unicode(settings.APP_SHORT_NAME).encode('utf8')
 
             msgAlternative = MIMEMultipart('alternative')
@@ -186,5 +193,5 @@ def create_and_send_mail_messages(messages):
             connection.quit()
         except socket.sslerror:
             connection.close()
-    except:
+    except Exception, e:
         pass
