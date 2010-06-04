@@ -118,7 +118,7 @@ def comments(post, user):
     if len(all_comments) <= 5:
         top_scorers = all_comments
     else:
-        top_scorers = sorted(all_comments, lambda c1, c2: c2.score - c1.score)[0:5]
+        top_scorers = sorted(all_comments, lambda c1, c2: cmp(c2.score, c1.score))[0:5]
 
     comments = []
     showing = 0
