@@ -1,13 +1,18 @@
 from django.utils.translation import ugettext as _
 from django.db.models import F
 from forum.models.action import ActionProxy
-from forum.models import Award, Badge
+from forum.models import Award, Badge, ValidationHash
 from forum import settings
 from forum.settings import APP_SHORT_NAME
+from forum.utils.mail import send_email, send_template_email
 
 class UserJoinsAction(ActionProxy):
     def repute_users(self):
         self.repute(self.user, int(settings.INITIAL_REP))
+
+    def process_action(self):
+        hash = ValidationHash.objects.create_new(self.user, 'email', [self.user.email])
+        send_template_email([self.user], "auth/email_validation.html", {'validation_code': hash})
 
     def describe(self, viewer=None):
         return _("%(user)s as joined the %(app_name)s Q&A community") % {

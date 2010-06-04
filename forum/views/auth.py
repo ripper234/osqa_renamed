@@ -14,7 +14,7 @@ import datetime
 
 from forum.authentication.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
         TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
-from forum.utils.mail import send_email
+from forum.utils.mail import send_email, send_template_email
 
 from forum.authentication.base import InvalidAuthentication
 from forum.authentication import AUTH_PROVIDERS
@@ -152,9 +152,6 @@ def external_register(request):
             user_.save()
             UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
 
-            if not user_.email_isvalid:
-                send_validation_email(user_)
-
             try:
                 assoc_key = request.session['assoc_key']
                 auth_provider = request.session['auth_provider']
@@ -172,7 +169,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            return login_and_forward(request, user_)
+            return login_and_forward(request, user_, _("A welcome email has been sent to your email address. "))
     else:
         provider_class = AUTH_PROVIDERS[request.session['auth_provider']].consumer
         user_data = provider_class.get_user_data(request.session['assoc_key'])
@@ -241,14 +238,7 @@ def temp_signin(request, user, code):
                 _("You are logged in with a temporary access key, please take the time to fix your issue with authentication."))
     else:
         raise Http404()
-
-def send_validation_email(user):
-    hash = ValidationHash.objects.create_new(user, 'email', [user.email])
-    send_email(_("Email Validation"), [(user.username, user.email)], "auth/email_validation.html", {
-        'validation_code': hash,
-        'user': user
-    })
-
+    
 def validate_email(request, user, code):
     user = get_object_or_404(User, id=user)
 

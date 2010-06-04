@@ -15,8 +15,8 @@
     {% htmlcontent notifications/base.html %}
         <p style="{{ p_style }}">
             {% blocktrans %}
-            {{ newmember_link }} has just joined {{ app_name }}. You can visit {{ newmember_name }}'s profile using the following link: <br />
-            <a href="{{ app_url }}{{ newmember_url }}">{{ newmember_name }} profile</a>
+            {{ newmember_link }} has just joined {{ app_name }}.
+            View <a style="{{ a_style }}" href="{{ app_url }}{{ newmember_url }}">{{ newmember_name }}'s profile</a>.
             {% endblocktrans %}
         </p>
     {% endhtmlcontent %}

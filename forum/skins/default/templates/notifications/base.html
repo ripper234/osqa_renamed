@@ -16,12 +16,15 @@
 <tbody><tr><td style="padding:20px;">
 <img src="{{ settings.APP_URL }}{{ settings.APP_LOGO }}" alt="{{settings.APP_TITLE}}" />
 <hr style="{{ hr_style }}" />
+{% if not exclude_greeting %}
 <p style="{{ p_style }}">{% trans "Hello" %} {{ recipient.username }},</p>
-{% block content %}
-{% endblock%}                    
+{% endif %}
+{% block content %}{% endblock%}
 <p style="{{ p_style }}">Thanks,<br />{{settings.APP_SHORT_NAME}}</p>
+{% if not exclude_finetune %}
 <p style="{{ p_style }}">P.S. You can always fine-tune which notifications you receive
 <a href="{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}" style="{{ a_style }}">here</a>.
+{% endif %}
 </p>
 <hr style="{{ hr_style }}" />
 <p style="{{ p_style }}"><small style="{{ small_style }}">{{ settings.EMAIL_FOOTER_TEXT }}</small></p>
