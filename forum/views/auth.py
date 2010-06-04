@@ -169,7 +169,7 @@ def external_register(request):
             del request.session['assoc_key']
             del request.session['auth_provider']
 
-            return login_and_forward(request, user_, _("A welcome email has been sent to your email address. "))
+            return login_and_forward(request, user_, message=_("A welcome email has been sent to your email address. "))
     else:
         provider_class = AUTH_PROVIDERS[request.session['auth_provider']].consumer
         user_data = provider_class.get_user_data(request.session['assoc_key'])
