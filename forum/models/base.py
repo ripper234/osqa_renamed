@@ -46,14 +46,9 @@ class CachedQuerySet(models.query.QuerySet):
         return obj
 
     def get(self, *args, **kwargs):
-        try:
-            pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact'
-                            ) or k.endswith('_ptr__pk') or k.endswith('_ptr__id')][0]
-        except:
-            pk = None
+        key = self.model.infer_cache_key(kwargs)
 
-        if pk is not None:
-            key = self.model.cache_key(pk)
+        if key is not None:
             obj = cache.get(key)
 
             if obj is None:
@@ -137,10 +132,6 @@ class BaseModel(models.Model):
         super(BaseModel, self).__init__(*args, **kwargs)
         self.reset_original_state(kwargs.keys())
 
-    @classmethod
-    def cache_key(cls, pk):
-        return '%s:%s:%s' % (settings.APP_URL, cls.__name__, pk)
-
     def reset_original_state(self, reset_fields=None):
         self._original_state = self._as_dict()
         
@@ -180,11 +171,31 @@ class BaseModel(models.Model):
         self.reset_original_state()
         self.cache()
 
+    @classmethod
+    def _generate_cache_key(cls, key, group=None):
+        if group is None:
+            group = cls.__name__
+
+        return '%s:%s:%s' % (settings.APP_URL, group, key)
+
+    def cache_key(self):
+        return self._generate_cache_key(self.id)
+
+    @classmethod
+    def infer_cache_key(cls, querydict):
+        try:
+            pk = [v for (k,v) in querydict.items() if k in ('pk', 'pk__exact', 'id', 'id__exact'
+                            ) or k.endswith('_ptr__pk') or k.endswith('_ptr__id')][0]
+
+            return cls._generate_cache_key(pk)
+        except:
+            return None
+
     def cache(self):
-        cache.set(self.cache_key(self.id), self._as_dict(), 60 * 60)
+        cache.set(self.cache_key(), self._as_dict(), 60 * 60)
 
     def uncache(self):
-        cache.delete(self.cache_key(self.id))
+        cache.delete(self.cache_key())
 
     def delete(self):
         self.uncache()

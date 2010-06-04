@@ -226,7 +226,7 @@ class EditAnswerForm(forms.Form):
             self.fields['wiki'] = WikiField(disabled=(answer.nis.wiki and not user.can_cancel_wiki(answer)), initial=answer.nis.wiki)
 
 class EditUserForm(forms.Form):
-    email = forms.EmailField(label=u'Email', help_text=_('this email does not have to be linked to gravatar'), required=True, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
+    email = forms.EmailField(label=u'Email', help_text=_('this email does not have to be linked to gravatar'), required=True, max_length=75, widget=forms.TextInput(attrs={'size' : 35}))
     realname = forms.CharField(label=_('Real name'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
     website = forms.URLField(label=_('Website'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
     city = forms.CharField(label=_('Location'), required=False, max_length=255, widget=forms.TextInput(attrs={'size' : 35}))
@@ -256,11 +256,12 @@ class EditUserForm(forms.Form):
             if settings.EMAIL_UNIQUE == True:
                 if 'email' in self.cleaned_data:
                     try:
-                        user = User.objects.get(email = self.cleaned_data['email'])
+                        User.objects.get(email = self.cleaned_data['email'])
                     except User.DoesNotExist:
                         return self.cleaned_data['email']
                     except User.MultipleObjectsReturned:
-                        raise forms.ValidationError(_('this email has already been registered, please use another one'))
+                        logging.error("Found multiple users sharing the same email: %s" % self.cleaned_data['email'])
+                        
                     raise forms.ValidationError(_('this email has already been registered, please use another one'))
         return self.cleaned_data['email']
 

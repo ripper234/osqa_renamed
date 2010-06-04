@@ -7,6 +7,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
+from utils import PickledObjectField
 
 class NodeContent(models.Model):
     title      = models.CharField(max_length=300)
@@ -186,6 +187,7 @@ class Node(BaseModel, NodeContent):
     tags                 = models.ManyToManyField('Tag', related_name='%(class)ss')
     active_revision       = models.OneToOneField('NodeRevision', related_name='active', null=True)
 
+    extra = PickledObjectField()
     extra_ref = models.ForeignKey('Node', null=True)
     extra_count = models.IntegerField(default=0)
 
@@ -202,8 +204,8 @@ class Node(BaseModel, NodeContent):
         return self.headline
 
     @classmethod
-    def cache_key(cls, pk):
-        return '%s:node:%s' % (settings.APP_URL, pk)
+    def _generate_cache_key(cls, key, group="node"):
+        return super(Node, cls)._generate_cache_key(key, group)
 
     @classmethod
     def get_type(cls):
