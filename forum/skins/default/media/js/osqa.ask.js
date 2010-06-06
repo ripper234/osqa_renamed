@@ -22,7 +22,7 @@ $(function() {
     var results_cache = {};
 
     function reload_suggestions_box(e) {
-        var q = $input.val().trim();
+        var q = $input.val().replace(/^\s+|\s+$/g,"");
 
         if (q.length == 0) {
             $('#ask-related-questions').html('');
@@ -36,7 +36,7 @@ $(function() {
 
         $.post(related_questions_url, {title: q}, function(data) {
             if (data) {
-                var c = $input.val().trim();
+                var c = $input.val().replace(/^\s+|\s+$/g,"");
 
                 if (c != q) {
                     return;
