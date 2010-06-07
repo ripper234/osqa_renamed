@@ -16,8 +16,9 @@ DJSTYLE_ADMIN_INTERFACE = Setting('DJSTYLE_ADMIN_INTERFACE', True)
 
 APP_URL = djsettings.APP_URL
 FORUM_SCRIPT_ALIAS = djsettings.FORUM_SCRIPT_ALIAS
-
-STATIC_PAGE_REGISTRY = Setting('STATIC_PAGE_REGISTRY', {})
+OSQA_SKIN = djsettings.OSQA_DEFAULT_SKIN
+LANGUAGE_CODE = djsettings.LANGUAGE_CODE
+ADMIN_MEDIA_PREFIX = djsettings.ADMIN_MEDIA_PREFIX
 
 
 from basic import *
@@ -33,6 +34,7 @@ from faq import *
 from form import *
 from moderation import *
 from users import *
+from static import *
 
 BADGES_SET = SettingSet('badges', _('Badges config'), _("Configure badges on your OSQA site."), 500)
 

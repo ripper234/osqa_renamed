@@ -21,6 +21,9 @@ import re
 def favicon(request):
     return HttpResponseRedirect(str(settings.APP_FAVICON))
 
+def custom_css(request):
+    return HttpResponse(unicode(settings.CUSTOM_CSS), mimetype="text/css")
+
 def static(request, title, content):
     return render_to_response('static.html', {'content' : content, 'title': title}, context_instance=RequestContext(request))
 

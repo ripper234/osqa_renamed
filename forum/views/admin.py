@@ -36,7 +36,7 @@ def admin_page(fn):
             context['othersets'] = sorted(
                     [s for s in Setting.sets.values() if not s.name in
                     ('basic', 'users', 'email', 'paths', 'extkeys', 'repgain', 'minrep', 'voting', 'badges', 'about', 'faq', 'sidebar',
-                    'form', 'moderation')]
+                    'form', 'moderation', 'css')]
                     , lambda s1, s2: s1.weight - s2.weight)
             return render_to_response(template, context, context_instance=RequestContext(request))
         else:

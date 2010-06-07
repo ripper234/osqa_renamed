@@ -16,9 +16,11 @@ class UnfilteredField(forms.CharField):
 class SettingsSetForm(forms.Form):
     def __init__(self, set, data=None, *args, **kwargs):
         if data is None:
-            data = dict([(setting.name, setting.value) for setting in set])
+            initial = dict([(setting.name, setting.value) for setting in set])
+        else:
+            initial = None
 
-        super(SettingsSetForm, self).__init__(data, *args, **kwargs)
+        super(SettingsSetForm, self).__init__(data, initial=initial, *args, **kwargs)
 
         for setting in set:
             if isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):

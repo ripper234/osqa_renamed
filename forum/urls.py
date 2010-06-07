@@ -37,6 +37,7 @@ urlpatterns += patterns('',
     url(r'^sitemap.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}, name='sitemap'),
 
     (r'^favicon\.ico$', app.meta.favicon),
+    url(r'^cstyle\.css$', app.meta.custom_css, name="custom_css"),
 
     url(r'^m/(?P<skin>\w+)/media/(?P<path>.*)$', app.meta.media , name='osqa_media'),
     url(r'^%s(?P<path>.*)$' % _('upfiles/'), 'django.views.static.serve',
