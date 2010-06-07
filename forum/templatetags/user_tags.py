@@ -14,11 +14,11 @@ class UserSignatureNode(template.Node):
 
     def render(self, context):
         return self.template.render(template.Context({
-            'user': self.user.resolve(context),
-            'format': self.format.resolve(context)
+        'user': self.user.resolve(context),
+        'format': self.format.resolve(context)
         }))
 
-@register.tag        
+@register.tag
 def user_signature(parser, token):
     try:
         tag_name, user, format = token.split_contents()
@@ -42,7 +42,7 @@ class ActivityNode(template.Node):
             describe = mark_safe(action.describe(viewer))
             return self.template.render(template.Context(dict(action=action, describe=describe)))
         except Exception, e:
-            #return action.action_type + ":" + str(e)
+        #return action.action_type + ":" + str(e)
             logging.error("Error in %s action describe: %s" % (action.action_type, str(e)))
 
 @register.tag
@@ -66,6 +66,6 @@ def flagged_item(parser, token):
 
 
 @register.inclusion_tag('users/menu.html')
-def user_menu(request, user):
-    return dict(viewer=request.user, user=user)
+def user_menu(viewer, user):
+    return dict(viewer=viewer, user=user)
 
