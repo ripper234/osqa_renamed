@@ -72,11 +72,13 @@ def tag(request, tag):
                          False)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
-def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None, allowIgnoreTags=True):
+def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None,
+                  allowIgnoreTags=True):
     questions = initial.filter_state(deleted=False)
 
     if request.user.is_authenticated() and allowIgnoreTags:
-        questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
+        questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad'))
+                                     )
 
     if sort is not False:
         if sort is None:
@@ -95,21 +97,21 @@ def question_list(request, initial, list_description=_('questions'), sort=None, 
     if request.GET.get("q"):
         keywords = request.GET.get("q").strip()
 
-    answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()   
+    answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()
     answer_description = _("answers")
 
     return {
-        "questions" : questions,
-        "questions_count" : questions.count(),
-        "answer_count" : answer_count,
-        "keywords" : keywords,
-        #"tags_autocomplete" : _get_tags_cache_json(),
-        "list_description": list_description,
-        "answer_description": answer_description,
-        "base_path" : base_path,
-        "page_title" : page_title,
-        "tab" : "questions",
-        }
+    "questions" : questions,
+    "questions_count" : questions.count(),
+    "answer_count" : answer_count,
+    "keywords" : keywords,
+    #"tags_autocomplete" : _get_tags_cache_json(),
+    "list_description": list_description,
+    "answer_description": answer_description,
+    "base_path" : base_path,
+    "page_title" : page_title,
+    "tab" : "questions",
+    }
 
 
 def search(request):
@@ -133,7 +135,7 @@ def question_search(request, keywords):
     initial = Question.objects.search(keywords)
 
     return question_list(request, initial, _("questions matching '%(keywords)s'") % {'keywords': keywords},
-            base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)
+                         base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)
 
 
 def tags(request):#view showing a listing of available tags - plain list
@@ -161,21 +163,21 @@ def tags(request):#view showing a listing of available tags - plain list
         tags = objects_list.page(objects_list.num_pages)
 
     return render_to_response('tags.html', {
-                                            "tags" : tags,
-                                            "stag" : stag,
-                                            "tab_id" : sortby,
-                                            "keywords" : stag,
-                                            "context" : {
-                                                'is_paginated' : is_paginated,
-                                                'pages': objects_list.num_pages,
-                                                'page': page,
-                                                'has_previous': tags.has_previous(),
-                                                'has_next': tags.has_next(),
-                                                'previous': tags.previous_page_number(),
-                                                'next': tags.next_page_number(),
-                                                'base_url' : reverse('tags') + '?sort=%s&' % sortby
-                                            }
-                                }, context_instance=RequestContext(request))
+    "tags" : tags,
+    "stag" : stag,
+    "tab_id" : sortby,
+    "keywords" : stag,
+    "context" : {
+    'is_paginated' : is_paginated,
+    'pages': objects_list.num_pages,
+    'page': page,
+    'has_previous': tags.has_previous(),
+    'has_next': tags.has_next(),
+    'previous': tags.previous_page_number(),
+    'next': tags.next_page_number(),
+    'base_url' : reverse('tags') + '?sort=%s&' % sortby
+    }
+    }, context_instance=RequestContext(request))
 
 def get_answer_sort_order(request):
     view_dic = {"latest":"-added_at", "oldest":"added_at", "votes":"-score" }
@@ -194,7 +196,7 @@ def update_question_view_times(request, question):
     if not 'last_seen_in_question' in request.session:
         request.session['last_seen_in_question'] = {}
 
-    last_seen = request.session['last_seen_in_question'].get(question.id,None)
+    last_seen = request.session['last_seen_in_question'].get(question.id, None)
 
     if (not last_seen) or last_seen < question.last_activity_at:
         QuestionViewAction(question, request.user, ip=request.META['REMOTE_ADDR']).save()
@@ -204,7 +206,7 @@ def update_question_view_times(request, question):
 
 def match_question_slug(slug):
     slug_words = slug.split('-')
-    qs = Question.objects.filter(node_type="question", title__istartswith=slug_words[0])
+    qs = Question.objects.filter(title__istartswith=slug_words[0])
 
     for q in qs:
         if slug == urlquote(slugify(q.title)):
@@ -214,16 +216,14 @@ def match_question_slug(slug):
 
 def question(request, id, slug):
     try:
-        question = Question.objects.get(node_type="question", id=id)
+        question = Question.objects.get(id=id)
     except:
-        question = match_question_slug(slug)
-        if question is not None:
-            return HttpResponsePermanentRedirect(question.get_absolute_url())
-        else:
-            raise Http404()
+        if slug:
+            question = match_question_slug(slug)
+            if question is not None:
+                return HttpResponsePermanentRedirect(question.get_absolute_url())
 
-    if slug != urlquote(slugify(question.title)):
-        return HttpResponsePermanentRedirect(question.get_absolute_url())
+        raise Http404()
 
     page = int(request.GET.get('page', 1))
     view_id, order_by = get_answer_sort_order(request)
@@ -256,24 +256,24 @@ def question(request, id, slug):
         subscription = False
 
     return render_to_response('question.html', {
-        "question" : question,
-        "answer" : answer_form,
-        "answers" : page_objects.object_list,
-        "tab_id" : view_id,
-        "similar_questions" : question.get_related_questions(),
-        "subscription": subscription,
-        "context" : {
-            'is_paginated' : True,
-            'pages': objects_list.num_pages,
-            'page': page,
-            'has_previous': page_objects.has_previous(),
-            'has_next': page_objects.has_next(),
-            'previous': page_objects.previous_page_number(),
-            'next': page_objects.next_page_number(),
-            'base_url' : request.path + '?sort=%s&' % view_id,
-            'extend_url' : "#sort-top"
-        }
-        }, context_instance=RequestContext(request))
+    "question" : question,
+    "answer" : answer_form,
+    "answers" : page_objects.object_list,
+    "tab_id" : view_id,
+    "similar_questions" : question.get_related_questions(),
+    "subscription": subscription,
+    "context" : {
+    'is_paginated' : True,
+    'pages': objects_list.num_pages,
+    'page': page,
+    'has_previous': page_objects.has_previous(),
+    'has_next': page_objects.has_next(),
+    'previous': page_objects.previous_page_number(),
+    'next': page_objects.next_page_number(),
+    'base_url' : request.path + '?sort=%s&' % view_id,
+    'extend_url' : "#sort-top"
+    }
+    }, context_instance=RequestContext(request))
 
 
 REVISION_TEMPLATE = template.loader.get_template('node/revision.html')
@@ -286,9 +286,9 @@ def revisions(request, id):
 
     for i, revision in enumerate(revisions):
         rev_ctx.append(dict(inst=revision, html=REVISION_TEMPLATE.render(template.Context({
-                'title': revision.title,
-                'html': revision.html,
-                'tags': revision.tagname_list(),
+        'title': revision.title,
+        'html': revision.html,
+        'tags': revision.tagname_list(),
         }))))
 
         if i > 0:
@@ -302,9 +302,9 @@ def revisions(request, id):
             rev_ctx[i]['summary'] = revision.summary
 
     return render_to_response('revisions.html', {
-                              'post': post,
-                              'revisions': rev_ctx,
-                              }, context_instance=RequestContext(request))
+    'post': post,
+    'revisions': rev_ctx,
+    }, context_instance=RequestContext(request))
 
 
 
