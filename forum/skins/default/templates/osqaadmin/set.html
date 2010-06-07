@@ -1,7 +1,6 @@
 {% extends basetemplate %}
 
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags extra_filters %}
 
 {% block subtitle %}{{ form.set.title }}{% endblock %}
 {% block pagename %}{{ form.set.title }}{% endblock %}
