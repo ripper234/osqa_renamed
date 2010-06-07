@@ -204,7 +204,7 @@ def user_stats(request, user):
 
 @user_view('users/recent.html', 'recent', _('recent user activity'), _('recent activity'))
 def user_recent(request, user):
-    activities = user.actions.exclude(action_type__in=("voteup", "votedown", "voteupcomment", "flag")).order_by('-action_date')[:USERS_PAGE_SIZE]
+    activities = user.actions.exclude(action_type__in=("voteup", "votedown", "voteupcomment", "flag", "newpage", "editpage")).order_by('-action_date')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "activities" : activities}
 

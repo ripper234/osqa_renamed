@@ -140,8 +140,14 @@ urlpatterns += patterns('',
     url(r'^%s%s(?P<set_name>\w+)/(?P<var_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.get_default, name="admin_default"),
     url(r'^%s%s$' % (_('admin/'), _('maintenance/')), app.admin.maintenance, name="admin_maintenance"),
     url(r'^%s%s$' % (_('admin/'), _('flagged_posts/')), app.admin.flagged_posts, name="admin_flagged_posts"),
+    url(r'^%s%s$' % (_('admin/'), _('static_pages/')), app.admin.static_pages, name="admin_static_pages"),
+
+    url(r'^%s%s%s$' % (_('admin/'), _('static_pages/'), _('new/')), app.admin.edit_page, name="admin_new_page"),
+    url(r'^%s%s%s(?P<id>\d+)/$' % (_('admin/'), _('static_pages/'), _('edit/')), app.admin.edit_page, name="admin_edit_page"),
 
     url(r'^%s%s(?P<set_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.settings_set, name="admin_set"),
 
     url(r'^feeds/rss/$', RssLastestQuestionsFeed, name="latest_questions_feed"),
+
+    url(r'^(?P<path>.+)$', app.meta.page, name="static_page")
 )

@@ -1,6 +1,5 @@
 import os.path
 from base import Setting, SettingSet
-from forms import ImageFormWidget
 
 from django.forms.widgets import Textarea
 from django.utils.translation import ugettext_lazy as _
@@ -17,6 +16,8 @@ DJSTYLE_ADMIN_INTERFACE = Setting('DJSTYLE_ADMIN_INTERFACE', True)
 
 APP_URL = djsettings.APP_URL
 FORUM_SCRIPT_ALIAS = djsettings.FORUM_SCRIPT_ALIAS
+
+STATIC_PAGE_REGISTRY = Setting('STATIC_PAGE_REGISTRY', {})
 
 
 from basic import *

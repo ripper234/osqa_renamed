@@ -24,7 +24,7 @@ class EditProfileAction(ActionProxy):
     def describe(self, viewer=None):
         return _("%(user)s edited %(hes_or_your)s %(profile_link)s") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'hes_or_your': self.viewer_or_user_verb(viewer, self.user, _('your'), _('hes')),
+            'hes_or_your': self.viewer_or_user_verb(viewer, self.user, _('your'), _('his')),
             'profile_link': self.hyperlink(self.user.get_profile_url(), _('profile')),
         }
 

@@ -24,7 +24,7 @@ from forum.utils.html import sanitize_html
 from forum.utils.diff import textDiff as htmldiff
 from forum.forms import *
 from forum.models import *
-from forum.utils.forms import get_next_url
+from forum.forms import get_next_url
 from forum.actions import QuestionViewAction
 from forum.modules.decorators import decoratable
 import decorators

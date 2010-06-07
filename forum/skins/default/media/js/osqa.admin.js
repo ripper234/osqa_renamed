@@ -41,4 +41,21 @@ $(function() {
             }
         }
     });
+
+    $('.url_field').each(function() {
+        var $input = $(this);
+        var $anchor = $input.parent().find('.url_field_anchor');
+        var app_url = $anchor.attr('href');
+
+        function rewrite_anchor() {
+            var val = app_url + $input.val();
+
+            $anchor.attr('href', val);
+            $anchor.html(val);
+
+        }
+
+        $input.keyup(rewrite_anchor);
+        rewrite_anchor();        
+    });
 });

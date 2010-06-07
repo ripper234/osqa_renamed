@@ -12,7 +12,7 @@ from django.http import get_host
 import types
 import datetime
 
-from forum.authentication.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
+from forum.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
         TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
 from forum.utils.mail import send_email, send_template_email
 

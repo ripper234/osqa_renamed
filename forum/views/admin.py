@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import time
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, Http404
 from django.template import RequestContext
@@ -9,9 +9,11 @@ from django.utils.translation import ugettext as _
 from django.utils import simplejson
 from django.db.models import Sum
 from forum.settings.base import Setting
-from forum.settings.forms import SettingsSetForm, MaintenanceModeForm
+from forum.forms import MaintenanceModeForm, PageForm
+from forum.settings.forms import SettingsSetForm
 
-from forum.models import Question, Answer, User, Node, Action
+from forum.models import Question, Answer, User, Node, Action, Page
+from forum.actions import NewPageAction, EditPageAction, PublishAction
 from forum import settings
 
 def super_user_required(fn):
@@ -282,5 +284,52 @@ def flagged_posts(request):
     return ('osqaadmin/flagged_posts.html', {
         'flagged_posts': get_flagged_posts(),
     })
+
+@admin_page
+def static_pages(request):
+    pages = Page.objects.all()
+
+    return ('osqaadmin/static_pages.html', {
+        'pages': pages,
+    })
+
+@admin_page
+def edit_page(request, id=None):
+    if id:
+        page = get_object_or_404(Page, id=id)
+    else:
+        page = None
+
+    if request.POST:
+        form = PageForm(page, request.POST)
+
+        if form.is_valid():
+            if form.has_changed():
+                if not page:
+                    page = NewPageAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data).node
+                else:
+                    EditPageAction(user=request.user, node=page, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+
+            if ('publish' in request.POST) and (not page.published):
+                PublishAction(user=request.user, node=page, ip=request.META['REMOTE_ADDR']).save()
+            elif ('unpublish' in request.POST) and page.published:
+                page.nstate.published.cancel(ip=request.META['REMOTE_ADDR'])
+
+            return HttpResponseRedirect(reverse('admin_edit_page', kwargs={'id': page.id}))
+
+    else:
+        form = PageForm(page)
+
+    if page:
+        published = page.published
+    else:
+        published = False
+
+    return ('osqaadmin/edit_page.html', {
+        'page': page,
+        'form': form,
+        'published': published
+    })
+
 
 

@@ -292,8 +292,9 @@ def accept_answer(request, id):
         answer.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
         commands['unmark_accepted'] = [answer.id]
     else:
-        if question.answer_accepted:
-            accepted = question.accepted_answer
+        accepted = question.accepted_answer
+
+        if accepted:
             accepted.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
             commands['unmark_accepted'] = [accepted.id]
 

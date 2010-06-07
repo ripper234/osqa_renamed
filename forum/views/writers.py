@@ -17,7 +17,7 @@ from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction,
 from forum.modules.decorators import decoratable
 from forum.forms import *
 from forum.models import *
-from forum.utils.forms import get_next_url
+from forum.forms import get_next_url
 
 
 def upload(request):#ajax upload file to a question or answer

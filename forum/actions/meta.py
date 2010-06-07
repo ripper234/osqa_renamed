@@ -157,7 +157,7 @@ class AcceptAnswerAction(ActionProxy):
 
         return _("%(user)s accepted %(answerer)s answer on %(asker)s question %(question)s") % {
             'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'answerer': self.hyperlink(answer.author.get_profile_url(), self.friendly_username(viewer, answer.author)),
+            'answerer': self.hyperlink(answer.author.get_profile_url(), self.friendly_ownername(viewer, answer.author)),
             'asker': asker,
             'question': self.hyperlink(question.get_absolute_url(), question.title)
         }

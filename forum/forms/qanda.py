@@ -1,13 +1,12 @@
 import re
 from datetime import date
 from django import forms
-from models import *
+from forum.models import *
 from django.utils.translation import ugettext as _
 from django.contrib.humanize.templatetags.humanize import apnumber
-from forum.models import User
 
 from django.utils.safestring import mark_safe
-from forum.utils.forms import NextUrlField, UserNameField, SetPasswordForm
+from general import NextUrlField, UserNameField, SetPasswordForm
 from forum import settings
 import logging
 
@@ -255,6 +254,7 @@ class EditUserForm(forms.Form):
         if self.user.email != self.cleaned_data['email']:
             if settings.EMAIL_UNIQUE == True:
                 if 'email' in self.cleaned_data:
+                    from forum.models import User
                     try:
                         User.objects.get(email = self.cleaned_data['email'])
                     except User.DoesNotExist:

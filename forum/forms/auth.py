@@ -1,4 +1,4 @@
-from forum.utils.forms import NextUrlField,  UserNameField,  UserEmailField, SetPasswordForm
+from general import NextUrlField,  UserNameField,  UserEmailField, SetPasswordForm
 from forum.models import Question, User
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext as _

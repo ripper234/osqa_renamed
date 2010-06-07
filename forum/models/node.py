@@ -23,8 +23,12 @@ class NodeContent(models.Model):
     def html(self):
         return self.as_markdown()
 
+    @classmethod
+    def _as_markdown(cls, content, *extensions):
+        return mark_safe(sanitize_html(markdown.markdown(content, extensions=extensions)))
+
     def as_markdown(self, *extensions):
-        return mark_safe(sanitize_html(markdown.markdown(self.body, extensions=extensions)))
+        return self._as_markdown(self.body, *extensions)
 
     @property
     def headline(self):

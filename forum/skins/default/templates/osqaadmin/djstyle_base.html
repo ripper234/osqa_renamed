@@ -38,7 +38,7 @@
             </div>
         </div>
         <div class="breadcrumbs">
-            <a href="{% url index %}">{% trans "Home" %}</a> &gt
+            <a href="{% url index %}">{% trans "Home" %}</a> &gt;
             <a href="{% url admin_index %}">{% trans "Dashboard" %}</a> &gt;
             {% block pagename %}{% endblock %} - 
             {% block description %}{% endblock %}
@@ -82,6 +82,7 @@
                 <div id="pages-sets-menu" class="module">
                     <h2>{% trans "Static content" %}</h2>
                     <ul>
+                        <li><a href="{% url admin_static_pages %}">{% trans "Custom Pages" %}</a></li>
                         <li><a href="{% url admin_set allsets.about.name %}">{{ allsets.about.title }}</a></li>
                         <li><a href="{% url admin_set allsets.faq.name %}">{{ allsets.faq.title }}</a></li>
                         <li><a href="{% url admin_set allsets.sidebar.name %}">{{ allsets.sidebar.title }}</a></li>

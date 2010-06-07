@@ -4,7 +4,7 @@ from django.template import RequestContext
 from django.utils.translation import ugettext as _
 
 from forms import ClassicRegisterForm
-from forum.authentication.forms import SimpleEmailSubscribeForm
+from forum.forms import SimpleEmailSubscribeForm
 from forum.views.auth import login_and_forward
 from forum.actions import UserJoinsAction
 

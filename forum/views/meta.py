@@ -3,18 +3,19 @@ from itertools import groupby
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.views.static import serve
 from forum import settings
 from forum.forms import FeedbackForm
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 from django.db.models import Count
-from forum.utils.forms import get_next_url
-from forum.models import Badge, Award, User
+from forum.forms import get_next_url
+from forum.models import Badge, Award, User, Page
 from forum.badges.base import BadgesMeta
 from forum import settings
 from forum.utils.mail import send_template_email
+from django.utils.safestring import mark_safe
 import re
 
 def favicon(request):
@@ -93,4 +94,51 @@ def badge(request, id, slug):
         'awards' : awards,
         'badge' : badge,
     }, context_instance=RequestContext(request))
+
+def page(request, path):
+    if path in settings.STATIC_PAGE_REGISTRY:
+        try:
+            page = Page.objects.get(id=settings.STATIC_PAGE_REGISTRY[path])
+
+            if not page.published or request.user.is_superuser:
+                raise Http404
+        except:
+            raise Http404
+    else:
+        raise Http404
+
+    template = page.extra.get('template', 'default')
+    sidebar = page.extra.get('sidebar', '')
+
+    if template == 'default':
+        base = 'base_content.html'
+    elif template == 'sidebar':
+        base = 'base.html'
+
+        sidebar_render = page.extra.get('render', 'markdown')
+
+        if sidebar_render == 'markdown':
+            sidebar = page._as_markdown(sidebar)
+        elif sidebar_render == 'html':
+            sidebar = mark_safe(sidebar)
+
+    else:
+        return HttpResponse(page.body)
+
+    render = page.extra.get('render', 'markdown')
+
+    if render == 'markdown':
+        body = page.as_markdown()
+    elif render == 'html':
+        body = mark_safe(page.body)
+    else:
+        body = page.body
+
+    return render_to_response('page.html', {
+        'page' : page,
+        'body' : body,
+        'sidebar': sidebar,
+        'base': base,        
+        }, context_instance=RequestContext(request))
+
 
