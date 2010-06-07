@@ -26,19 +26,20 @@ def custom_css(request):
     return HttpResponse(or_preview(settings.CUSTOM_CSS, request), mimetype="text/css")
 
 def static(request, title, content):
-    return render_to_response('static.html', {'content' : content, 'title': title}, context_instance=RequestContext(request))
+    return render_to_response('static.html', {'content' : content, 'title': title},
+                              context_instance=RequestContext(request))
 
 def media(request, skin, path):
-    return serve(request, "%s/media/%s" % (skin, path), 
-                 document_root=os.path.join(os.path.dirname(os.path.dirname(__file__)),'skins').replace('\\','/'))
+    return serve(request, "%s/media/%s" % (skin, path),
+                 document_root=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'skins').replace('\\', '/'))
 
 def markdown_help(request):
     return render_to_response('markdown_help.html', context_instance=RequestContext(request))
 
 
-def opensearch(request):   
+def opensearch(request):
     return render_to_response('opensearch.html', {'settings' : settings}, context_instance=RequestContext(request))
-    
+
 
 def feedback(request):
     if request.method == "POST":
@@ -47,14 +48,14 @@ def feedback(request):
             context = {'user': request.user}
 
             if not request.user.is_authenticated:
-                context['email'] = form.cleaned_data.get('email',None)
+                context['email'] = form.cleaned_data.get('email', None)
             context['message'] = form.cleaned_data['message']
-            context['name'] = form.cleaned_data.get('name',None)
+            context['name'] = form.cleaned_data.get('name', None)
             context['ip'] = request.META['REMOTE_ADDR']
 
             recipients = User.objects.filter(is_superuser=True)
             send_template_email(recipients, "notifications/feedback.html", context)
-            
+
             msg = _('Thanks for the feedback!')
             request.user.message_set.create(message=msg)
             return HttpResponseRedirect(get_next_url(request))
@@ -62,6 +63,7 @@ def feedback(request):
         form = FeedbackForm(initial={'next':get_next_url(request)})
 
     return render_to_response('feedback.html', {'form': form}, context_instance=RequestContext(request))
+
 feedback.CANCEL_MESSAGE=_('We look forward to hearing your feedback! Please, give it next time :)')
 
 def privacy(request):
@@ -69,34 +71,34 @@ def privacy(request):
 
 def logout(request):
     return render_to_response('logout.html', {
-        'next' : get_next_url(request),
+    'next' : get_next_url(request),
     }, context_instance=RequestContext(request))
 
 def badges(request):
     badges = [b.ondb for b in sorted(BadgesMeta.by_id.values(), lambda b1, b2: cmp(b1.name, b2.name))]
-    
+
     if request.user.is_authenticated():
         my_badges = Award.objects.filter(user=request.user).values('badge_id').distinct()
     else:
         my_badges = []
 
     return render_to_response('badges.html', {
-        'badges' : badges,
-        'mybadges' : my_badges,
+    'badges' : badges,
+    'mybadges' : my_badges,
     }, context_instance=RequestContext(request))
 
 def badge(request, id, slug):
     badge = Badge.objects.get(id=id)
     awards = list(Award.objects.filter(badge=badge).order_by('user', 'awarded_at'))
     award_count = len(awards)
-    
+
     awards = sorted([dict(count=len(list(g)), user=k) for k, g in groupby(awards, lambda a: a.user)],
                     lambda c1, c2: c2['count'] - c1['count'])
 
     return render_to_response('badge.html', {
-        'award_count': award_count,
-        'awards' : awards,
-        'badge' : badge,
+    'award_count': award_count,
+    'awards' : awards,
+    'badge' : badge,
     }, context_instance=RequestContext(request))
 
 def page(request, path):
@@ -104,7 +106,7 @@ def page(request, path):
         try:
             page = Page.objects.get(id=settings.STATIC_PAGE_REGISTRY[path])
 
-            if not page.published or request.user.is_superuser:
+            if (not page.published) and (not request.user.is_superuser):
                 raise Http404
         except:
             raise Http404
@@ -127,7 +129,7 @@ def page(request, path):
             sidebar = mark_safe(sidebar)
 
     else:
-        return HttpResponse(page.body)
+        return HttpResponse(page.body, mimetype=page.extra.get('mimetype', 'text/html'))
 
     render = page.extra.get('render', 'markdown')
 
@@ -139,10 +141,10 @@ def page(request, path):
         body = page.body
 
     return render_to_response('page.html', {
-        'page' : page,
-        'body' : body,
-        'sidebar': sidebar,
-        'base': base,        
-        }, context_instance=RequestContext(request))
+    'page' : page,
+    'body' : body,
+    'sidebar': sidebar,
+    'base': base,
+    }, context_instance=RequestContext(request))
 
 

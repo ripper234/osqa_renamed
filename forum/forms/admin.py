@@ -37,30 +37,30 @@ class MaintenanceModeForm(forms.Form):
 
 
 TEMPLATE_CHOICES = (
-    ('default', _('Default')),
-    ('sidebar', _('Default with sidebar')),
-    ('none', _('None')),
+('default', _('Default')),
+('sidebar', _('Default with sidebar')),
+('none', _('None')),
 )
 
 RENDER_CHOICES = (
-    ('markdown', _('Markdown')),
-    ('html', _('HTML')),
-    ('escape', _('Escaped'))
+('markdown', _('Markdown')),
+('html', _('HTML')),
+('escape', _('Escaped'))
 )
 
 class UrlFieldWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
         if not value:
             value = ''
-            
+
         return """
                 <input class="url_field" type="text" name="%(name)s" value="%(value)s" />
                 <a class="url_field_anchor" target="_blank" href="%(app_url)s%(script_alias)s"></a>
-            """  % {'name': name, 'value': value, 'app_url': settings.APP_URL, 'script_alias': settings.FORUM_SCRIPT_ALIAS}
+            """  % {'name': name, 'value': value, 'app_url': settings.APP_URL,
+                    'script_alias': settings.FORUM_SCRIPT_ALIAS}
 
 
 class PageForm(forms.Form):
-
     def __init__(self, page, *args, **kwargs):
         if page:
             initial = page.extra
@@ -70,16 +70,22 @@ class PageForm(forms.Form):
             super(PageForm, self).__init__(*args, **kwargs)
 
 
-    title  = forms.CharField(label=_('Title'), max_length=255, widget=forms.TextInput(attrs={'class': 'longstring'}), initial='New page')
+    title  = forms.CharField(label=_('Title'), max_length=255, widget=forms.TextInput(attrs={'class': 'longstring'}),
+                             initial='New page')
     path  = forms.CharField(label=_('Page URL'), widget=UrlFieldWidget, initial='pages/new/')
 
     content = forms.CharField(label=_('Page Content'), widget=forms.Textarea(attrs={'rows': 30}))
-    render = forms.ChoiceField(widget=forms.RadioSelect, choices=RENDER_CHOICES, initial='markdown', label=_('Render Mode'))
+    mimetype = forms.CharField(label=_('Mime Type'), initial='text/html')
 
-    template = forms.ChoiceField(widget=forms.RadioSelect, choices=TEMPLATE_CHOICES, initial='default', label=_('Template'))
+    render = forms.ChoiceField(widget=forms.RadioSelect, choices=RENDER_CHOICES, initial='markdown',
+                               label=_('Render Mode'))
+
+    template = forms.ChoiceField(widget=forms.RadioSelect, choices=TEMPLATE_CHOICES, initial='default',
+                                 label=_('Template'))
     sidebar = forms.CharField(label=_('Sidebar Content'), widget=forms.Textarea(attrs={'rows': 20}), required=False)
-    sidebar_wrap = forms.BooleanField(label=_("Wrap sidebar block"), initial=True, required=False) 
-    sidebar_render = forms.ChoiceField(widget=forms.RadioSelect, choices=RENDER_CHOICES, initial='markdown', label=_('Sidebar Render Mode'))
+    sidebar_wrap = forms.BooleanField(label=_("Wrap sidebar block"), initial=True, required=False)
+    sidebar_render = forms.ChoiceField(widget=forms.RadioSelect, choices=RENDER_CHOICES, initial='markdown',
+                                       label=_('Sidebar Render Mode'))
 
     comments = forms.BooleanField(label=_("Allow comments"), initial=False, required=False)
 

@@ -103,6 +103,10 @@
                             <a href="{% url admin_set allsets.headandfoot.name %}">{{ allsets.headandfoot.title }}</a>
                             {% if "headandfoot" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
                         </li>
+                        <li>
+                            <a href="{% url admin_set allsets.head.name %}">{{ allsets.head.title }}</a>
+                            {% if "head" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                        </li>
                     </ul>
                 </div>
                 <div id="other-sets-menu" class="module">

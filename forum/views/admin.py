@@ -36,12 +36,11 @@ def admin_page(fn):
             context['othersets'] = sorted(
                     [s for s in Setting.sets.values() if not s.name in
                     ('basic', 'users', 'email', 'paths', 'extkeys', 'repgain', 'minrep', 'voting', 'badges', 'about', 'faq', 'sidebar',
-                    'form', 'moderation', 'css', 'headandfoot')]
+                    'form', 'moderation', 'css', 'headandfoot', 'head')]
                     , lambda s1, s2: s1.weight - s2.weight)
 
             unsaved = request.session.get('previewing_settings', {})
             context['unsaved'] = set([getattr(settings, s).set.name for s in unsaved.keys() if hasattr(settings, s)])
-
 
             return render_to_response(template, context, context_instance=RequestContext(request))
         else:
@@ -52,10 +51,10 @@ def admin_page(fn):
 @admin_page
 def dashboard(request):
     return ('osqaadmin/dashboard.html', {
-        'settings_pack': unicode(settings.SETTINGS_PACK),
-        'statistics': get_statistics(),
-        'recent_activity': get_recent_activity(),
-        'flagged_posts': get_flagged_posts(),
+    'settings_pack': unicode(settings.SETTINGS_PACK),
+    'statistics': get_statistics(),
+    'recent_activity': get_recent_activity(),
+    'flagged_posts': get_flagged_posts(),
     })
 
 @super_user_required
@@ -71,36 +70,37 @@ def statistics(request):
     last_month = today - timedelta(days=30)
 
     last_month_questions = Question.objects.filter_state(deleted=False).filter(added_at__gt=last_month
-                                                  ).order_by('added_at').values_list('added_at', flat=True)
+                                                                               ).order_by('added_at').values_list(
+            'added_at', flat=True)
 
     last_month_n_questions = Question.objects.filter_state(deleted=False).filter(added_at__lt=last_month).count()
     qgraph_data = simplejson.dumps([
-            (time.mktime(d.timetuple()) * 1000, i + last_month_n_questions)
-            for i, d in enumerate(last_month_questions)
+    (time.mktime(d.timetuple()) * 1000, i + last_month_n_questions)
+    for i, d in enumerate(last_month_questions)
     ])
 
     last_month_users = User.objects.filter(date_joined__gt=last_month
-                                                  ).order_by('date_joined').values_list('date_joined', flat=True)
+                                           ).order_by('date_joined').values_list('date_joined', flat=True)
 
     last_month_n_users = User.objects.filter(date_joined__lt=last_month).count()
 
     ugraph_data = simplejson.dumps([
-            (time.mktime(d.timetuple()) * 1000, i + last_month_n_users)
-            for i, d in enumerate(last_month_users)
+    (time.mktime(d.timetuple()) * 1000, i + last_month_n_users)
+    for i, d in enumerate(last_month_users)
     ])
 
     return 'osqaadmin/statistics.html', {
-        'graphs': [
+    'graphs': [
             {
-                'id': 'questions_graph',
-                'caption': _("Questions Graph"),
-                'data': qgraph_data
-            },{
-                'id': 'userss_graph',
-                'caption': _("Users Graph"),
-                'data': ugraph_data
+            'id': 'questions_graph',
+            'caption': _("Questions Graph"),
+            'data': qgraph_data
+            }, {
+            'id': 'userss_graph',
+            'caption': _("Users Graph"),
+            'data': ugraph_data
             }
-        ]
+            ]
     }
 
 
@@ -139,8 +139,8 @@ def settings_set(request, set_name):
         form = SettingsSetForm(set, unsaved=current_preview)
 
     return 'osqaadmin/set.html', {
-        'form': form,
-        'markdown': set.markdown,
+    'form': form,
+    'markdown': set.markdown,
     }
 
 @super_user_required
@@ -167,17 +167,19 @@ def get_flagged_posts():
 
 def get_statistics():
     return {
-        'total_users': User.objects.all().count(),
-        'users_last_24': User.objects.filter(date_joined__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_questions': Question.objects.filter_state(deleted=False).count(),
-        'questions_last_24': Question.objects.filter_state(deleted=False).filter(added_at__gt=(datetime.now() - timedelta(days=1))).count(),
-        'total_answers': Answer.objects.filter_state(deleted=False).count(),
-        'answers_last_24': Answer.objects.filter_state(deleted=False).filter(added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+    'total_users': User.objects.all().count(),
+    'users_last_24': User.objects.filter(date_joined__gt=(datetime.now() - timedelta(days=1))).count(),
+    'total_questions': Question.objects.filter_state(deleted=False).count(),
+    'questions_last_24': Question.objects.filter_state(deleted=False).filter(
+            added_at__gt=(datetime.now() - timedelta(days=1))).count(),
+    'total_answers': Answer.objects.filter_state(deleted=False).count(),
+    'answers_last_24': Answer.objects.filter_state(deleted=False).filter(
+            added_at__gt=(datetime.now() - timedelta(days=1))).count(),
     }
 
 @super_user_required
 def go_bootstrap(request):
-    #todo: this is the quick and dirty way of implementing a bootstrap mode
+#todo: this is the quick and dirty way of implementing a bootstrap mode
     try:
         from forum_modules.default_badges import settings as dbsets
         dbsets.POPULAR_QUESTION_VIEWS.set_value(100)
@@ -275,8 +277,8 @@ def maintenance(request):
 
             if form.is_valid():
                 settings.MAINTAINANCE_MODE.set_value({
-                    'allow_ips': form.cleaned_data['ips'],
-                    'message': form.cleaned_data['message']})
+                'allow_ips': form.cleaned_data['ips'],
+                'message': form.cleaned_data['message']})
 
                 if 'close' in request.POST:
                     message = _('Maintenance mode enabled')
@@ -294,13 +296,14 @@ def maintenance(request):
         form = MaintenanceModeForm(initial={'ips': request.META['REMOTE_ADDR'],
                                             'message': _('Currently down for maintenance. We\'ll be back soon')})
 
-    return ('osqaadmin/maintenance.html', {'form': form, 'in_maintenance': settings.MAINTAINANCE_MODE.value is not None})
+    return ('osqaadmin/maintenance.html', {'form': form, 'in_maintenance': settings.MAINTAINANCE_MODE.value is not None
+                                           })
 
 
 @admin_page
 def flagged_posts(request):
     return ('osqaadmin/flagged_posts.html', {
-        'flagged_posts': get_flagged_posts(),
+    'flagged_posts': get_flagged_posts(),
     })
 
 @admin_page
@@ -308,7 +311,7 @@ def static_pages(request):
     pages = Page.objects.all()
 
     return ('osqaadmin/static_pages.html', {
-        'pages': pages,
+    'pages': pages,
     })
 
 @admin_page
@@ -324,9 +327,11 @@ def edit_page(request, id=None):
         if form.is_valid():
             if form.has_changed():
                 if not page:
-                    page = NewPageAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data).node
+                    page = NewPageAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data
+                                                                                                 ).node
                 else:
-                    EditPageAction(user=request.user, node=page, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                    EditPageAction(user=request.user, node=page, ip=request.META['REMOTE_ADDR']).save(
+                            data=form.cleaned_data)
 
             if ('publish' in request.POST) and (not page.published):
                 PublishAction(user=request.user, node=page, ip=request.META['REMOTE_ADDR']).save()
@@ -344,9 +349,9 @@ def edit_page(request, id=None):
         published = False
 
     return ('osqaadmin/edit_page.html', {
-        'page': page,
-        'form': form,
-        'published': published
+    'page': page,
+    'form': form,
+    'published': published
     })
 
 
