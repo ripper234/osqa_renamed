@@ -20,7 +20,7 @@ from threading import Thread
 def send_msg_list(msgs, sender=None):
     if len(msgs):
         connection = SMTP(str(settings.EMAIL_HOST), str(settings.EMAIL_PORT),
-                local_hostname=DNS_NAME.get_fqdn())
+                          local_hostname=DNS_NAME.get_fqdn())
 
         try:
             if (bool(settings.EMAIL_USE_TLS)):
@@ -127,7 +127,7 @@ def send_email(subject, recipients, template, context={}, sender=None, images=[]
         msgs.append((email, msg))
 
     if threaded:
-        thread = Thread(target=send_msg_list,  args=[msgs])
+        thread = Thread(target=send_msg_list, args=[msgs])
         thread.setDaemon(True)
         thread.start()
     else:
@@ -144,10 +144,10 @@ def create_and_send_mail_messages(messages):
     sender.append('<%s>' % unicode(settings.DEFAULT_FROM_EMAIL))
     sender = u'%s <%s>' % (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))
 
-    connection = SMTP(str(settings.EMAIL_HOST), str(settings.EMAIL_PORT),
-                local_hostname=DNS_NAME.get_fqdn())
-
     try:
+        connection = SMTP(str(settings.EMAIL_HOST), str(settings.EMAIL_PORT),
+                          local_hostname=DNS_NAME.get_fqdn())
+
         if (bool(settings.EMAIL_USE_TLS)):
             connection.ehlo()
             connection.starttls()
@@ -168,7 +168,7 @@ def create_and_send_mail_messages(messages):
             to = Header(recipient.username, 'utf-8')
             to.append('<%s>' % recipient.email)
             msgRoot['To'] = to
-            
+
             msgRoot.preamble = 'This is a multi-part message from %s.' % unicode(settings.APP_SHORT_NAME).encode('utf8')
 
             msgAlternative = MIMEMultipart('alternative')
