@@ -1,5 +1,4 @@
-{% load extra_tags %}
-{% load i18n %}
+{% load extra_tags extra_filters i18n %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -97,15 +96,15 @@
                         <li><a href="{% url admin_set allsets.sidebar.name %}">{{ allsets.sidebar.title }}</a></li>
                         <li>
                             <a href="{% url admin_set allsets.css.name %}">{{ allsets.css.title }}</a>
-                            {% if "css" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                            {% if "css"|contained_in:unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
                         </li>
                         <li>
                             <a href="{% url admin_set allsets.headandfoot.name %}">{{ allsets.headandfoot.title }}</a>
-                            {% if "headandfoot" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                            {% if "headandfoot"|contained_in:unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
                         </li>
                         <li>
                             <a href="{% url admin_set allsets.head.name %}">{{ allsets.head.title }}</a>
-                            {% if "head" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                            {% if "head"|contained_in:unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
                         </li>
                     </ul>
                 </div>
@@ -115,7 +114,7 @@
                     {% for set in othersets %}
                         <li>
                             <a href="{% url admin_set set.name %}">{{ set.title }}</a>
-                            {% if set.name in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                            {% if set.name|contained_in:unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
                         </li>
                     {% endfor %}
                     </ul>

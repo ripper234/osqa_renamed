@@ -13,7 +13,7 @@ def collapse(input):
 def can_edit_post(user, post):
     return user.can_edit_post(post)
 
-    
+
 @register.filter
 def cnprog_intword(number):
     try:
@@ -33,3 +33,8 @@ def or_preview(setting, request):
             return previewing[setting.name]
 
     return setting.value
+
+
+@register.filter
+def contained_in(item, container):
+    return item in container

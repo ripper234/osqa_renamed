@@ -15,8 +15,8 @@ class NewPageAction(ActionProxy):
 
     def describe(self, viewer=None):
         return _("%(user)s created a new page titled %(page)s") % {
-            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
+        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+        'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
         }
 
 class EditPageAction(ActionProxy):
@@ -26,7 +26,7 @@ class EditPageAction(ActionProxy):
         title = data.pop('title')
         body = data.pop('content')
 
-        if (title != self.node.title) and (body != self.node.body):
+        if (title != self.node.title) or (body != self.node.body):
             self.node.create_revision(self.user, title=title, body=body)
 
         self.node.extra = data
@@ -34,8 +34,8 @@ class EditPageAction(ActionProxy):
 
     def describe(self, viewer=None):
         return _("%(user)s edited the page titled %(page)s") % {
-            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
+        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+        'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
         }
 
 class PublishAction(ActionProxy):
@@ -53,6 +53,6 @@ class PublishAction(ActionProxy):
 
     def describe(self, viewer=None):
         return _("%(user)s published a new page titled %(page)s") % {
-            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-            'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
+        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+        'page': self.hyperlink(self.node.get_absolute_url(), self.node.title)
         }
