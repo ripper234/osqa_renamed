@@ -53,6 +53,15 @@
                 {% block admincontent %}{% endblock %}
             </div>
             <div id="content-related">
+                {% if unsaved %}
+                <div id="changes-box" class="module">
+                    <h2>{% trans "Unpublished changes" %}</h2>
+                    <p>
+                        <img src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" />
+                        {% trans "Items marked with this icon have unpublished changes." %}
+                    </p>
+                </div>
+                {% endif %}
                 <div id="basic-sets-menu" class="module">
                     <h2>{% trans "Basic settings" %}</h2>
                     <ul>
@@ -86,14 +95,24 @@
                         <li><a href="{% url admin_set allsets.about.name %}">{{ allsets.about.title }}</a></li>
                         <li><a href="{% url admin_set allsets.faq.name %}">{{ allsets.faq.title }}</a></li>
                         <li><a href="{% url admin_set allsets.sidebar.name %}">{{ allsets.sidebar.title }}</a></li>
-                        <li><a href="{% url admin_set allsets.css.name %}">{{ allsets.css.title }}</a></li>
+                        <li>
+                            <a href="{% url admin_set allsets.css.name %}">{{ allsets.css.title }}</a>
+                            {% if "css" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                        </li>
+                        <li>
+                            <a href="{% url admin_set allsets.headandfoot.name %}">{{ allsets.headandfoot.title }}</a>
+                            {% if "headandfoot" in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                        </li>
                     </ul>
                 </div>
                 <div id="other-sets-menu" class="module">
                     <h2>{% trans "Other settings" %}</h2>
                     <ul>
                     {% for set in othersets %}
-                        <li><a href="{% url admin_set set.name %}">{{ set.title }}</a></li>
+                        <li>
+                            <a href="{% url admin_set set.name %}">{{ set.title }}</a>
+                            {% if set.name in unsaved %}<img width="12" height="12" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_alert.gif" alt="{% trans "Unsaved changes" %}" />{% endif %}
+                        </li>
                     {% endfor %}
                     </ul>
                 </div>

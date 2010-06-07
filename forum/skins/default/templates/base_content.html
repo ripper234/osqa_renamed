@@ -1,7 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- base_content.html -->
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags extra_filters markup %}
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
@@ -14,7 +13,7 @@
         {% endif %}
         <link rel="shortcut icon" href="{{ settings.APP_FAVICON }}" />
         <link href="{% media  "/media/style/style.css" %}" rel="stylesheet" type="text/css" />
-        {% if settings.USE_CUSTOM_CSS %}
+        {% if settings.USE_CUSTOM_CSS|or_preview:request %}
         <link href="{% url custom_css %}" rel="stylesheet" type="text/css" />
         {% endif %}
         {% block forestyle %}{% endblock %}
@@ -65,6 +64,11 @@
             {% endautoescape %}
             <a id="close-notify" onclick="notify.close(true)">&times;</a>
         </div>
+        {% if settings.USE_CUSTOM_HEADER|or_preview:request %}
+            <div id="custom_header">
+                {{ settings.CUSTOM_HEADER|or_preview:request|markdown:"settingsparser" }}    
+            </div>
+        {% endif %}
         {% include "header.html" %}
         {% block page_center %}
         <div id="wrapper">
@@ -82,7 +86,29 @@
             <div class="spacer3"></div>
         </div>
         {% endblock %}
-        {% include "footer.html" %}
+        {% if settings.USE_CUSTOM_FOOTER|or_preview:request %}
+            {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "above" %}
+                <div id="custom_footer">
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                </div>
+            {% endifequal %}
+            <div id="ground">
+                {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "replace" %}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                {% else %}
+                    {% include "footer.html" %}
+                {% endifequal %}
+            </div>
+            {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "below" %}
+                <div id="custom_footer">
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                </div>
+            {% endifequal %}
+        {% else %}
+            <div id="ground">
+                {% include "footer.html" %}
+            </div>
+        {% endif %}
         {% block endjs %}
         {% endblock %}
         {% if settings.GOOGLE_ANALYTICS_KEY %}

@@ -16,13 +16,14 @@ from forum.badges.base import BadgesMeta
 from forum import settings
 from forum.utils.mail import send_template_email
 from django.utils.safestring import mark_safe
+from forum.templatetags.extra_filters import or_preview
 import re
 
 def favicon(request):
     return HttpResponseRedirect(str(settings.APP_FAVICON))
 
 def custom_css(request):
-    return HttpResponse(unicode(settings.CUSTOM_CSS), mimetype="text/css")
+    return HttpResponse(or_preview(settings.CUSTOM_CSS, request), mimetype="text/css")
 
 def static(request, title, content):
     return render_to_response('static.html', {'content' : content, 'title': title}, context_instance=RequestContext(request))

@@ -36,8 +36,13 @@ def admin_page(fn):
             context['othersets'] = sorted(
                     [s for s in Setting.sets.values() if not s.name in
                     ('basic', 'users', 'email', 'paths', 'extkeys', 'repgain', 'minrep', 'voting', 'badges', 'about', 'faq', 'sidebar',
-                    'form', 'moderation', 'css')]
+                    'form', 'moderation', 'css', 'headandfoot')]
                     , lambda s1, s2: s1.weight - s2.weight)
+
+            unsaved = request.session.get('previewing_settings', {})
+            context['unsaved'] = set([getattr(settings, s).set.name for s in unsaved.keys() if hasattr(settings, s)])
+
+
             return render_to_response(template, context, context_instance=RequestContext(request))
         else:
             return res
@@ -101,7 +106,8 @@ def statistics(request):
 
 @admin_page
 def settings_set(request, set_name):
-    set = Setting.sets.get(set_name, None)
+    set = Setting.sets.get(set_name, {})
+    current_preview = request.session.get('previewing_settings', {})
 
     if set is None:
         raise Http404
@@ -110,15 +116,27 @@ def settings_set(request, set_name):
         form = SettingsSetForm(set, data=request.POST, files=request.FILES)
 
         if form.is_valid():
-            form.save()
-            request.user.message_set.create(message=_("'%s' settings saved succesfully") % set_name)
+            if 'preview' in request.POST:
+                current_preview.update(form.cleaned_data)
+                request.session['previewing_settings'] = current_preview
 
-            if set_name in ('minrep', 'badges', 'repgain'):
-                settings.SETTINGS_PACK.set_value("custom")
+                return HttpResponseRedirect(reverse('index'))
+            else:
+                for s in set:
+                    current_preview.pop(s.name, None)
 
-            return HttpResponseRedirect(reverse('admin_set', args=[set_name]))
+                request.session['previewing_settings'] = current_preview
+
+                if not 'reset' in request.POST:
+                    form.save()
+                    request.user.message_set.create(message=_("'%s' settings saved succesfully") % set_name)
+
+                    if set_name in ('minrep', 'badges', 'repgain'):
+                        settings.SETTINGS_PACK.set_value("custom")
+
+                return HttpResponseRedirect(reverse('admin_set', args=[set_name]))
     else:
-        form = SettingsSetForm(set)
+        form = SettingsSetForm(set, unsaved=current_preview)
 
     return 'osqaadmin/set.html', {
         'form': form,

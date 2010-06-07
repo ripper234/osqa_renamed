@@ -6,12 +6,13 @@ import logging
 TMP_MINICACHE_SECONDS = 5
 
 class SettingSet(list):
-    def __init__(self, name, title, description, weight=1000, markdown=False):
+    def __init__(self, name, title, description, weight=1000, markdown=False, can_preview=False):
         self.name = name
         self.title = title
         self.description = description
         self.weight = weight
         self.markdown = markdown
+        self.can_preview = can_preview
 
 
 class BaseSetting(object):
@@ -30,6 +31,8 @@ class BaseSetting(object):
         self._temp = None
 
         if set is not None:
+            self.set = set
+            
             if not set.name in Setting.sets:
                 Setting.sets[set.name] = set
 

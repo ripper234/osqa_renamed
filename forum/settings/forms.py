@@ -14,16 +14,20 @@ class UnfilteredField(forms.CharField):
 
 
 class SettingsSetForm(forms.Form):
-    def __init__(self, set, data=None, *args, **kwargs):
-        if data is None:
-            initial = dict([(setting.name, setting.value) for setting in set])
-        else:
-            initial = None
+    def __init__(self, set, data=None, unsaved=None, *args, **kwargs):
+        initial = dict([(setting.name, setting.value) for setting in set])
+
+        if unsaved:
+            initial.update(unsaved)
 
         super(SettingsSetForm, self).__init__(data, initial=initial, *args, **kwargs)
 
         for setting in set:
-            if isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):
+            widget = setting.field_context.get('widget', None)
+
+            if widget is forms.RadioSelect or isinstance(widget, forms.RadioSelect):
+                field = forms.ChoiceField(**setting.field_context)
+            elif isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):
                 if not setting.field_context.get('widget', None):
                     setting.field_context['widget'] = forms.TextInput(attrs={'class': 'longstring'})
                 field = forms.CharField(**setting.field_context)

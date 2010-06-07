@@ -24,3 +24,12 @@ def cnprog_intword(number):
             return number
     except:
         return number
+
+@register.filter
+def or_preview(setting, request):
+    if request.user.is_superuser:
+        previewing = request.session.get('previewing_settings', {})
+        if setting.name in previewing:
+            return previewing[setting.name]
+
+    return setting.value
