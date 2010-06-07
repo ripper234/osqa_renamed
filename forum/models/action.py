@@ -289,11 +289,11 @@ class ActionRepute(models.Model):
 
     def save(self, *args, **kwargs):
         super(ActionRepute, self).save(*args, **kwargs)
-        self.user.reputation += self.value
+        self.user.reputation = models.F('reputation') + self.value
         self.user.save()
 
     def delete(self):
-        self.user.reputation -= self.value
+        self.user.reputation = models.F('reputation') - self.value
         self.user.save()
         super(ActionRepute, self).delete()
 
