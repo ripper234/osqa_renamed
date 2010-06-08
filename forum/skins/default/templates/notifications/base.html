@@ -20,10 +20,10 @@
 <p style="{{ p_style }}">{% trans "Hello" %} {{ recipient.username }},</p>
 {% endif %}
 {% block content %}{% endblock%}
-<p style="{{ p_style }}">Thanks,<br />{{settings.APP_SHORT_NAME}}</p>
+<p style="{{ p_style }}">{% trans "Thanks" %},<br />{{settings.APP_SHORT_NAME}}</p>
 {% if not exclude_finetune %}
-<p style="{{ p_style }}">P.S. You can always fine-tune which notifications you receive
-<a href="{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}" style="{{ a_style }}">here</a>.
+<p style="{{ p_style }}">{% trans "P.S. You can always fine-tune which notifications you receive" %}
+<a href="{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}" style="{{ a_style }}">{% trans "here" %}</a>.
 {% endif %}
 </p>
 <hr style="{{ hr_style }}" />
