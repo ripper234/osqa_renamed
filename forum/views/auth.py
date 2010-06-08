@@ -7,10 +7,11 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login,  logout
+from django.contrib.auth import login, logout
 from django.http import get_host
 import types
 import datetime
+import logging
 
 from forum.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
         TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
@@ -35,19 +36,19 @@ def signin_page(request, action=None):
     can_show = lambda c: not request.user.is_authenticated() or c.show_to_logged_in_user
 
     bigicon_providers = sorted([
-        context for context in all_providers if context.mode == 'BIGICON' and can_show(context)
+    context for context in all_providers if context.mode == 'BIGICON' and can_show(context)
     ], sort)
 
     smallicon_providers = sorted([
-        context for context in all_providers if context.mode == 'SMALLICON' and can_show(context)
+    context for context in all_providers if context.mode == 'SMALLICON' and can_show(context)
     ], sort)
 
     top_stackitem_providers = sorted([
-        context for context in all_providers if context.mode == 'TOP_STACK_ITEM' and can_show(context)
+    context for context in all_providers if context.mode == 'TOP_STACK_ITEM' and can_show(context)
     ], sort)
 
     stackitem_providers = sorted([
-        context for context in all_providers if context.mode == 'STACK_ITEM' and can_show(context)
+    context for context in all_providers if context.mode == 'STACK_ITEM' and can_show(context)
     ], sort)
 
     try:
@@ -59,25 +60,26 @@ def signin_page(request, action=None):
     return render_to_response(
             'auth/signin.html',
             {
-                'msg': msg,
-                'all_providers': all_providers,
-                'bigicon_providers': bigicon_providers,
-                'top_stackitem_providers': top_stackitem_providers,
-                'stackitem_providers': stackitem_providers,
-                'smallicon_providers': smallicon_providers,
+            'msg': msg,
+            'all_providers': all_providers,
+            'bigicon_providers': bigicon_providers,
+            'top_stackitem_providers': top_stackitem_providers,
+            'stackitem_providers': stackitem_providers,
+            'smallicon_providers': smallicon_providers,
             },
             RequestContext(request))
 
 def prepare_provider_signin(request, provider):
     force_email_request = request.REQUEST.get('validate_email', 'yes') == 'yes'
     request.session['force_email_request'] = force_email_request
-    
+
     if provider in AUTH_PROVIDERS:
         provider_class = AUTH_PROVIDERS[provider].consumer
 
         try:
             request_url = provider_class.prepare_authentication_request(request,
-                    reverse('auth_provider_done', kwargs={'provider': provider}))
+                                                                        reverse('auth_provider_done',
+                                                                                kwargs={'provider': provider}))
 
             return HttpResponseRedirect(request_url)
         except NotImplementedError, e:
@@ -103,26 +105,32 @@ def process_provider_signin(request, provider):
         if request.user.is_authenticated():
             if isinstance(assoc_key, (type, User)):
                 if request.user != assoc_key:
-                    request.session['auth_error'] = _("Sorry, these login credentials belong to anoother user. Plese terminate your current session and try again.")
+                    request.session['auth_error'] = _(
+                            "Sorry, these login credentials belong to anoother user. Plese terminate your current session and try again."
+                            )
                 else:
                     request.session['auth_error'] = _("You are already logged in with that user.")
             else:
                 try:
                     assoc = AuthKeyUserAssociation.objects.get(key=assoc_key)
                     if assoc.user == request.user:
-                        request.session['auth_error'] = _("These login credentials are already associated with your account.")
+                        request.session['auth_error'] = _(
+                                "These login credentials are already associated with your account.")
                     else:
-                        request.session['auth_error'] = _("Sorry, these login credentials belong to anoother user. Plese terminate your current session and try again.")
+                        request.session['auth_error'] = _(
+                                "Sorry, these login credentials belong to anoother user. Plese terminate your current session and try again."
+                                )
                 except:
                     uassoc = AuthKeyUserAssociation(user=request.user, key=assoc_key, provider=provider)
                     uassoc.save()
-                    request.user.message_set.create(message=_('The new credentials are now associated with your account'))
+                    request.user.message_set.create(
+                            message=_('The new credentials are now associated with your account'))
                     return HttpResponseRedirect(reverse('user_authsettings', args=[request.user.id]))
 
             return HttpResponseRedirect(reverse('auth_signin'))
         else:
             if isinstance(assoc_key, User):
-                return login_and_forward(request, assoc_key) 
+                return login_and_forward(request, assoc_key)
 
         try:
             assoc = AuthKeyUserAssociation.objects.get(key=assoc_key)
@@ -148,7 +156,7 @@ def external_register(request):
             if User.objects.all().count() == 0:
                 user_.is_superuser = True
                 user_.is_staff = True
-            
+
             user_.save()
             UserJoinsAction(user=user_, ip=request.META['REMOTE_ADDR']).save()
 
@@ -156,8 +164,11 @@ def external_register(request):
                 assoc_key = request.session['assoc_key']
                 auth_provider = request.session['auth_provider']
             except:
-                request.session['auth_error'] = _("Oops, something went wrong in the middle of this process. Please try again.")
-                return HttpResponseRedirect(request.session.get('on_signin_url', reverse('auth_signin'))) 
+                request.session['auth_error'] = _(
+                        "Oops, something went wrong in the middle of this process. Please try again.")
+                logging.error("Missing session data when trying to complete user registration: %s" % ", ".join(
+                        ["%s: %s" % (k, v) for k, v in request.META.items()]))
+                return HttpResponseRedirect(reverse('auth_signin'))
 
             uassoc = AuthKeyUserAssociation(user=user_, key=assoc_key, provider=auth_provider)
             uassoc.save()
@@ -171,7 +182,15 @@ def external_register(request):
 
             return login_and_forward(request, user_, message=_("A welcome email has been sent to your email address. "))
     else:
-        provider_class = AUTH_PROVIDERS[request.session['auth_provider']].consumer
+        auth_provider = request.session.get('auth_provider', None)
+        if not auth_provider:
+            request.session['auth_error'] = _(
+                    "Oops, something went wrong in the middle of this process. Please try again.")
+            logging.error("Missing session data when trying to complete user registration: %s" % ", ".join(
+                    ["%s: %s" % (k, v) for k, v in request.META.items()]))
+            return HttpResponseRedirect(reverse('auth_signin'))
+
+        provider_class = AUTH_PROVIDERS[auth_provider].consumer
         user_data = provider_class.get_user_data(request.session['assoc_key'])
 
         if not user_data:
@@ -184,20 +203,20 @@ def external_register(request):
             request.session['auth_validated_email'] = email
 
         form1 = SimpleRegistrationForm(initial={
-            'next': '/',
-            'username': username,
-            'email': email,
+        'next': '/',
+        'username': username,
+        'email': email,
         })
         email_feeds_form = SimpleEmailSubscribeForm()
 
     provider_context = AUTH_PROVIDERS[request.session['auth_provider']].context
 
     return render_to_response('auth/complete.html', {
-        'form1': form1,
-        'email_feeds_form': email_feeds_form,
-        'provider':mark_safe(provider_context.human_name),
-        'login_type':provider_context.id,
-        'gravatar_faq_url':reverse('faq') + '#gravatar',
+    'form1': form1,
+    'email_feeds_form': email_feeds_form,
+    'provider':mark_safe(provider_context.human_name),
+    'login_type':provider_context.id,
+    'gravatar_faq_url':reverse('faq') + '#gravatar',
     }, context_instance=RequestContext(request))
 
 def request_temp_login(request):
@@ -224,25 +243,27 @@ def request_temp_login(request):
         form = TemporaryLoginRequestForm()
 
     return render_to_response(
-            'auth/temp_login_request.html', {'form': form}, 
+            'auth/temp_login_request.html', {'form': form},
             context_instance=RequestContext(request))
 
 def temp_signin(request, user, code):
     user = get_object_or_404(User, id=user)
 
     if (ValidationHash.objects.validate(code, user, 'templogin', [user.id])):
-        return login_and_forward(request,  user, reverse('user_authsettings', kwargs={'id': user.id}),
-                _("You are logged in with a temporary access key, please take the time to fix your issue with authentication."))
+        return login_and_forward(request, user, reverse('user_authsettings', kwargs={'id': user.id}),
+                                 _(
+                                         "You are logged in with a temporary access key, please take the time to fix your issue with authentication."
+                                         ))
     else:
         raise Http404()
-    
+
 def validate_email(request, user, code):
     user = get_object_or_404(User, id=user)
 
     if (ValidationHash.objects.validate(code, user, 'email', [user.email])):
         user.email_isvalid = True
         user.save()
-        return login_and_forward(request,  user, None, _("Thank you, your email is now validated."))
+        return login_and_forward(request, user, None, _("Thank you, your email is now validated."))
     else:
         raise Http404()
 
@@ -290,16 +311,16 @@ def auth_settings(request, id):
             "unknown: %s" % ConsumerTemplateContext.readable_key(k)
 
         auth_keys_list.append({
-            'name': name,
-            'id': k.id
+        'name': name,
+        'id': k.id
         })
 
     return render_to_response('auth/auth_settings.html', {
-        'view_user': user_,
-        "can_view_private": (user_ == request.user) or request.user.is_superuser,
-        'form': form,
-        'has_password': user_.has_usable_password(),
-        'auth_keys': auth_keys_list,
+    'view_user': user_,
+    "can_view_private": (user_ == request.user) or request.user.is_superuser,
+    'form': form,
+    'has_password': user_.has_usable_password(),
+    'auth_keys': auth_keys_list,
     }, context_instance=RequestContext(request))
 
 def remove_external_provider(request, id):
@@ -320,14 +341,14 @@ def newanswer_signin_action(user):
     return answer.get_absolute_url()
 
 POST_SIGNIN_ACTIONS = {
-    'newquestion': newquestion_signin_action,
-    'newanswer': newanswer_signin_action,
+'newquestion': newquestion_signin_action,
+'newanswer': newanswer_signin_action,
 }
 
-def login_and_forward(request,  user, forward=None, message=None):
+def login_and_forward(request, user, forward=None, message=None):
     old_session = request.session.session_key
     user.backend = "django.contrib.auth.backends.ModelBackend"
-    login(request,  user)
+    login(request, user)
 
     temp_data = request.session.pop('temp_node_data', None)
     if temp_data:
