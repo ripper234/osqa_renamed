@@ -145,7 +145,7 @@ class Action(BaseModel):
             self.save()
             self.cancel_reputes()
             self.cancel_action()
-            #self.trigger_hooks(False)
+        #self.trigger_hooks(False)
 
     @classmethod
     def get_current(cls, **kwargs):
@@ -168,7 +168,7 @@ class Action(BaseModel):
         Action.hooks[cls].append(fn)
 
     def trigger_hooks(self, new=True):
-        thread = Thread(target=trigger_hooks_threaded,  args=[self, Action.hooks, new])
+        thread = Thread(target=trigger_hooks_threaded, args=[self, Action.hooks, new])
         thread.setDaemon(True)
         thread.start()
 
@@ -209,7 +209,7 @@ class ActionProxy(Action):
         return (owner == user) and _('your') or user.username
 
     def viewer_or_user_verb(self, viewer, user, viewer_verb, user_verb):
-        return (viewer == user) and viewer_verb or user_verb    
+        return (viewer == user) and viewer_verb or user_verb
 
     def hyperlink(self, url, title, **attrs):
         return html.hyperlink(url, title, **attrs)
@@ -223,11 +223,11 @@ class ActionProxy(Action):
             node_desc = node_link
 
         return _("%(user)s %(node_name)s %(node_desc)s") % {
-            'user': self.hyperlink(node.author.get_profile_url(), self.friendly_ownername(viewer, node.author)),
-            'node_name': node.friendly_name,
-            'node_desc': node_desc,
+        'user': self.hyperlink(node.author.get_profile_url(), self.friendly_ownername(viewer, node.author)),
+        'node_name': node.friendly_name,
+        'node_desc': node_desc,
         }
-    
+
     class Meta:
         proxy = True
 
@@ -269,7 +269,6 @@ class DummyActionProxy(object):
         cls.hooks.append(fn)
 
 
-
 class ActionRepute(models.Model):
     action = models.ForeignKey(Action, related_name='reputes')
     date = models.DateTimeField(default=datetime.datetime.now)
@@ -287,13 +286,19 @@ class ActionRepute(models.Model):
         if self.value < 0: return self.value
         return 0
 
+    def _add_to_rep(self, value):
+        if self.user.reputation + value < 0:
+            return 0
+        else:
+            return models.F('reputation') + value
+
     def save(self, *args, **kwargs):
         super(ActionRepute, self).save(*args, **kwargs)
-        self.user.reputation = models.F('reputation') + self.value
+        self.user.reputation = self._add_to_rep(self.value)
         self.user.save()
 
     def delete(self):
-        self.user.reputation = models.F('reputation') - self.value
+        self.user.reputation = self._add_to_rep(-self.value)
         self.user.save()
         super(ActionRepute, self).delete()
 
