@@ -36,8 +36,6 @@ class FamousQuestion(QuestionViewBadge):
     nviews = settings.FAMOUS_QUESTION_VIEWS
 
 
-
-
 class NodeScoreBadge(AbstractBadge):
     abstract = True
     listen_to = (VoteAction,)
@@ -45,7 +43,7 @@ class NodeScoreBadge(AbstractBadge):
     def award_to(self, action):
         if (action.node.node_type == self.node_type) and (action.node.score == int(self.expected_score)):
             return action.node.author
-            
+
 
 class QuestionScoreBadge(NodeScoreBadge):
     abstract = True
@@ -77,7 +75,7 @@ class AnswerScoreBadge(NodeScoreBadge):
     @property
     def description(self):
         return _('Answer voted up %s times') % str(self.expected_score)
-    
+
 class NiceAnswer(AnswerScoreBadge):
     expected_score = settings.NICE_ANSWER_VOTES_UP
     name = _("Nice Answer")
@@ -91,7 +89,6 @@ class GreatAnswer(AnswerScoreBadge):
     type = Badge.GOLD
     expected_score = settings.GREAT_ANSWER_VOTES_UP
     name = _("Great Answer")
-
 
 
 class FavoriteQuestionBadge(AbstractBadge):
@@ -115,7 +112,6 @@ class StellarQuestion(FavoriteQuestionBadge):
     type = Badge.GOLD
     name = _("Stellar Question")
     expected_count = settings.STELLAR_QUESTION_FAVS
-
 
 
 class Disciplined(AbstractBadge):
@@ -162,7 +158,7 @@ class Supporter(AbstractBadge):
 class FirstActionBadge(AbstractBadge):
     award_once = True
     abstract = True
-    
+
     def award_to(self, action):
         if (self.listen_to[0].objects.filter(user=action.user).count() == 1):
             return action.user
@@ -206,7 +202,6 @@ class Autobiographer(AbstractBadge):
             return user
 
 
-
 class CivicDuty(AbstractBadge):
     type = Badge.SILVER
     award_once = True
@@ -226,7 +221,8 @@ class Pundit(AbstractBadge):
     description = _('Left %s comments') % settings.PUNDIT_COMMENT_COUNT
 
     def award_to(self, action):
-        if action.user.nodes.filter_state(deleted=False).filter(node_type="comment").count() == int(settings.CIVIC_DUTY_VOTES):
+        if action.user.nodes.filter_state(deleted=False).filter(node_type="comment").count() == int(
+                settings.CIVIC_DUTY_VOTES):
             return action.user
 
 
@@ -237,7 +233,7 @@ class SelfLearner(AbstractBadge):
 
     def award_to(self, action):
         if (action.node.node_type == "answer") and (action.node.author == action.node.parent.author) and (
-            action.node.score == int(settings.SELF_LEARNER_UP_VOTES)):
+        action.node.score == int(settings.SELF_LEARNER_UP_VOTES)):
             return action.node.author
 
 
@@ -260,7 +256,8 @@ class Student(AbstractBadge):
     description = _('Asked first question with at least one up vote')
 
     def award_to(self, action):
-        if (action.node.node_type == "question") and (action.node.author.nodes.filter_state(deleted=False).filter(node_type="question", score=1).count() == 1):
+        if (action.node.node_type == "question") and (action.node.author.nodes.filter_state(deleted=False).filter(
+                node_type="question", score=1).count() == 1):
             return action.node.author
 
 
@@ -271,7 +268,8 @@ class Teacher(AbstractBadge):
     description = _('Answered first question with at least one up vote')
 
     def award_to(self, action):
-        if (action.node.node_type == "answer") and (action.node.author.nodes.filter_state(deleted=False).filter(node_type="answer", score=1).count() == 1):
+        if (action.node.node_type == "answer") and (action.node.author.nodes.filter_state(deleted=False).filter(
+                node_type="answer", score=1).count() == 1):
             return action.node.author
 
 
@@ -284,7 +282,7 @@ class Enlightened(AbstractBadge):
 
     def award_to(self, action):
         if (action.node.node_type == "answer") and (action.node.accepted) and (
-            action.node.score >= int(settings.ENLIGHTENED_UP_VOTES)):
+        action.node.score >= int(settings.ENLIGHTENED_UP_VOTES)):
             return action.node.author
 
 
@@ -296,7 +294,7 @@ class Guru(AbstractBadge):
 
     def award_to(self, action):
         if (action.node.node_type == "answer") and (action.node.accepted) and (
-            action.node.score >= int(settings.ENLIGHTENED_UP_VOTES)):
+        action.node.score >= int(settings.ENLIGHTENED_UP_VOTES)):
             return action.node.author
 
 
@@ -309,7 +307,8 @@ class Necromancer(AbstractBadge):
 
     def award_to(self, action):
         if (action.node.node_type == "answer") and (
-            action.node.added_at >= (action.node.question.added_at + timedelta(days=int(settings.NECROMANCER_DIF_DAYS)))):
+        action.node.added_at >= (action.node.question.added_at + timedelta(days=int(settings.NECROMANCER_DIF_DAYS)))
+        ) and (action.node.score == settings.NECROMANCER_UP_VOTES):
             return action.node.author
 
 class Taxonomist(AbstractBadge):
