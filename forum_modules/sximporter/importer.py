@@ -9,6 +9,20 @@ from django.template.defaultfilters import slugify
 from forum.models.utils import dbsafe_encode
 from orm import orm
 
+from django.utils.encoding import force_unicode
+
+try:
+    from cPickle import loads, dumps
+except ImportError:
+    from pickle import loads, dumps
+
+from copy import deepcopy
+from base64 import b64encode, b64decode
+from zlib import compress, decompress
+
+def dbsafe_encode(value):
+    return force_unicode(b64encode(compress(dumps(deepcopy(value)))))
+
 def getText(el):
     rc = ""
     for node in el.childNodes:
@@ -633,6 +647,97 @@ def badges_import(dump, uidmap, post_list):
     for badge in obadges.values():
         badge.save()
 
+def pages_import(dump):
+    registry = {}
+    sx_pages = readTable(dump, "FlatPages")
+
+    for sxp in sx_pages:
+        page = orm.Node(
+                node_type = "page",
+                title = sxp['name'],
+                body = b64decode(sxp['value']),
+                extra = dbsafe_encode({
+                'path': sxp['url'][1:],
+                'mimetype': sxp['contenttype'],
+                'template': (sxp['usemaster'] == "true") and "default" or "none",
+                'render': "html",
+                'sidebar': "",
+                'sidebar_wrap': True,
+                'sidebar_render': "html",
+                'comments': False
+                }),
+                author_id = 1
+                )
+
+        page.save()
+        registry[sxp['url'][1:]] = page.id
+
+        create_action = orm.Action(
+                action_type = "newpage",
+                user_id = page.author_id,
+                node = page
+                )
+
+        create_action.save()
+
+        if sxp['active'] == "true" and sxp['contenttype'] == "text/html":
+            pub_action = orm.Action(
+                    action_type = "publish",
+                    user_id = page.author_id,
+                    node = page
+                    )
+
+            pub_action.save()
+            add_post_state("published", page, pub_action)
+
+    kv = orm.KeyValue(key='STATIC_PAGE_REGISTRY', value=dbsafe_encode(registry))
+    kv.save()
+
+sx2osqa_set_map = {
+u'theme.html.name': 'APP_TITLE',
+u'theme.html.footer': 'USE_CUSTOM_FOOTER',
+u'theme.html.sidebar': 'SIDEBAR_UPPER_TEXT',
+u'theme.html.sidebar-low': 'SIDEBAR_LOWER_TEXT',
+u'theme.html.welcome': 'APP_INTRO',
+u'theme.html.head': 'CUSTOM_HEAD',
+u'theme.html.header': 'CUSTOM_HEADER'
+}
+
+html_codes = (
+('&amp;', '&'),
+('&lt;', '<'),
+('&gt;', '>'),
+('&quot;', '"'),
+('&#39;', "'"),
+)
+
+def html_decode(html):
+    html = force_unicode(html)
+
+    for args in html_codes:
+        html = html.replace(*args)
+
+    return html
+
+
+def static_import(dump):
+    sx_sets = readTable(dump, "ThemeTextResources")
+    sx_unknown = {}
+
+    for set in sx_sets:
+        if unicode(set['name']) in sx2osqa_set_map:
+            kv = orm.KeyValue(
+                    key = sx2osqa_set_map[set['name']],
+                    value = dbsafe_encode(html_decode(set['value']))
+                    )
+
+            kv.save()
+        else:
+            sx_unknown[set['name']] = html_decode(set['value'])
+
+    unknown = orm.KeyValue(key='SXIMPORT_UNKNOWN_SETS', value=dbsafe_encode(sx_unknown))
+    unknown.save()
+
 
 def reset_sequences():
     from south.db import db
@@ -642,14 +747,17 @@ def reset_sequences():
         db.commit_transaction()
 
 def sximport(dump, options):
-    uidmap, merged_users = userimport(dump, options)
-    tagmap = tagsimport(dump, uidmap)
-    posts = postimport(dump, uidmap, tagmap)
-    posts, comments = comment_import(dump, uidmap, posts)
-    add_tags_to_posts(posts, tagmap)
-    post_vote_import(dump, uidmap, posts)
-    comment_vote_import(dump, uidmap, comments, posts)
-    badges_import(dump, uidmap, posts.values())
+#uidmap, merged_users = userimport(dump, options)
+#tagmap = tagsimport(dump, uidmap)
+#posts = postimport(dump, uidmap, tagmap)
+#posts, comments = comment_import(dump, uidmap, posts)
+#add_tags_to_posts(posts, tagmap)
+#post_vote_import(dump, uidmap, posts)
+#comment_vote_import(dump, uidmap, comments, posts)
+#badges_import(dump, uidmap, posts.values())
+
+    pages_import(dump)
+    #static_import(dump)
 
     from south.db import db
     db.commit_transaction()
