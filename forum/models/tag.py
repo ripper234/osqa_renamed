@@ -17,7 +17,6 @@ class Tag(BaseModel):
 
     active = ActiveTagManager()
 
-
     class Meta:
         ordering = ('-used_count', 'name')
         app_label = 'forum'
@@ -25,12 +24,18 @@ class Tag(BaseModel):
     def __unicode__(self):
         return self.name
 
+    def add_to_usage_count(self, value):
+        if self.used_count + value < 0:
+            self.used_count = 0
+        else:
+            self.used_count = models.F('used_count') + value
+
     @models.permalink
     def get_absolute_url(self):
         return ('tag_questions', (), {'tag': self.name})
 
 class MarkedTag(models.Model):
-    TAG_MARK_REASONS = (('good',_('interesting')),('bad',_('ignored')))
+    TAG_MARK_REASONS = (('good', _('interesting')), ('bad', _('ignored')))
     tag = models.ForeignKey(Tag, related_name='user_selections')
     user = models.ForeignKey(User, related_name='tag_selections')
     reason = models.CharField(max_length=16, choices=TAG_MARK_REASONS)

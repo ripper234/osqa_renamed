@@ -62,7 +62,7 @@ class NodeMetaClass(BaseMetaClass):
     @classmethod
     def setup_relations(cls):
         for node_cls in NodeMetaClass.types.values():
-            NodeMetaClass.setup_relation(node_cls)        
+            NodeMetaClass.setup_relation(node_cls)
 
     @classmethod
     def setup_relation(cls, node_cls):
@@ -171,7 +171,6 @@ class NodeStateQuery(object):
         return "(%s)" % name in node.state_string
 
 
-
 class Node(BaseModel, NodeContent):
     __metaclass__ = NodeMetaClass
 
@@ -250,7 +249,7 @@ class Node(BaseModel, NodeContent):
     def deleted(self):
         return self.nis.deleted
 
-    @property    
+    @property
     def absolute_parent(self):
         if not self.abs_parent_id:
             return self
@@ -309,10 +308,10 @@ class Node(BaseModel, NodeContent):
             new_tags = set(name for name in self.tagnames.split(u' ') if name)
 
             return dict(
-                current=list(new_tags),
-                added=list(new_tags - old_tags),
-                removed=list(old_tags - new_tags)
-            )
+                    current=list(new_tags),
+                    added=list(new_tags - old_tags),
+                    removed=list(old_tags - new_tags)
+                    )
 
     def _last_active_user(self):
         return self.last_edited and self.last_edited.by or self.author
@@ -328,14 +327,14 @@ class Node(BaseModel, NodeContent):
                     tag = Tag.objects.create(name=name, created_by=self._last_active_user())
 
                 if not self.nis.deleted:
-                    tag.used_count = models.F('used_count') + 1
+                    tag.add_to_usage_count(1)
                     tag.save()
 
             if not self.nis.deleted:
                 for name in tag_changes['removed']:
                     try:
                         tag = Tag.objects.get(name=name)
-                        tag.used_count = models.F('used_count') - 1
+                        tag.add_to_usage_count(-1)
                         tag.save()
                     except:
                         pass
@@ -350,20 +349,21 @@ class Node(BaseModel, NodeContent):
 
         if action:
             for tag in self.tags.all():
-                tag.used_count = models.F('used_count') - 1
+                tag.tag.add_to_usage_count(-1)
                 tag.save()
         else:
             for tag in Tag.objects.filter(name__in=self.tagname_list()):
-                tag.used_count = models.F('used_count') + 1
+                tag.add_to_usage_count(1)
                 tag.save()
 
     def save(self, *args, **kwargs):
         tags_changed = self._process_changes_in_tags()
-        
+
         if not self.id:
             self.node_type = self.get_type()
             super(BaseModel, self).save(*args, **kwargs)
-            self.active_revision = self._create_revision(self.author, 1, title=self.title, tagnames=self.tagnames, body=self.body)
+            self.active_revision = self._create_revision(self.author, 1, title=self.title, tagnames=self.tagnames,
+                                                         body=self.body)
             self.update_last_activity(self.author)
 
         if self.parent_id and not self.abs_parent_id:
