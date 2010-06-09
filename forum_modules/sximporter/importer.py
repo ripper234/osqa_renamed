@@ -787,12 +787,13 @@ def pages_import(dump, currid):
 
 sx2osqa_set_map = {
 u'theme.html.name': 'APP_TITLE',
-u'theme.html.footer': 'USE_CUSTOM_FOOTER',
+u'theme.html.footer': 'CUSTOM_FOOTER',
 u'theme.html.sidebar': 'SIDEBAR_UPPER_TEXT',
 u'theme.html.sidebar-low': 'SIDEBAR_LOWER_TEXT',
 u'theme.html.welcome': 'APP_INTRO',
 u'theme.html.head': 'CUSTOM_HEAD',
-u'theme.html.header': 'CUSTOM_HEADER'
+u'theme.html.header': 'CUSTOM_HEADER',
+u'theme.css': 'CUSTOM_CSS',
 }
 
 html_codes = (
