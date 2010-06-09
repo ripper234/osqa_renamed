@@ -747,17 +747,17 @@ def reset_sequences():
         db.commit_transaction()
 
 def sximport(dump, options):
-#uidmap, merged_users = userimport(dump, options)
-#tagmap = tagsimport(dump, uidmap)
-#posts = postimport(dump, uidmap, tagmap)
-#posts, comments = comment_import(dump, uidmap, posts)
-#add_tags_to_posts(posts, tagmap)
-#post_vote_import(dump, uidmap, posts)
-#comment_vote_import(dump, uidmap, comments, posts)
-#badges_import(dump, uidmap, posts.values())
+    uidmap, merged_users = userimport(dump, options)
+    tagmap = tagsimport(dump, uidmap)
+    posts = postimport(dump, uidmap, tagmap)
+    posts, comments = comment_import(dump, uidmap, posts)
+    add_tags_to_posts(posts, tagmap)
+    post_vote_import(dump, uidmap, posts)
+    comment_vote_import(dump, uidmap, comments, posts)
+    badges_import(dump, uidmap, posts.values())
 
     pages_import(dump)
-    #static_import(dump)
+    static_import(dump)
 
     from south.db import db
     db.commit_transaction()
