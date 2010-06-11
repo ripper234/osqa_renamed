@@ -140,6 +140,9 @@ def send_template_email(recipients, template, context):
     t.render(Context(context))
 
 def create_and_send_mail_messages(messages):
+    if not settings.EMAIL_HOST:
+        return
+
     sender = Header(unicode(settings.APP_SHORT_NAME), 'utf-8')
     sender.append('<%s>' % unicode(settings.DEFAULT_FROM_EMAIL))
     sender = u'%s <%s>' % (unicode(settings.APP_SHORT_NAME), unicode(settings.DEFAULT_FROM_EMAIL))

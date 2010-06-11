@@ -111,7 +111,7 @@ class Action(BaseModel):
     def get_type(cls):
         return re.sub(r'action$', '', cls.__name__.lower())
 
-    def save(self, data=None, *args, **kwargs):
+    def save(self, data=None, threaded=True, *args, **kwargs):
         isnew = False
 
         if not self.id:
@@ -127,7 +127,7 @@ class Action(BaseModel):
             if (self.node is None) or (not self.node.nis.wiki):
                 self.repute_users()
             self.process_action()
-            self.trigger_hooks(True)
+            self.trigger_hooks(threaded, True)
 
         return self
 
@@ -167,15 +167,18 @@ class Action(BaseModel):
 
         Action.hooks[cls].append(fn)
 
-    def trigger_hooks(self, new=True):
-        thread = Thread(target=trigger_hooks_threaded, args=[self, Action.hooks, new])
-        thread.setDaemon(True)
-        thread.start()
+    def trigger_hooks(self, threaded, new=True):
+        if threaded:
+            thread = Thread(target=trigger_hooks, args=[self, Action.hooks, new])
+            thread.setDaemon(True)
+            thread.start()
+        else:
+            trigger_hooks(self, Action.hooks, new)
 
     class Meta:
         app_label = 'forum'
 
-def trigger_hooks_threaded(action, hooks, new):
+def trigger_hooks(action, hooks, new):
     for cls, hooklist in hooks.items():
         if isinstance(action, cls):
             for hook in hooklist:
