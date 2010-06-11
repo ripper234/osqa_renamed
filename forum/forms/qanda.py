@@ -42,7 +42,7 @@ class QuestionEditorField(EditorField):
 
 
     def clean(self, value):
-        if self.required and (len(value) < settings.FORM_MIN_QUESTION_BODY):
+        if self.required and (len(re.sub('[ ]{2,}', ' ', value)) < settings.FORM_MIN_QUESTION_BODY):
             raise forms.ValidationError(_('question content must be at least %s characters') % settings.FORM_MIN_QUESTION_BODY)
 
         return value
@@ -53,7 +53,7 @@ class AnswerEditorField(EditorField):
         self.required = True
 
     def clean(self, value):
-        if len(value) < settings.FORM_MIN_QUESTION_BODY:
+        if len(re.sub('[ ]{2,}', ' ', value)) < settings.FORM_MIN_QUESTION_BODY:
             raise forms.ValidationError(_('answer content must be at least %s characters') % settings.FORM_MIN_QUESTION_BODY)
 
         return value
