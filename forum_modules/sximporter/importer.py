@@ -856,7 +856,11 @@ def reset_sequences():
 
 
 def sximport(dump, options):
-    disable_triggers()
+    try:
+        disable_triggers()
+        triggers_disabled = True
+    except:
+        triggers_disabled = False
     uidmap = userimport(dump, options)
     tagmap = tagsimport(dump, uidmap)
     gc.collect()
@@ -883,7 +887,9 @@ def sximport(dump, options):
     db.commit_transaction()
 
     reset_sequences()
-    enable_triggers()
+
+    if triggers_disabled:
+        enable_triggers()
 
 
 PG_DISABLE_TRIGGERS = """
