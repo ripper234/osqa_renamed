@@ -17,7 +17,7 @@ from base import BaseModel
 
 MAX_MARKABLE_STRING_LENGTH = 100
 
-class PickledObject(str):
+class PickledObject(unicode):
     pass
 
 def dbsafe_encode(value, compress_object=True):
@@ -48,7 +48,7 @@ class PickledObjectField(models.Field):
         super(PickledObjectField, self).__init__(*args, **kwargs)
 
     def generate_type_marked_value(self, value):
-        return PickledObject("T[%s]%s" % (type(value).__name__, value))
+        return PickledObject(u"T[%s]%s" % (type(value).__name__, value))
 
     def read_marked_value(self, value):
         m = self.marker_re.match(value)
@@ -83,10 +83,11 @@ class PickledObjectField(models.Field):
 
     def get_db_prep_value(self, value):
         if value is not None and not isinstance(value, PickledObject):
-            if type(value).__name__ in self.markable_types and not (isinstance(value, basestring) and len(value) > MAX_MARKABLE_STRING_LENGTH):
-                value = force_unicode(self.generate_type_marked_value(value))
+            if type(value).__name__ in self.markable_types and not (isinstance(value, basestring) and len(value
+                                                                                                          ) > MAX_MARKABLE_STRING_LENGTH):
+                value = unicode(self.generate_type_marked_value(value))
             else:
-                value = force_unicode(dbsafe_encode(value, self.compress))
+                value = unicode(dbsafe_encode(value, self.compress))
         return value
 
     def value_to_string(self, obj):
@@ -115,7 +116,7 @@ class KeyValue(BaseModel):
     @classmethod
     def infer_cache_key(cls, querydict):
         try:
-            key = [v for (k,v) in querydict.items() if k in ('key', 'key__exact')][0]
+            key = [v for (k, v) in querydict.items() if k in ('key', 'key__exact')][0]
 
             return cls._generate_cache_key(key)
         except:
