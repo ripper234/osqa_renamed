@@ -12,9 +12,15 @@ def sximporter(request):
         dump = ZipFile(request.FILES['dump'])
         members = [f for f in dump.namelist() if f.endswith('.xml')]
         extract_to = os.path.join(os.path.dirname(__file__), 'tmp')
-        dump.extractall(extract_to, members)
-        importer.sximport(extract_to, request.POST)
+
+        for m in members:
+            f = open(os.path.join(extract_to, m), 'w')
+            f.write(dump.read(m))
+            f.close()
+
+        #dump.extractall(extract_to, members)
         dump.close()
+        importer.sximport(extract_to, request.POST)
 
     return render_to_response('modules/sximporter/page.html', {
     'names': list
