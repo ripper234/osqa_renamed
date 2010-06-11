@@ -390,7 +390,7 @@ $(function() {
         cleanup_form();
 
         function process_form_changes() {
-            var length = $textarea.val().length;
+            var length = $textarea.val().replace(/[ ]{2,}/g," ").length;
 
             if (current_length == length)
                 return;
@@ -406,6 +406,7 @@ $(function() {
                 $chars_togo_message.show();
                 $chars_counter.html(min_length - length);
             } else {
+                length = $textarea.val().length;
                 $chars_togo_message.hide();
                 $chars_left_message.show();
                 $chars_counter.html(max_length - length);
