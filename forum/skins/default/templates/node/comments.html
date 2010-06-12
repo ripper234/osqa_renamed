@@ -39,8 +39,8 @@
         <a href="#" class="add-comment-link">{% trans "add new comment" %}</a>
     {% endif %}
 </div>
-{% if can_comment %}
 <div id="comment-{{ post.id }}-form-container" class="comment-form-container">
+    {% if can_comment %}
     <form id="comment-{{ post.id }}-form" method="post" action="{% url comment id=post.id %}" accept-charset="utf-8">
         <div class="comment-form-widgets-container">
             <textarea name="comment"></textarea>
@@ -72,6 +72,6 @@
              </div>
         </script>
     </form>
+    {% endif %}
 </div>
-{% endif %}
     

@@ -103,3 +103,29 @@ class AwardAction(ActionProxy):
         'were_was': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
         'badge_name': self.award.badge.name,
         }
+
+class SuspendAction(ActionProxy):
+    def process_data(self, **kwargs):
+        self.extra = kwargs
+
+    def process_action(self):
+        self.user.is_active = False
+        self.user.save()
+
+    def cancel_action(self):
+        self.user.is_active = True
+        self.user._pop_suspension_cache()
+        self.user.save()
+        self.user.message_set.create(message=_("Your suspension has been removed."))
+
+    def describe(self, viewer=None):
+        if self.extra.get('bantype', 'indefinitely') == 'forxdays' and self.extra.get('forxdays', None):
+            suspension = _("for %s days") % self.extra['forxdays']
+        else:
+            suspension = _("indefinetely")
+
+        return _("%(user)s %(were_was)s suspended %(suspension)s: %(msg)s") % {
+        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+        'were_was': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
+        'suspension': suspension, 'msg': self.extra.get('publicmsg', _('Bad behaviour'))
+        }

@@ -13,39 +13,49 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
 from forum.modules.decorators import decoratable
-from decorators import command, CommandException
+from decorators import command, CommandException, RefreshPageCommand
 from forum import settings
 import logging
 
 class NotEnoughRepPointsException(CommandException):
     def __init__(self, action):
         super(NotEnoughRepPointsException, self).__init__(
-            _("""Sorry, but you don't have enough reputation points to %(action)s.<br />Please check the <a href='%(faq_url)s'>faq</a>""") % {'action': action, 'faq_url': reverse('faq')}
-        )
+                _(
+                        """Sorry, but you don't have enough reputation points to %(action)s.<br />Please check the <a href='%(faq_url)s'>faq</a>"""
+                        ) % {'action': action, 'faq_url': reverse('faq')}
+                )
 
 class CannotDoOnOwnException(CommandException):
     def __init__(self, action):
         super(CannotDoOnOwnException, self).__init__(
-            _("""Sorry but you cannot %(action)s your own post.<br />Please check the <a href='%(faq_url)s'>faq</a>""") % {'action': action, 'faq_url': reverse('faq')}
-        )
+                _(
+                        """Sorry but you cannot %(action)s your own post.<br />Please check the <a href='%(faq_url)s'>faq</a>"""
+                        ) % {'action': action, 'faq_url': reverse('faq')}
+                )
 
 class AnonymousNotAllowedException(CommandException):
     def __init__(self, action):
         super(AnonymousNotAllowedException, self).__init__(
-            _("""Sorry but anonymous users cannot %(action)s.<br />Please login or create an account <a href='%(signin_url)s'>here</a>.""") % {'action': action, 'signin_url': reverse('auth_signin')}
-        )
+                _(
+                        """Sorry but anonymous users cannot %(action)s.<br />Please login or create an account <a href='%(signin_url)s'>here</a>."""
+                        ) % {'action': action, 'signin_url': reverse('auth_signin')}
+                )
 
 class NotEnoughLeftException(CommandException):
     def __init__(self, action, limit):
         super(NotEnoughLeftException, self).__init__(
-            _("""Sorry, but you don't have enough %(action)s left for today..<br />The limit is %(limit)s per day..<br />Please check the <a href='%(faq_url)s'>faq</a>""") % {'action': action, 'limit': limit, 'faq_url': reverse('faq')}
-        )
+                _(
+                        """Sorry, but you don't have enough %(action)s left for today..<br />The limit is %(limit)s per day..<br />Please check the <a href='%(faq_url)s'>faq</a>"""
+                        ) % {'action': action, 'limit': limit, 'faq_url': reverse('faq')}
+                )
 
 class CannotDoubleActionException(CommandException):
     def __init__(self, action):
         super(CannotDoubleActionException, self).__init__(
-            _("""Sorry, but you cannot %(action)s twice the same post.<br />Please check the <a href='%(faq_url)s'>faq</a>""") % {'action': action, 'faq_url': reverse('faq')}
-        )
+                _(
+                        """Sorry, but you cannot %(action)s twice the same post.<br />Please check the <a href='%(faq_url)s'>faq</a>"""
+                        ) % {'action': action, 'faq_url': reverse('faq')}
+                )
 
 
 @command
@@ -76,8 +86,9 @@ def vote_post(request, id, vote_type):
         if old_vote.action_date < datetime.datetime.now() - datetime.timedelta(days=int(settings.DENY_UNVOTE_DAYS)):
             raise CommandException(
                     _("Sorry but you cannot cancel a vote after %(ndays)d %(tdays)s from the original vote") %
-                    {'ndays': int(settings.DENY_UNVOTE_DAYS), 'tdays': ungettext('day', 'days', int(settings.DENY_UNVOTE_DAYS))}
-            )
+                    {'ndays': int(settings.DENY_UNVOTE_DAYS),
+                     'tdays': ungettext('day', 'days', int(settings.DENY_UNVOTE_DAYS))}
+                    )
 
         old_vote.cancel(ip=request.META['REMOTE_ADDR'])
         score_inc += (old_vote.__class__ == VoteDownAction) and 1 or -1
@@ -89,10 +100,10 @@ def vote_post(request, id, vote_type):
         vote_type = "none"
 
     response = {
-        'commands': {
-            'update_post_score': [id, score_inc],
-            'update_user_post_vote': [id, vote_type]
-        }
+    'commands': {
+    'update_post_score': [id, score_inc],
+    'update_user_post_vote': [id, vote_type]
+    }
     }
 
     votes_left = (int(settings.MAX_VOTES_PER_DAY) - user_vote_count_today) + (vote_type == 'none' and -1 or 1)
@@ -127,7 +138,8 @@ def flag_post(request, id):
 
     try:
         current = FlagAction.objects.get(canceled=False, user=user, node=post)
-        raise CommandException(_("You already flagged this post with the following reason: %(reason)s") % {'reason': current.extra})
+        raise CommandException(
+                _("You already flagged this post with the following reason: %(reason)s") % {'reason': current.extra})
     except ObjectDoesNotExist:
         reason = request.POST.get('prompt', '').strip()
 
@@ -137,7 +149,7 @@ def flag_post(request, id):
         FlagAction(user=user, node=post, extra=reason, ip=request.META['REMOTE_ADDR']).save()
 
     return {'message': _("Thank you for your report. A moderator will review your submission shortly.")}
-        
+
 @command
 def like_comment(request, id):
     comment = get_object_or_404(Comment, id=id)
@@ -150,7 +162,7 @@ def like_comment(request, id):
         raise CannotDoOnOwnException(_('like'))
 
     if not user.can_like_comment(comment):
-        raise NotEnoughRepPointsException( _('like comments'))    
+        raise NotEnoughRepPointsException( _('like comments'))
 
     like = VoteAction.get_action_for(node=comment, user=user)
 
@@ -162,10 +174,10 @@ def like_comment(request, id):
         likes = True
 
     return {
-        'commands': {
-            'update_post_score': [comment.id, likes and 1 or -1],
-            'update_user_post_vote': [comment.id, likes and 'up' or 'none']
-        }
+    'commands': {
+    'update_post_score': [comment.id, likes and 1 or -1],
+    'update_user_post_vote': [comment.id, likes and 'up' or 'none']
+    }
     }
 
 @command
@@ -183,9 +195,9 @@ def delete_comment(request, id):
         DeleteAction(node=comment, user=user, ip=request.META['REMOTE_ADDR']).save()
 
     return {
-        'commands': {
-            'remove_comment': [comment.id],
-        }
+    'commands': {
+    'remove_comment': [comment.id],
+    }
     }
 
 @command
@@ -204,10 +216,10 @@ def mark_favorite(request, id):
         added = True
 
     return {
-        'commands': {
-            'update_favorite_count': [added and 1 or -1],
-            'update_favorite_mark': [added and 'on' or 'off']
-        }
+    'commands': {
+    'update_favorite_count': [added and 1 or -1],
+    'update_favorite_mark': [added and 'on' or 'off']
+    }
     }
 
 @decoratable
@@ -239,27 +251,30 @@ def comment(request, id):
         if not user.can_edit_comment(comment):
             raise NotEnoughRepPointsException( _('edit comments'))
 
-        comment = ReviseAction(user=user, node=comment, ip=request.META['REMOTE_ADDR']).save(data=dict(text=comment_text)).node
+        comment = ReviseAction(user=user, node=comment, ip=request.META['REMOTE_ADDR']).save(
+                data=dict(text=comment_text)).node
     else:
         if not user.can_comment(post):
             raise NotEnoughRepPointsException( _('comment'))
 
-        comment = CommentAction(user=user, ip=request.META['REMOTE_ADDR']).save(data=dict(text=comment_text, parent=post)).node
+        comment = CommentAction(user=user, ip=request.META['REMOTE_ADDR']).save(
+                data=dict(text=comment_text, parent=post)).node
 
     if comment.active_revision.revision == 1:
         return {
-            'commands': {
-                'insert_comment': [
-                    id, comment.id, comment.comment, user.username, user.get_profile_url(),
-                        reverse('delete_comment', kwargs={'id': comment.id}), reverse('node_markdown', kwargs={'id': comment.id})
+        'commands': {
+        'insert_comment': [
+                id, comment.id, comment.comment, user.username, user.get_profile_url(),
+                reverse('delete_comment', kwargs={'id': comment.id}),
+                reverse('node_markdown', kwargs={'id': comment.id})
                 ]
-            }
+        }
         }
     else:
         return {
-            'commands': {
-                'update_comment': [comment.id, comment.comment]
-            }
+        'commands': {
+        'update_comment': [comment.id, comment.comment]
+        }
         }
 
 @command
@@ -303,7 +318,7 @@ def accept_answer(request, id):
 
     return {'commands': commands}
 
-@command    
+@command
 def delete_post(request, id):
     post = get_object_or_404(Node, id=id)
     user = request.user
@@ -353,11 +368,7 @@ def close(request, id, close):
 
         CloseAction(node=question, user=user, extra=reason, ip=request.META['REMOTE_ADDR']).save()
 
-    return {
-        'commands': {
-            'refresh_page': []
-        }
-    }
+    return RefreshPageCommand()
 
 @command
 def wikify(request, id):
@@ -381,11 +392,7 @@ def wikify(request, id):
 
         WikifyAction(node=node, user=user, ip=request.META['REMOTE_ADDR']).save()
 
-    return {
-        'commands': {
-            'refresh_page': []
-        }
-    }
+    return RefreshPageCommand()
 
 @command
 def convert_to_comment(request, id):
@@ -394,9 +401,11 @@ def convert_to_comment(request, id):
     question = answer.question
 
     if not request.POST:
-        description = lambda a: _("Answer by %(uname)s: %(snippet)s...") % {'uname': a.author.username, 'snippet': a.summary[:10]}
+        description = lambda a: _("Answer by %(uname)s: %(snippet)s...") % {'uname': a.author.username,
+                                                                            'snippet': a.summary[:10]}
         nodes = [(question.id, _("Question"))]
-        [nodes.append((a.id, description(a))) for a in question.answers.filter_state(deleted=False).exclude(id=answer.id)]
+        [nodes.append((a.id, description(a))) for a in
+         question.answers.filter_state(deleted=False).exclude(id=answer.id)]
 
         return render_to_response('node/convert_to_comment.html', {'answer': answer, 'nodes': nodes})
 
@@ -416,11 +425,7 @@ def convert_to_comment(request, id):
 
     AnswerToCommentAction(user=user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(new_parent=new_parent))
 
-    return {
-        'commands': {
-            'refresh_page': []
-        }
-    }
+    return RefreshPageCommand()
 
 @command
 def subscribe(request, id):
@@ -436,10 +441,10 @@ def subscribe(request, id):
         subscribed = True
 
     return {
-        'commands': {
-                'set_subscription_button': [subscribed and _('unsubscribe me') or _('subscribe me')],
-                'set_subscription_status': ['']
-            }
+    'commands': {
+    'set_subscription_button': [subscribed and _('unsubscribe me') or _('subscribe me')],
+    'set_subscription_status': ['']
+    }
     }
 
 #internally grouped views - used by the tagging system
@@ -465,20 +470,21 @@ def mark_tag(request, tag=None, **kwargs):#tagging system
 
 def matching_tags(request):
     if len(request.GET['q']) == 0:
-       raise CommandException(_("Invalid request"))
+        raise CommandException(_("Invalid request"))
 
     possible_tags = Tag.active.filter(name__istartswith = request.GET['q'])
     tag_output = ''
     for tag in possible_tags:
         tag_output += (tag.name + "|" + tag.name + "." + tag.used_count.__str__() + "\n")
-        
+
     return HttpResponse(tag_output, mimetype="text/plain")
 
 def related_questions(request):
     if request.POST and request.POST.get('title', None):
         return HttpResponse(simplejson.dumps(
                 [dict(title=q.title, url=q.get_absolute_url(), score=q.score, summary=q.summary)
-                 for q in Question.objects.search(request.POST['title']).filter_state(deleted=False)[0:10]]), mimetype="application/json")
+                 for q in Question.objects.search(request.POST['title']).filter_state(deleted=False)[0:10]]),
+                            mimetype="application/json")
     else:
         raise Http404()
 

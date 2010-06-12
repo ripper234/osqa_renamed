@@ -106,6 +106,9 @@ def cnprog_pagesize(context):
 
 @register.simple_tag
 def get_score_badge(user):
+    if user.is_suspended():
+        return _("(suspended)")
+
     BADGE_TEMPLATE = '<span class="score" title="%(reputation)s %(reputationword)s">%(reputation)s</span>'
     if user.gold > 0 :
         BADGE_TEMPLATE = '%s%s' % (BADGE_TEMPLATE, '<span title="%(gold)s %(badgesword)s">'

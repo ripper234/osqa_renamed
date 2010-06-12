@@ -1,7 +1,6 @@
 from forum.settings import MAINTAINANCE_MODE, APP_LOGO, APP_TITLE
-from django.http import HttpResponseGone
-from django.template.loader import render_to_string
 
+from forum.http_responses import HttpResponseServiceUnavailable
 
 class RequestUtils(object):
     def __init__(self):
@@ -31,11 +30,7 @@ class RequestUtils(object):
             ip = request.META['REMOTE_ADDR']
 
             if not ip in MAINTAINANCE_MODE.value['allow_ips']:
-                return HttpResponseGone(render_to_string('410.html', {
-                    'message': MAINTAINANCE_MODE.value.get('message', ''),
-                    'app_logo': APP_LOGO,
-                    'app_title': APP_TITLE
-                }))
+                return HttpResponseServiceUnavailable(MAINTAINANCE_MODE.value.get('message', ''))
 
         if request.session.get('redirect_POST_data', None):
             request.POST = request.session.pop('redirect_POST_data')

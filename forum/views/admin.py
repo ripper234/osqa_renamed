@@ -7,7 +7,7 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidde
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.utils import simplejson
-from django.db.models import Sum
+from django.db import models
 from forum.settings.base import Setting
 from forum.forms import MaintenanceModeForm, PageForm
 from forum.settings.forms import SettingsSetForm
@@ -258,12 +258,12 @@ def go_defaults(request):
 def recalculate_denormalized(request):
     for n in Node.objects.all():
         n = n.leaf
-        n.score = n.votes.aggregate(score=Sum('value'))['score']
+        n.score = n.votes.aggregate(score=models.Sum('value'))['score']
         if not n.score: n.score = 0
         n.save()
 
     for u in User.objects.all():
-        u.reputation = u.reputes.aggregate(reputation=Sum('value'))['reputation']
+        u.reputation = u.reputes.aggregate(reputation=models.Sum('value'))['reputation']
         u.save()
 
     request.user.message_set.create(message=_('All values recalculated'))
@@ -353,6 +353,79 @@ def edit_page(request, id=None):
     'form': form,
     'published': published
     })
+
+@admin_page
+def moderation(request):
+    if request.POST:
+        if not 'ids' in request.POST:
+            verify = None
+        else:
+            sort = {
+            'high-rep': '-reputation',
+            'newer': '-date_joined',
+            'older': 'date_joined',
+            }.get(request.POST.get('sort'), None)
+
+            if sort:
+                try:
+                    limit = int(request.POST['limit'])
+                except:
+                    limit = 5
+
+                verify = User.objects.order_by(sort)[:limit]
+            else:
+                verify = None
+
+        if verify:
+            possible_cheaters = []
+            verify = User.objects.order_by(sort)[:5]
+
+            cheat_score_sort = lambda c1, c2: cmp(c2.fdata['fake_score'], c1.fdata['fake_score'])
+
+            for user in verify:
+                possible_fakes = []
+                affecters = User.objects.filter(actions__node__author=user, actions__canceled=False).annotate(
+                        affect_count=models.Count('actions')).order_by('-affect_count')
+                user_ips = set(Action.objects.filter(user=user).values_list('ip', flat=True).distinct('ip'))
+
+                for affecter in affecters:
+                    if affecter == user:
+                        continue
+
+                    data = {'affect_count': affecter.affect_count}
+
+                    total_actions = affecter.actions.filter(canceled=False).exclude(node=None).count()
+                    ratio = (float(affecter.affect_count) / float(total_actions)) * 100
+
+                    if total_actions > 10 and ratio > 50:
+                        data['total_actions'] = total_actions
+                        data['action_ratio'] = ratio
+
+                        affecter_ips = set(
+                                Action.objects.filter(user=affecter).values_list('ip', flat=True).distinct('ip'))
+                        cross_ips = len(user_ips & affecter_ips)
+
+                        data['cross_ip_count'] = cross_ips
+                        data['total_ip_count'] = len(affecter_ips)
+                        data['cross_ip_ratio'] = (float(data['cross_ip_count']) / float(data['total_ip_count'])) * 100
+
+                        if affecter.email_isvalid:
+                            email_score = 0
+                        else:
+                            email_score = 50.0
+
+                        data['fake_score'] = ((data['cross_ip_ratio'] + data['action_ratio'] + email_score) / 100) * 4
+
+                        affecter.fdata = data
+                        possible_fakes.append(affecter)
+
+                if len(possible_fakes) > 0:
+                    possible_fakes = sorted(possible_fakes, cheat_score_sort)
+                    possible_cheaters.append((user, possible_fakes))
+
+            return ('osqaadmin/moderation.html', {'cheaters': possible_cheaters})
+
+    return ('osqaadmin/moderation.html', {})
 
 
 

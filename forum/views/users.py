@@ -17,7 +17,7 @@ from forum.forms import *
 from forum.utils.html import sanitize_html
 from datetime import datetime, date
 import decorators
-from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction
+from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
 
 import time
 
@@ -26,7 +26,7 @@ USERS_PAGE_SIZE = 35# refactor - move to some constants file
 def users(request):
     is_paginated = True
     sortby = request.GET.get('sort', 'reputation')
-    suser = request.REQUEST.get('q',  "")
+    suser = request.REQUEST.get('q', "")
     try:
         page = int(request.GET.get('page', '1'))
     except ValueError:
@@ -41,11 +41,12 @@ def users(request):
             objects_list = Paginator(User.objects.all().order_by('username'), USERS_PAGE_SIZE)
         # default
         else:
-            objects_list = Paginator(User.objects.all().order_by('-reputation'), USERS_PAGE_SIZE)
+            objects_list = Paginator(User.objects.all().order_by('-is_active', '-reputation'), USERS_PAGE_SIZE)
         base_url = reverse('users') + '?sort=%s&' % sortby
     else:
         sortby = "reputation"
-        objects_list = Paginator(User.objects.filter(username__icontains=suser).order_by('-reputation'), USERS_PAGE_SIZE)
+        objects_list = Paginator(User.objects.filter(username__icontains=suser).order_by('-reputation'), USERS_PAGE_SIZE
+                                 )
         base_url = reverse('users') + '?name=%s&sort=%s&' % (suser, sortby)
 
     try:
@@ -54,30 +55,30 @@ def users(request):
         users = objects_list.page(objects_list.num_pages)
 
     return render_to_response('users/users.html', {
-                                "users" : users,
-                                "suser" : suser,
-                                "keywords" : suser,
-                                "tab_id" : sortby,
-                                "context" : {
-                                    'is_paginated' : is_paginated,
-                                    'pages': objects_list.num_pages,
-                                    'page': page,
-                                    'has_previous': users.has_previous(),
-                                    'has_next': users.has_next(),
-                                    'previous': users.previous_page_number(),
-                                    'next': users.next_page_number(),
-                                    'base_url' : base_url
-                                }
+    "users" : users,
+    "suser" : suser,
+    "keywords" : suser,
+    "tab_id" : sortby,
+    "context" : {
+    'is_paginated' : is_paginated,
+    'pages': objects_list.num_pages,
+    'page': page,
+    'has_previous': users.has_previous(),
+    'has_next': users.has_next(),
+    'previous': users.previous_page_number(),
+    'next': users.next_page_number(),
+    'base_url' : base_url
+    }
 
-                                }, context_instance=RequestContext(request))
+    }, context_instance=RequestContext(request))
 
 def set_new_email(user, new_email, nomessage=False):
     if new_email != user.email:
         user.email = new_email
         user.email_isvalid = False
         user.save()
-        #if settings.EMAIL_VALIDATION == 'on':
-        #    send_new_email_key(user,nomessage=nomessage)    
+    #if settings.EMAIL_VALIDATION == 'on':
+    #    send_new_email_key(user,nomessage=nomessage)
 
 @login_required
 def edit_user(request, id):
@@ -108,10 +109,10 @@ def edit_user(request, id):
     else:
         form = EditUserForm(user)
     return render_to_response('users/edit.html', {
-                                                'user': user,
-                                                'form' : form,
-                                                'gravatar_faq_url' : reverse('faq') + '#gravatar',
-                                    }, context_instance=RequestContext(request))
+    'user': user,
+    'form' : form,
+    'gravatar_faq_url' : reverse('faq') + '#gravatar',
+    }, context_instance=RequestContext(request))
 
 
 @login_required
@@ -129,7 +130,7 @@ def user_powers(request, id, action, status):
     else:
         raise Http404()
 
-    user.save()    
+    user.save()
     return HttpResponseRedirect(user.get_profile_url())
 
 
@@ -151,6 +152,38 @@ def award_points(request, id):
     return dict(reputation=user.reputation)
 
 
+@decorators.command
+def suspend(request, id):
+    user = get_object_or_404(User, id=id)
+
+    if not request.POST:
+        if user.is_suspended():
+            suspension = user.suspension
+            suspension.cancel(ip=request.META['REMOTE_ADDR'])
+            return decorators.RefreshPageCommand()
+        else:
+            return render_to_response('users/suspend_user.html')
+
+    if not request.user.is_superuser:
+        raise decorators.CommandException(_("Only superusers can ban other users"))
+
+    data = {
+    'bantype': request.POST.get('bantype', 'indefinetly').strip(),
+    'publicmsg': request.POST.get('publicmsg', _('Bad behaviour')),
+    'privatemsg': request.POST.get('privatemsg', None) or request.POST.get('publicmsg', ''),
+    'suspender': request.user.id
+    }
+
+    if data['bantype'] == 'forxdays':
+        try:
+            data['forxdays'] = int(request.POST['forxdays'])
+        except:
+            raise decorators.CommandException(_('Invalid numeric argument for the number of days.'))
+
+    SuspendAction(user=user, ip=request.META['REMOTE_ADDR']).save(data=data)
+
+    return decorators.RefreshPageCommand()
+
 def user_view(template, tab_name, tab_description, page_title, private=False):
     def decorator(fn):
         def decorated(request, id, slug=None):
@@ -162,13 +195,15 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
             rev_page_title = user.username + " - " + page_title
 
             context.update({
-                "tab_name" : tab_name,
-                "tab_description" : tab_description,
-                "page_title" : rev_page_title,
-                "can_view_private": (user == request.user) or request.user.is_superuser
+            "tab_name" : tab_name,
+            "tab_description" : tab_description,
+            "page_title" : rev_page_title,
+            "can_view_private": (user == request.user) or request.user.is_superuser
             })
             return render_to_response(template, context, context_instance=RequestContext(request))
+
         return decorated
+
     return decorator
 
 
@@ -186,32 +221,35 @@ def user_stats(request, user):
         .annotate(user_tag_usage_count=Count('name')).order_by('-user_tag_usage_count')
 
     awards = [(Badge.objects.get(id=b['id']), b['count']) for b in
-            Badge.objects.filter(awards__user=user).values('id').annotate(count=Count('cls')).order_by('-count')]
+              Badge.objects.filter(awards__user=user).values('id').annotate(count=Count('cls')).order_by('-count')]
 
     return {
-            "view_user" : user,
-            "questions" : questions,
-            "answers" : answers,
-            "up_votes" : up_votes,
-            "down_votes" : down_votes,
-            "total_votes": up_votes + down_votes,
-            "votes_today_left": votes_total-votes_today,
-            "votes_total_per_day": votes_total,
-            "user_tags" : user_tags[:50],
-            "awards": awards,
-            "total_awards" : len(awards),
-        }
+    "view_user" : user,
+    "questions" : questions,
+    "answers" : answers,
+    "up_votes" : up_votes,
+    "down_votes" : down_votes,
+    "total_votes": up_votes + down_votes,
+    "votes_today_left": votes_total-votes_today,
+    "votes_total_per_day": votes_total,
+    "user_tags" : user_tags[:50],
+    "awards": awards,
+    "total_awards" : len(awards),
+    }
 
 @user_view('users/recent.html', 'recent', _('recent user activity'), _('recent activity'))
 def user_recent(request, user):
-    activities = user.actions.exclude(action_type__in=("voteup", "votedown", "voteupcomment", "flag", "newpage", "editpage")).order_by('-action_date')[:USERS_PAGE_SIZE]
+    activities = user.actions.exclude(
+            action_type__in=("voteup", "votedown", "voteupcomment", "flag", "newpage", "editpage")).order_by(
+            '-action_date')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "activities" : activities}
 
 
 @user_view('users/votes.html', 'votes', _('user vote record'), _('votes'), True)
 def user_votes(request, user):
-    votes = user.votes.exclude(node__state_string__contains="(deleted").filter(node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
+    votes = user.votes.exclude(node__state_string__contains="(deleted").filter(
+            node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
 
     return {"view_user" : user, "votes" : votes}
 
@@ -220,18 +258,18 @@ def user_votes(request, user):
 def user_reputation(request, user):
     rep = list(user.reputes.order_by('date'))
     values = [r.value for r in rep]
-    redux = lambda x, y: x+y     
+    redux = lambda x, y: x+y
 
     graph_data = simplejson.dumps([
-            (time.mktime(rep[i].date.timetuple()) * 1000, reduce(redux, values[:i], 0))
-            for i in range(len(values))
+    (time.mktime(rep[i].date.timetuple()) * 1000, reduce(redux, values[:i], 0))
+    for i in range(len(values))
     ])
 
     rep = user.reputes.filter(action__canceled=False).order_by('-date')[0:20]
-    
+
     return {"view_user": user, "reputation": rep, "graph_data": graph_data}
 
-@user_view('users/questions.html', 'favorites', _('favorite questions'),  _('favorite questions'))
+@user_view('users/questions.html', 'favorites', _('favorite questions'), _('favorite questions'))
 def user_favorites(request, user):
     favorites = FavoriteAction.objects.filter(canceled=False, user=user)
 
@@ -252,7 +290,7 @@ def user_subscriptions(request, user):
                 request.user.message_set.create(message=_('Notifications are now disabled'))
 
         form.is_valid()
-        for k,v in form.cleaned_data.items():
+        for k, v in form.cleaned_data.items():
             setattr(user.subscription_settings, k, v)
 
         user.subscription_settings.save()
@@ -271,7 +309,7 @@ def account_settings(request):
     is_openid = False
 
     return render_to_response('account_settings.html', {
-        'msg': msg,
-        'is_openid': is_openid
-        }, context_instance=RequestContext(request))
+    'msg': msg,
+    'is_openid': is_openid
+    }, context_instance=RequestContext(request))
 

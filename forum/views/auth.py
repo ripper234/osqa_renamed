@@ -9,6 +9,7 @@ from django.utils.http import urlquote_plus
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.http import get_host
+from forum.actions import SuspendAction
 import types
 import datetime
 import logging
@@ -165,7 +166,8 @@ def external_register(request):
                 auth_provider = request.session['auth_provider']
             except:
                 request.session['auth_error'] = _(
-                        "Oops, something went wrong in the middle of this process. Please try again.")
+                        "Oops, something went wrong in the middle of this process. Please try again. Note that you need to have cookies enabled for the authentication to work."
+                        )
                 logging.error("Missing session data when trying to complete user registration: %s" % ", ".join(
                         ["%s: %s" % (k, v) for k, v in request.META.items()]))
                 return HttpResponseRedirect(reverse('auth_signin'))
@@ -225,6 +227,9 @@ def request_temp_login(request):
 
         if form.is_valid():
             user = form.user_cache
+
+            if user.is_suspended():
+                return forward_suspended_user(request, user, False)
 
             try:
                 hash = get_object_or_404(ValidationHash, user=user, type='templogin')
@@ -346,7 +351,9 @@ POST_SIGNIN_ACTIONS = {
 }
 
 def login_and_forward(request, user, forward=None, message=None):
-    old_session = request.session.session_key
+    if user.is_suspended():
+        return forward_suspended_user(request, user)
+
     user.backend = "django.contrib.auth.backends.ModelBackend"
     login(request, user)
 
@@ -381,13 +388,21 @@ def login_and_forward(request, user, forward=None, message=None):
     request.user.message_set.create(message=message)
     return HttpResponseRedirect(forward)
 
+def forward_suspended_user(request, user, show_private_msg=True):
+    message = _("Sorry, but this account is suspended")
+    if show_private_msg:
+        msg_type = 'privatemsg'
+    else:
+        msg_type = 'publicmsg'
+
+    suspension = user.suspension
+    if suspension:
+        message += (":<br />" + suspension.extra.get(msg_type, ''))
+
+    request.user.message_set.create(message)
+    return HttpResponseRedirect(reverse('index'))
+
 @login_required
 def signout(request):
-    """
-    signout from the website. Remove openid from session and kill it.
-
-    url : /signout/"
-    """
-
     logout(request)
     return HttpResponseRedirect(reverse('index'))
