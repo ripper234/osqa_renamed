@@ -7,7 +7,7 @@
 {% load markup %}
 {% load user_tags %}
 
-<div id="subheader" class="headUser">
+<div id="subheader" class="headUser{% if view_user.is_suspended %} suspended-user{% endif %}">
     {{view_user.username}}
 </div>
 <table class="user-info-table">
@@ -21,8 +21,13 @@
                 </tr>
                 <tr>
                     <td align="center">
-                        <div class="scoreNumber" id="user-reputation">{{view_user.reputation|intcomma}}</div>
-                        <p><b style="color:#777;">{% trans "reputation" %}</b></p>
+                        {% if not view_user.is_suspended %}
+                            <div class="scoreNumber" id="user-reputation">{{view_user.reputation|intcomma}}</div>
+                            <p><b style="color:#777;">{% trans "reputation" %}</b></p>
+                        {% else %}
+                            <div class="scoreNumber">{% trans "Suspended" %}</div>
+                            <p>{{ view_user.suspension.extra.publicmsg }}</p>
+                        {% endif %}
                     </td>
                 </tr>
             </table>
@@ -46,7 +51,7 @@
                 {% if view_user.last_seen %}
                 <tr>
                     <td>{% trans "last seen" %}</td>
-                    <td><strong title="{{ view_user.last_seen }}">{% diff_date view_user.last_seen %}</strong></td>
+                    <td><strong title="{{ view_user.last_login }}">{% diff_date view_user.last_login %}</strong></td>
                 </tr>
                 {% endif %}
                 {% if view_user.website %}

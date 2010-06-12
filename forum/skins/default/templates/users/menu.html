@@ -25,8 +25,11 @@
                 </li>
                 {% endif %}
             {% endif %}
-
-            <li class="item"><span class="user-award_rep"></span><a href="{% url user_award_points id=user.id %}" id="award-rep-points">{% trans "reputation bonus" %}</a></li>
+            {% if not user.is_suspended %}
+                <li class="item"><span class="user-award_rep"></span>
+                    <a href="{% url user_award_points id=user.id %}" id="award-rep-points">{% trans "reputation bonus" %}</a>
+                </li>
+            {% endif %}
                 {% if not user.is_superuser %}
                     {% if not user.is_staff %}
                     <li class="item"><span class="user-moderator"></span>
