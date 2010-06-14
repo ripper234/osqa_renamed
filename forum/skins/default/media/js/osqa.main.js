@@ -660,7 +660,7 @@ function pickedTags(){
         init: function(){
             collectPickedTags();
             setupHideIgnoredQuestionsControl();
-            $("#interestingTagInput, #ignoredTagInput").autocomplete("/matching_tags", {
+            $("#interestingTagInput, #ignoredTagInput").autocomplete("/matching_tags/", {
                 minChars: 1,
                 matchContains: true,
                 max: 20,

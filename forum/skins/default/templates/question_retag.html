@@ -9,7 +9,7 @@
         $().ready(function(){
             $("#nav_questions").attr('className',"on");
             //Tags autocomplete action
-        	$("#id_tags").autocomplete("/matching_tags", {
+        	$("#id_tags").autocomplete("/matching_tags/", {
                 minChars: 1,
         		matchContains: true,
                 max: 20,
