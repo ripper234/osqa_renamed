@@ -349,7 +349,7 @@ class Node(BaseModel, NodeContent):
 
         if action:
             for tag in self.tags.all():
-                tag.tag.add_to_usage_count(-1)
+                tag.add_to_usage_count(-1)
                 tag.save()
         else:
             for tag in Tag.objects.filter(name__in=self.tagname_list()):
