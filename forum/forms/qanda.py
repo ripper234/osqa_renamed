@@ -78,14 +78,16 @@ class TagNamesField(forms.CharField):
         data = value.strip().lower()
 
         split_re = re.compile(r'[ ,]+')
-        list = split_re.split(data)
+        list = {}
+        for tag in split_re.split(data):
+            list[tag] = tag
 
         if len(list) > settings.FORM_MAX_NUMBER_OF_TAGS or len(list) < settings.FORM_MIN_NUMBER_OF_TAGS:
             raise forms.ValidationError(_('please use between %(min)s and %(max)s tags') % { 'min': settings.FORM_MIN_NUMBER_OF_TAGS, 'max': settings.FORM_MAX_NUMBER_OF_TAGS})
 
         list_temp = []
         tagname_re = re.compile(r'^[\w+\.-]+$', re.UNICODE)
-        for tag in list:
+        for key,tag in list:
             if len(tag) > settings.FORM_MAX_LENGTH_OF_TAG or len(tag) < settings.FORM_MIN_LENGTH_OF_TAG:
                 raise forms.ValidationError(_('please use between %(min)s and %(max)s characters in you tags') % { 'min': settings.FORM_MIN_LENGTH_OF_TAG, 'max': settings.FORM_MAX_LENGTH_OF_TAG})
             if not tagname_re.match(tag):
