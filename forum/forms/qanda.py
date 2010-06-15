@@ -136,7 +136,7 @@ class SummaryField(forms.CharField):
 
 class FeedbackForm(forms.Form):
     name = forms.CharField(label=_('Your name:'), required=False)
-    email = forms.EmailField(label=_('Email (not shared with anyone):'), required=False)
+    email = forms.EmailField(label=_('Email (not shared with anyone):'), required=True)
     message = forms.CharField(label=_('Your message:'), max_length=800,widget=forms.Textarea(attrs={'cols':60}))
     next = NextUrlField()
 
