@@ -2,11 +2,16 @@ import email
 import socket
 import os
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.image import MIMEImage
-from email.header import Header
-import email.Charset
+try:
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    from email.mime.image import MIMEImage
+    from email.header import Header
+except:
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
+    from email.MIMEImage import MIMEImage
+    from email.Header import Header
 
 from django.core.mail import DNS_NAME
 from smtplib import SMTP
