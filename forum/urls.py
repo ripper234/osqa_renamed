@@ -13,10 +13,10 @@ import logging
 
 admin.autodiscover()
 feeds = {
-'rss': RssLastestQuestionsFeed
+    'rss': RssLastestQuestionsFeed
 }
 sitemaps = {
-'questions': QuestionsSitemap
+    'questions': QuestionsSitemap
 }
 
 APP_PATH = os.path.dirname(__file__)
@@ -131,7 +131,7 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)/$' % _('users/'), app.users.user_stats, name='user_profile'),
 
                         url(r'^%s$' % _('badges/'), app.meta.badges, name='badges'),
-                        url(r'^%s(?P<id>\d+)/(?P<slug>.+)/$' % _('badges/'), app.meta.badge, name='badge'),
+                        url(r'^%s(?P<id>\d+)/(?P<slug>.+)$' % _('badges/'), app.meta.badge, name='badge'),
                         # (r'^admin/doc/' % _('admin/doc'), include('django.contrib.admindocs.urls')),
                         url(r'^%s(.*)' % _('nimda/'), admin.site.root, name='osqa_admin'),
                         url(r'^feeds/(?P<url>.*)/$', 'django.contrib.syndication.views.feed', {'feed_dict': feeds},
