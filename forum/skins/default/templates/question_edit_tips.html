@@ -66,7 +66,9 @@
             {% trans "They will help other find your question." %}
         </li>
         <li>
-            {% trans "A question can have up to " %} {{settings.FORM_MAX_NUMBER_OF_TAGS}} {% trans " tags, but it must have at least " %} {{settings.FORM_MIN_NUMBER_OF_TAGS}} {% trans "." %}
+            {% blocktrans with settings.FORM_MAX_NUMBER_OF_TAGS as max_number_of_tags and settings.FORM_MIN_NUMBER_OF_TAGS as min_number_of_tags %}
+                A question can have up to {{max_number_of_tags}} tags, but it must have at least {{min_number_of_tags}}.
+            {% endblocktrans %}
         </li>
     </ul>
 </div>

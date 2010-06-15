@@ -41,7 +41,9 @@
                 messages: {
         			tags: {
                         required: "{% trans "tags are required" %}",
-                        maxlength: "{% trans "up to " %} {{settings.FORM_MAX_LENGTH_OF_TAG}} {% trans " tags, less than " %} {{settings.FORM_MIN_LENGTH_OF_TAG}} {% trans " characters each" %}"
+                        {% blocktrans with settings.FORM_MAX_NUMBER_OF_TAGS as max_number_of_tags and settings.FORM_MAX_LENGTH_OF_TAG as max_length_of_tags %}
+                        maxlength: "up to {{max_number_of_tags}} tags, less than {{max_length_of_tags}} characters each"
+                        {% endblocktrans %}
                     }
                 }
                 
