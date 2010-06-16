@@ -4,7 +4,7 @@ class DecoratableObject(object):
     def __init__(self, fn):
         self._callable = fn
 
-    def decorate(self, fn, needs_origin):
+    def _decorate(self, fn, needs_origin):
         origin = self._callable
 
         if needs_origin:
@@ -12,48 +12,56 @@ class DecoratableObject(object):
         else:
             self._callable = lambda *args, **kwargs: fn(*args, **kwargs)
 
+    def _decorate_method(self, fn, needs_origin):
+        origin = self._callable
+
+        if needs_origin:
+            self._callable = lambda inst, *args, **kwargs: fn(inst, origin, *args, **kwargs)
+        else:
+            self._callable = lambda inst, *args, **kwargs: fn(inst, *args, **kwargs)
+
+
     def __call__(self, *args, **kwargs):
         return self._callable(*args, **kwargs)
 
 
-def decoratable(fn):
-    return DecoratableObject(fn)
+def _decorate_method(origin, needs_origin):
+    if not hasattr(origin, '_decoratable_obj'):
+        name = origin.__name__
+        cls = origin.im_class
 
-def decoratable_method(fn):
-    obj = DecoratableObject(fn)
-    def decorated(self, *args, **kwargs):
-        return obj(self, *args, **kwargs)
+        decoratable = DecoratableObject(origin)
 
-    decorated.__obj = obj
-    return decorated
+        def decoratable_method(self, *args, **kwargs):
+            return decoratable(self, *args, **kwargs)
 
-decoratable.method = decoratable_method
-
-def decorate(origin, needs_origin=True):
-    if not isinstance(origin, DecoratableObject):
-        if hasattr(origin, '__obj'):
-            def decorator(fn):
-                origin.__obj.decorate(fn, needs_origin)
-                return origin
-            return decorator
-
-        raise TypeError('Not a decoratable function: %s' % origin.__name__)
+        decoratable_method._decoratable_obj = decoratable
+        setattr(cls, name, decoratable_method)
+    else:
+        decoratable = origin._decoratable_obj
 
     def decorator(fn):
-        origin.decorate(fn, needs_origin)
-        return origin
+        decoratable._decorate_method(fn, needs_origin)
+
+    return decorator
+
+def _decorate_function(origin, needs_origin):
+    if not isinstance(origin, DecoratableObject):
+        mod = inspect.getmodule(origin)
+
+        name = origin.__name__
+        origin = DecoratableObject(origin)
+        setattr(mod, name, DecoratableObject(origin))
+
+    def decorator(fn):
+        origin._decorate(fn, needs_origin)
 
     return decorator
 
 
-def decorate_all(module):
-    [setattr(module, n, decoratable(f)) for n, f in
-        [(n, getattr(module, n)) for n in dir(module)]
-        if (callable(f)) and (not inspect.isclass(f)) and (f.__module__ == module.__name__)]
+def decorate(origin, needs_origin=True):
+    if inspect.ismethod(origin):
+        return _decorate_method(origin, needs_origin)
 
-
-
-
-
-
-
+    if inspect.isfunction(origin):
+        return _decorate_function(origin, needs_origin)

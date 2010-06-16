@@ -14,7 +14,6 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
 from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction
-from forum.modules.decorators import decoratable
 from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
@@ -64,7 +63,6 @@ def upload(request):#ajax upload file to a question or answer
 
     return HttpResponse(result, mimetype="application/xml")
 
-@decoratable
 def ask(request):
     if request.POST and "text" in request.POST:
         form = AskForm(request.POST, user=request.user)
@@ -197,7 +195,6 @@ def edit_answer(request, id):
                               'form': form,
                               }, context_instance=RequestContext(request))
 
-@decoratable
 def answer(request, id):
     question = get_object_or_404(Question, id=id)
     if request.POST:

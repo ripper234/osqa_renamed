@@ -1,7 +1,7 @@
 import re
 from django.db.models import Q
 from forum.models.question import Question, QuestionManager
-from forum.modules.decorators import decorate
+from forum.modules import decorate
 
 repl_re = re.compile(r"^'|[^\'\-_\s\w]|'$", re.UNICODE)
 sing_quote_re = re.compile(r"\'+")

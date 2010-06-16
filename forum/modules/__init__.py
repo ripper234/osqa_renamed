@@ -105,3 +105,5 @@ def module_templates_loader(name, dirs=None):
     raise TemplateDoesNotExist, name 
 
 module_templates_loader.is_usable = True
+
+from decorators import decorate

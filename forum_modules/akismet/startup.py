@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.utils import simplejson
 from django.utils.encoding import smart_str
 from django.shortcuts import render_to_response
-from forum.modules.decorators import decorate
+from forum.modules import decorate
 from forum import views
 from lib.akismet import Akismet
 from forum.settings import APP_URL, OSQA_VERSION

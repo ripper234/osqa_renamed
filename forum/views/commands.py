@@ -12,7 +12,6 @@ from forum.actions import *
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
-from forum.modules.decorators import decoratable
 from decorators import command, CommandException, RefreshPageCommand
 from forum import settings
 import logging
@@ -222,7 +221,6 @@ def mark_favorite(request, id):
     }
     }
 
-@decoratable
 @command
 def comment(request, id):
     post = get_object_or_404(Node, id=id)

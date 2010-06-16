@@ -26,7 +26,6 @@ from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
 from forum.actions import QuestionViewAction
-from forum.modules.decorators import decoratable
 import decorators
 
 # used in index page
