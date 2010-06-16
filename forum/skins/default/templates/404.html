@@ -28,7 +28,7 @@
             <li>{% trans "this question or answer has been deleted;" %}</li>
             <li>{% trans "url has error - please check it;" %}</li>
             <li>{% trans "if you believe this error 404 should not have occurred, please" %} 
-				<a href="{{feedback_site_url}}" target="_blank">{% trans "report this problem" %}</a></li>
+				<a href="{% if settings.CONTACT_URL %}{{ settings.CONTACT_URL }}{% else %}{% url feedback %}{% endif %}">{% trans "report this problem" %}</a></li>
             </ul>
         </div>
         <script type="text/javascript">
