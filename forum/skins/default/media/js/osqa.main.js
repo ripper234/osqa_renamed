@@ -340,117 +340,170 @@ $(function() {
 
     $('div.comment-form-container').each(function() {
         var $container = $(this);
-        var $form = $container.find('form');
-        var $textarea = $container.find('textarea');
-        var textarea = $textarea.get(0);
-        var $button = $container.find('.comment-submit');
-        var $cancel = $container.find('.comment-cancel');
-        var $chars_left_message = $container.find('.comments-chars-left-msg');
-        var $chars_togo_message = $container.find('.comments-chars-togo-msg');
-        var $chars_counter = $container.find('.comments-char-left-count');
-
         var $comment_tools = $container.parent().find('.comment-tools');
-        var $add_comment_link = $comment_tools.find('.add-comment-link');
         var $comments_container = $container.parent().find('.comments-container');
-
-        var chars_limits = $chars_counter.html().split('|');
-
-        var min_length = parseInt(chars_limits[0]);
-        var max_length = parseInt(chars_limits[1]);
         
-        var warn_length = max_length - 30;
-        var current_length = 0;
-        var comment_in_form = false;
-        var interval = null;
+        var $form = $container.find('form');
 
-        var hcheck = !($.browser.msie || $.browser.opera);
+        if ($form.length) {
+            var $textarea = $container.find('textarea');
+            var textarea = $textarea.get(0);
+            var $button = $container.find('.comment-submit');
+            var $cancel = $container.find('.comment-cancel');
+            var $chars_left_message = $container.find('.comments-chars-left-msg');
+            var $chars_togo_message = $container.find('.comments-chars-togo-msg');
+            var $chars_counter = $container.find('.comments-char-left-count');
 
-        $textarea.css("padding-top", 0).css("padding-bottom", 0).css("resize", "none");
-        textarea.style.overflow = 'hidden';
-        
+            var $add_comment_link = $comment_tools.find('.add-comment-link');
 
-        function cleanup_form() {
-            $textarea.val('');
-            $textarea.css('height', 80);
-            $chars_counter.html(max_length);
-            $chars_left_message.removeClass('warn');
-            comment_in_form = false;
-            current_length = 0;
+            var chars_limits = $chars_counter.html().split('|');
 
-            $chars_left_message.hide();
-            $chars_togo_message.show();
-            
-            $chars_counter.removeClass('warn');
-            $chars_counter.html(min_length);
-            $button.attr("disabled","disabled");
-            
-            interval = null;
-        }
+            var min_length = parseInt(chars_limits[0]);
+            var max_length = parseInt(chars_limits[1]);
 
-        cleanup_form();
+            var warn_length = max_length - 30;
+            var current_length = 0;
+            var comment_in_form = false;
+            var interval = null;
 
-        function process_form_changes() {
-            var length = $textarea.val().replace(/[ ]{2,}/g," ").length;
+            var hcheck = !($.browser.msie || $.browser.opera);
 
-            if (current_length == length)
-                return;
+            $textarea.css("padding-top", 0).css("padding-bottom", 0).css("resize", "none");
+            textarea.style.overflow = 'hidden';
 
-            if (length < warn_length && current_length >= warn_length) {
-                $chars_counter.removeClass('warn');
-            } else if (current_length < warn_length && length >= warn_length){
-                $chars_counter.addClass('warn');
-            }
 
-            if (length < min_length) {
+            function cleanup_form() {
+                $textarea.val('');
+                $textarea.css('height', 80);
+                $chars_counter.html(max_length);
+                $chars_left_message.removeClass('warn');
+                comment_in_form = false;
+                current_length = 0;
+
                 $chars_left_message.hide();
                 $chars_togo_message.show();
-                $chars_counter.html(min_length - length);
-            } else {
-                length = $textarea.val().length;
-                $chars_togo_message.hide();
-                $chars_left_message.show();
-                $chars_counter.html(max_length - length);
-            }
 
-            if (length > max_length || length < min_length) {
+                $chars_counter.removeClass('warn');
+                $chars_counter.html(min_length);
                 $button.attr("disabled","disabled");
-            } else {
-                $button.removeAttr("disabled");
-            }
 
-            var current_height = textarea.style.height;
-            if (hcheck)
-                textarea.style.height = "0px";
-
-            var h = Math.max(80, textarea.scrollHeight);
-            textarea.style.height = current_height;
-            $textarea.animate({height: h + 'px'}, 50);
-
-            current_length = length;
-        }
-
-        function show_comment_form() {
-            $container.slideDown('slow');
-            $add_comment_link.fadeOut('slow');
-            window.setInterval(function() {
-                process_form_changes();
-            }, 200);
-        }
-
-        function hide_comment_form() {
-            if (interval != null) {
-                window.clearInterval(interval);
                 interval = null;
             }
-            $container.slideUp('slow');
-            $add_comment_link.fadeIn('slow');
-        }
 
-        $add_comment_link.click(function(){
             cleanup_form();
-            show_comment_form();
-            return false;
-        });
+
+            function process_form_changes() {
+                var length = $textarea.val().replace(/[ ]{2,}/g," ").length;
+
+                if (current_length == length)
+                    return;
+
+                if (length < warn_length && current_length >= warn_length) {
+                    $chars_counter.removeClass('warn');
+                } else if (current_length < warn_length && length >= warn_length){
+                    $chars_counter.addClass('warn');
+                }
+
+                if (length < min_length) {
+                    $chars_left_message.hide();
+                    $chars_togo_message.show();
+                    $chars_counter.html(min_length - length);
+                } else {
+                    length = $textarea.val().length;
+                    $chars_togo_message.hide();
+                    $chars_left_message.show();
+                    $chars_counter.html(max_length - length);
+                }
+
+                if (length > max_length || length < min_length) {
+                    $button.attr("disabled","disabled");
+                } else {
+                    $button.removeAttr("disabled");
+                }
+
+                var current_height = textarea.style.height;
+                if (hcheck)
+                    textarea.style.height = "0px";
+
+                var h = Math.max(80, textarea.scrollHeight);
+                textarea.style.height = current_height;
+                $textarea.animate({height: h + 'px'}, 50);
+
+                current_length = length;
+            }
+
+            function show_comment_form() {
+                $container.slideDown('slow');
+                $add_comment_link.fadeOut('slow');
+                window.setInterval(function() {
+                    process_form_changes();
+                }, 200);
+            }
+
+            function hide_comment_form() {
+                if (interval != null) {
+                    window.clearInterval(interval);
+                    interval = null;
+                }
+                $container.slideUp('slow');
+                $add_comment_link.fadeIn('slow');
+            }
+
+            $add_comment_link.click(function(){
+                cleanup_form();
+                show_comment_form();
+                return false;
+            });
+
+            $('#' + $comments_container.attr('id') + ' .comment-edit').live('click', function() {
+                var $link = $(this);
+                var comment_id = /comment-(\d+)-edit/.exec($link.attr('id'))[1];
+                var $comment = $('#comment-' + comment_id);
+
+                comment_in_form = comment_id;
+
+                $.get($link.attr('href'), function(data) {
+                    $textarea.val(data);
+                });
+
+                $comment.slideUp('slow');
+                show_comment_form();
+                return false;
+            });
+
+            $button.click(function(evt) {
+                if (running) return false;
+
+                var post_data = {
+                    comment: $textarea.val()
+                }
+
+                if (comment_in_form) {
+                    post_data['id'] = comment_in_form;
+                }
+
+                start_command();
+                $.post($form.attr('action'), post_data, function(data) {
+                    process_ajax_response(data, evt, function(error) {
+                        if (!error) {
+                            cleanup_form();
+                            hide_comment_form();
+                        }
+                    });
+
+                }, "json");
+
+                return false;
+            });
+
+            $cancel.click(function() {
+                if (comment_in_form) {
+                    $comment = $('#comment-' + comment_in_form).slideDown('slow');
+                }
+                hide_comment_form();
+                return false;
+            });
+        }
 
         $comment_tools.find('.show-all-comments-link').click(function() {
             $comments_container.find('.not_top_scorer').slideDown('slow');
@@ -458,58 +511,7 @@ $(function() {
             $comment_tools.find('.comments-showing').fadeOut('slow');
             return false;
         });
-
-        $('#' + $comments_container.attr('id') + ' .comment-edit').live('click', function() {
-            var $link = $(this);
-            var comment_id = /comment-(\d+)-edit/.exec($link.attr('id'))[1];
-            var $comment = $('#comment-' + comment_id);
-
-            comment_in_form = comment_id;
-
-            $.get($link.attr('href'), function(data) {
-                $textarea.val(data);
-            });
-            
-            $comment.slideUp('slow');
-            show_comment_form();
-            return false;
-        });
-
-        $button.click(function(evt) {
-            if (running) return false;
-
-            var post_data = {
-                comment: $textarea.val()
-            }
-
-            if (comment_in_form) {
-                post_data['id'] = comment_in_form;
-            }
-
-            start_command();
-            $.post($form.attr('action'), post_data, function(data) {
-                process_ajax_response(data, evt, function(error) {
-                    if (!error) {
-                        cleanup_form();
-                        hide_comment_form();
-                    }
-                });
-
-            }, "json");
-            
-            return false;
-        });
-
-        $cancel.click(function() {
-            if (comment_in_form) {
-                $comment = $('#comment-' + comment_in_form).slideDown('slow');
-            }
-            hide_comment_form();
-            return false;
-        });
     });
-
-            
 });
 
 //var scriptUrl, interestingTags, ignoredTags, tags, $;
