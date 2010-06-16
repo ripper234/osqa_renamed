@@ -14,7 +14,11 @@
             {% if is_unanswered %}
                 {% trans "Unanswered questions" %}
             {% else %}
-                {% trans "All questions" %}
+                {% if page_title %}
+                    {% trans page_title %}
+                {% else %}
+                    {% trans "All Questions" %}
+                {% endif %}
             {% endif %}
         {% endif %}
     {% endif %}

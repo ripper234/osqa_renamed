@@ -1,4 +1,4 @@
-# encoding:utf-8   
+# encoding:utf-8
 import datetime
 import logging
 from urllib import unquote
@@ -45,8 +45,8 @@ ANSWERS_PAGE_SIZE = 10
 def index(request):
     return question_list(request,
                          Question.objects.all(),
-                         sort=request.utils.set_sort_method('active'),
-                         base_path=reverse('questions'))
+                         request.utils.set_sort_method('active'),
+                         reverse('questions'))
 
 @decorators.render('questions.html', 'unanswered')
 def unanswered(request):
@@ -55,7 +55,7 @@ def unanswered(request):
                          _('open questions without an accepted answer'),
                          request.utils.set_sort_method('active'),
                          None,
-                         _("Unanswered questions"))
+                         _("Unanswered Questions"))
 
 @decorators.render('questions.html', 'questions')
 def questions(request):
@@ -68,12 +68,17 @@ def tag(request, tag):
                          mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          request.utils.set_sort_method('active'),
                          None,
-                         mark_safe(_('questions tagged %(tag)s') % {'tag': tag}),
+                         mark_safe(_('Questions Tagged With <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          False)
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
-def question_list(request, initial, list_description=_('questions'), sort=None, base_path=None, page_title=None,
+def question_list(request, initial,
+                  list_description=_('questions'),
+                  sort=None,
+                  base_path=None,
+                  page_title=_("All Question"),
                   allowIgnoreTags=True):
+
     questions = initial.filter_state(deleted=False)
 
     if request.user.is_authenticated() and allowIgnoreTags:
@@ -134,8 +139,11 @@ def search(request):
 def question_search(request, keywords):
     initial = Question.objects.search(keywords)
 
-    return question_list(request, initial, _("questions matching '%(keywords)s'") % {'keywords': keywords},
-                         base_path="%s?t=question&q=%s" % (reverse('search'), django_urlquote(keywords)), sort=False)
+    return question_list(request, initial,
+                         _("questions matching '%(keywords)s'") % {'keywords': keywords},
+                         False,
+                         "%s?t=question&q=%s" % (reverse('search'),django_urlquote(keywords)),
+                         _("questions matching '%(keywords)s'") % {'keywords': keywords})
 
 
 def tags(request):#view showing a listing of available tags - plain list
