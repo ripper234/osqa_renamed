@@ -76,7 +76,7 @@ def question_list(request, initial,
                   list_description=_('questions'),
                   sort=None,
                   base_path=None,
-                  page_title=_("All Question"),
+                  page_title=_("All Questions"),
                   allowIgnoreTags=True):
 
     questions = initial.filter_state(deleted=False)
