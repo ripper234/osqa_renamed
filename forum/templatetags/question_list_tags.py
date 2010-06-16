@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from forum.models import Tag, MarkedTag
 from forum.templatetags import argument_parser
+from forum import settings
 
 register = template.Library()
 
@@ -33,7 +34,12 @@ def question_sort_tabs(sort_context):
 @register.inclusion_tag('question_list/related_tags.html')
 def question_list_related_tags(questions):
     if len(questions):
-        return {'tags': Tag.objects.filter(nodes__id__in=[q.id for q in questions]).distinct()}
+        tags = Tag.objects.filter(nodes__id__in=[q.id for q in questions]).distinct()
+
+        if settings.LIMIT_RELATED_TAGS:
+            tags = tags[:settings.LIMIT_RELATED_TAGS]
+
+        return {'tags': tags}
     else:
         return {'tags': False}
 

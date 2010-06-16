@@ -82,3 +82,6 @@ FORM_GRAVATAR_IN_COMMENTS = Setting('FORM_GRAVATAR_IN_COMMENTS', False, FORUM_SE
 label = _("Show author gravatar in comments"),
 help_text = _("Show the gravatar image of a comment author."),
 required=False))
+
+
+

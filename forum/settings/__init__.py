@@ -32,6 +32,7 @@ from upload import *
 from about import *
 from faq import *
 from form import *
+from view import *
 from moderation import *
 from users import *
 from static import *
