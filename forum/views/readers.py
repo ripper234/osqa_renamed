@@ -45,8 +45,8 @@ ANSWERS_PAGE_SIZE = 10
 def index(request):
     return question_list(request,
                          Question.objects.all(),
-                         request.utils.set_sort_method('active'),
-                         reverse('questions'))
+                         sort=request.utils.set_sort_method('active'),
+                         base_path=reverse('questions'))
 
 @decorators.render('questions.html', 'unanswered')
 def unanswered(request):
