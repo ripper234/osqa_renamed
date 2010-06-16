@@ -6,40 +6,29 @@
  		form input { margin-right: 5px; }
 	</style>
 {% endblock %}
-{% block forejs %}
-       <script type="text/javascript">
-        $().ready(function(){
-            $("#linkPrevious").bind("click", back=function(){history.go(-1);})
-        });
-
-        </script>
-{% endblock %}
 {% block content %}
 <div id="main-bar" class="headNormal">
     {% trans "Forbidden" %}
 </div>
 <div id="main-body" class="">
     <div style="padding:5px 0px 10px 0;line-height:25px;">
-        <h3>{% trans "Sorry, could not find the page you requested." %}</h3>
+        <h3>{% trans "Sorry, you don't have permissions to access this page." %}</h3>
         <div style="margin-top:5px">
         {% trans "This might have happened for the following reasons:" %}<br/>
             <ul>
-            <li>{% trans "this question or answer has been deleted;" %}</li>
-            <li>{% trans "url has error - please check it;" %}</li>
-            <li>{% trans "the page you tried to visit is protected or you don't have sufficient points, see" %} <a href="{% url faq %}"> faq</a>;</li>
-            <li>{% trans "if you believe this error 404 should not have occurred, please" %}
-				<a href="{{feedback_site_url}}" target="_blank">{% trans "report this problem" %}</a></li>
+            <li>{% trans "you followed a link on an email, but you're currently logged in as another user;" %}</li>
+            <li>{% trans "there are errors in the url, please confirm it;" %}</li>
+            <li>{% trans "if you believe you shouldn't bee seeing this error, please" %}
+				<a href="{% if settings.CONTACT_URL %}{{ settings.CONTACT_URL }}{% else %}{% url feedback %}{% endif %}" target="_blank">
+				    {% trans "report this problem" %}
+				</a>
+			</li>
             </ul>
         </div>
-        <script type="text/javascript">
-            var GOOG_FIXURL_LANG = '{{settings.LANGUAGE_CODE}}';
-            var GOOG_FIXURL_SITE = '{{site_url}}';
-        </script>
-        <script type="text/javascript" src="http://linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js"></script>
         <ul>
-            <li><a href="#" id="linkPrevious">{% trans "back to previous page" %} È</a></li>
-            <li><a href="{% url questions %}">{% trans "see all questions" %} È</a></li>
-            <li><a href="{% url tags %}">{% trans "see all tags" %} È</a></li>
+            <li><a href="{% url index %}">{% trans "to home page" %} &raquo;</a></li>
+            <li><a href="{% url questions %}">{% trans "see all questions" %} &raquo;</a></li>
+            <li><a href="{% url tags %}">{% trans "see all tags" %} &raquo;</a></li>
         </ul>
     </div>
 

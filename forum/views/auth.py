@@ -2,7 +2,8 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from forum.models import User
-from django.http import HttpResponseRedirect, Http404, HttpResponseForbidden
+from django.http import HttpResponseRedirect, Http404
+from forum.http_responses import HttpResponseUnauthorized
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
@@ -277,7 +278,7 @@ def auth_settings(request, id):
     user_ = get_object_or_404(User, id=id)
 
     if not (request.user.is_superuser or request.user == user_):
-        return HttpResponseForbidden()
+        return HttpResponseUnauthorized(request)
 
     auth_keys = user_.auth_keys.all()
 
@@ -331,7 +332,7 @@ def auth_settings(request, id):
 def remove_external_provider(request, id):
     association = get_object_or_404(AuthKeyUserAssociation, id=id)
     if not (request.user.is_superuser or request.user == association.user):
-        return HttpResponseForbidden()
+        return HttpResponseUnauthorized(request)
 
     request.user.message_set.create(message=_("You removed the association with %s") % association.provider)
     association.delete()

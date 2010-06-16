@@ -4,7 +4,7 @@ import logging
 from urllib import unquote
 from forum import settings as django_settings
 from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, Http404, HttpResponsePermanentRedirect
+from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponsePermanentRedirect
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
 from django.template import RequestContext
 from django import template

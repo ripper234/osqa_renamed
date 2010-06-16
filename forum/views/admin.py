@@ -3,7 +3,8 @@ import time
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from forum.http_responses import HttpResponseUnauthorized
 from django.template import RequestContext
 from django.utils.translation import ugettext as _
 from django.utils import simplejson
@@ -21,7 +22,7 @@ def super_user_required(fn):
         if request.user.is_authenticated() and request.user.is_superuser:
             return fn(request, *args, **kwargs)
         else:
-            return HttpResponseForbidden()
+            return HttpResponseUnauthorized(request)
 
     return wrapper
 

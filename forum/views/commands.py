@@ -2,7 +2,7 @@ import datetime
 from forum import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import simplejson
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext

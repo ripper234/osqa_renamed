@@ -7,7 +7,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
+from forum.http_responses import HttpResponseUnauthorized
 from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
 from django.utils.html import strip_tags
@@ -84,7 +85,7 @@ def set_new_email(user, new_email, nomessage=False):
 def edit_user(request, id):
     user = get_object_or_404(User, id=id)
     if not (request.user.is_superuser or request.user == user):
-        return HttpResponseForbidden()
+        return HttpResponseUnauthorized(request)
     if request.method == "POST":
         form = EditUserForm(user, request.POST)
         if form.is_valid():
@@ -118,7 +119,7 @@ def edit_user(request, id):
 @login_required
 def user_powers(request, id, action, status):
     if not request.user.is_superuser:
-        return HttpResponseForbidden()
+        return HttpResponseUnauthorized(request)
 
     user = get_object_or_404(User, id=id)
     new_state = action == 'grant'
@@ -189,7 +190,7 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
         def decorated(request, id, slug=None):
             user = get_object_or_404(User, id=id)
             if private and not (user == request.user or request.user.is_superuser):
-                return HttpResponseForbidden()
+                return HttpResponseUnauthorized(request)
             context = fn(request, user)
 
             rev_page_title = user.username + " - " + page_title
