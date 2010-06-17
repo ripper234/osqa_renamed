@@ -15,8 +15,13 @@ class ActionQuerySet(CachedQuerySet):
         else:
             return super(ActionQuerySet, self).obj_from_datadict(datadict)
 
-    def get(self, *args, **kwargs):
-        return super(ActionQuerySet, self).get(*args, **kwargs).leaf()
+    def get(self, *args, **kwargs):            
+        action = super(ActionQuerySet, self).get(*args, **kwargs).leaf()
+
+        if not isinstance(action, self.model):
+            raise self.model.DoesNotExist()
+
+        return action
 
 class ActionManager(CachedManager):
     use_for_related_fields = True

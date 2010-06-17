@@ -95,7 +95,12 @@ class NodeQuerySet(CachedQuerySet):
             return super(NodeQuerySet, self).obj_from_datadict(datadict)
 
     def get(self, *args, **kwargs):
-        return super(NodeQuerySet, self).get(*args, **kwargs).leaf
+        node = super(NodeQuerySet, self).get(*args, **kwargs).leaf
+
+        if not isinstance(node, self.model):
+            raise self.model.DoesNotExist()
+
+        return node
 
     def filter_state(self, **kwargs):
         apply_bool = lambda q, b: b and q or ~q
