@@ -1,20 +1,10 @@
 <!-- template header.html -->
-{% load extra_tags %}
-{% load i18n %}
+{% load extra_tags ui_registry i18n %}
+
 	<div id="roof">
 		<div id="navBar">
 			<div id="top">
-                {% if request.user.is_authenticated %}
-                    {% if request.user.is_superuser %}
-                        <a href="{% url admin_index %}">{% trans "administration" %}</a>   
-                    {% endif %}
-                    <a href="{{ request.user.get_profile_url }}">{{ request.user.username }}</a> {% get_score_badge request.user %} 
-                    <a href="{% url logout %}">{% trans "logout" %}</a>
-                {% else %}
-                    <a href="{% url auth_signin %}">{% trans "login" %}</a>
-                {% endif %}
-                <a href="{% url about %}">{% trans "about" %}</a>
-                <a href="{% url faq %}">{% trans "faq" %}</a>
+			    {% loadregistry header_links %}
 			</div>
 			<table width="100%" border="0" cellspacing="0" cellpadding="0">
 			  <tr>
@@ -27,11 +17,9 @@
             	</td>
 				<td width="77%" valign="bottom">
                 <div class="nav">
-                    <a id="nav_questions"{% ifequal tab "questions" %} class="on"{% endifequal %} href="{% url questions %}" >{% trans "questions" %}</a>
-                    <a id="nav_tags"{% ifequal tab "tags" %} class="on"{% endifequal %} href="{% url tags %}">{% trans "tags" %}</a>
-                    <a id="nav_users"{% ifequal tab "users" %} class="on"{% endifequal %} href="{% url users %}">{% trans "users" %}</a>
-                    <a id="nav_badges"{% ifequal tab "badges" %} class="on"{% endifequal %} href="{% url badges %}">{% trans "badges" %}</a>
-                    <a id="nav_unanswered"{% ifequal tab "unanswered" %} class="on"{% endifequal %} href="{% url unanswered %}">{% trans "unanswered questions" %}</a>
+                    {% loopregistry page_top_tabs %}{% spaceless %}
+                        <a id="nav_{{ tab_name }}"{% ifequal tab tab_name %} class="on"{% endifequal %} href="{{ tab_url }}" >{{ tab_title }}</a>
+                    {% endspaceless %}{% endloopregistry %}
                     <div class="focus">
                     <a id="nav_ask" href="{% url ask %}" class="special">{% trans "ask a question" %}</a>
                     </div>

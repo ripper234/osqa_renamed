@@ -58,7 +58,7 @@ def html2text(s, ignore_tags=(), indent_width=4, page_width=80):
     return mark_safe(parser.result)
 
 def buildtag(name, content, **attrs):
-    return mark_safe('<%s %s>%s</a>' % (name, " ".join('%s="%s"' % i for i in attrs.items()), content))
+    return mark_safe('<%s %s>%s</a>' % (name, " ".join('%s="%s"' % i for i in attrs.items()), str(content)))
 
 def hyperlink(url, title, **attrs):
     return mark_safe('<a href="%s" %s>%s</a>' % (url, " ".join('%s="%s"' % i for i in attrs.items()), title))
