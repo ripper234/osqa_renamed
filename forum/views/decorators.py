@@ -2,11 +2,13 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.utils import simplejson
 from django.core.paginator import Paginator, EmptyPage
 from django.shortcuts import render_to_response
+from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.utils.translation import ungettext, ugettext as _
+from forum.modules import ui
 import logging
 
-def render(template=None, tab=None):
+def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
     def decorator(func):
         def decorated(request, *args, **kwargs):
             context = func(request, *args, **kwargs)
@@ -17,6 +19,10 @@ def render(template=None, tab=None):
             return render_to_response(context.pop('template', template), context,
                                       context_instance=RequestContext(request))
 
+        if tabbed and tab:
+            ui.register(ui.PAGE_TOP_TABS,
+                        ui.PageTab(tab, tab_title, lambda: reverse(func.__name__), weight=weight))
+            
         return decorated
 
     return decorator

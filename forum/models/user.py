@@ -20,10 +20,6 @@ QUESTIONS_PER_PAGE_CHOICES = (
 (50, u'50'),
 )
 
-class UserManager(CachedManager):
-    def get_site_owner(self):
-        return self.all().order_by('date_joined')[0]
-
 class AnonymousUser(DjangoAnonymousUser):
     def get_visible_answers(self, question):
         return question.answers.filter_state(deleted=False)
@@ -115,10 +111,13 @@ class User(BaseModel, DjangoUser):
     vote_up_count = DenormalizedField("actions", canceled=False, action_type="voteup")
     vote_down_count = DenormalizedField("actions", canceled=False, action_type="votedown")
 
-    objects = UserManager()
-
     def __unicode__(self):
         return self.username
+
+    @property
+    def is_siteowner(self):
+        #temporary thing, for now lets just assume that the site owner will always be the first user of the application
+        return self.id == 1
 
     @property
     def gravatar(self):

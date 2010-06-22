@@ -14,7 +14,7 @@
 
 {% if not exclude_finetune %}
 {% trans "P.S. You can always fine-tune which notifications you receive here:" %}
-{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id %}
+{{ settings.APP_URL }}{% url user_subscriptions id=recipient.id,slug=recipient.username|slugify %}
 {% endif %}
 
 {{ postal_address }}

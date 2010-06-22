@@ -5,14 +5,18 @@ register = template.Library()
 
 
 class LoadRegistryNode(template.Node):
-    def __init__(self, registry):
+    def __init__(self, registry, separator):
         self.registry = registry
+        self.separator = separator
 
     def render(self, context):
+        separator = self.separator.render(context)
         result = ''
 
         for ui_object in self.registry:
             if ui_object.can_render(context):
+                if result:
+                    result += separator
                 result += ui_object.render(context)
 
         return result
@@ -26,7 +30,9 @@ def loadregistry(parser, token):
         raise template.TemplateSyntaxError, "%r tag requires exactly one argument" % token.contents.split()[0]
 
     registry = ui.get_registry_by_name(registry)
-    return LoadRegistryNode(registry)
+    separator = parser.parse(('endloadregistry',))
+    parser.delete_first_token()
+    return LoadRegistryNode(registry, separator)
 
 
 class LoopRegistryNode(template.Node):

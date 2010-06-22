@@ -1,26 +1,9 @@
-{% load extra_tags %}
-{% load i18n %}
+{% load extra_tags ui_registry i18n %}
 
 
 <div>
     <div class="footerLinks" >
-        <a href="{% url about %}">{% trans "about" %}</a><span class="link-separator"> |</span>
-        <a href="{% url faq %}">{% trans "faq" %}</a><span class="link-separator"> |</span>
-        <a href="{% url privacy %}">{% trans "privacy" %}</a><span class="link-separator"> |</span>
-        {% if settings.SUPPORT_URL %}
-            <a href="{{settings.SUPPORT_URL}}" target="_blank">{% trans "support" %}</a><span class="link-separator"> |</span>
-        {% endif %}
-        {% spaceless %}
-        <a href=
-            {% if settings.CONTACT_URL %}
-                "{{settings.CONTACT_URL}}"
-                target="_blank">
-            {% else %}
-                "{% url feedback %}?next={{request.path}}">
-            {% endif %}
-            {% trans "contact us" %}
-        </a>
-        {% endspaceless %}
+        {% loadregistry footer_links %}<span class="link-separator"> |</span>{% endloadregistry %}
     </div>
   <p>
      <a href="http://osqa.net" target="_blank" title="OSQA {{ settings.OSQA_VERSION }} ({{ settings.SVN_REVISION }})">

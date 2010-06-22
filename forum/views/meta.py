@@ -17,6 +17,7 @@ from forum import settings
 from forum.utils.mail import send_template_email
 from django.utils.safestring import mark_safe
 from forum.templatetags.extra_filters import or_preview
+import decorators
 import re
 
 def favicon(request):
@@ -74,6 +75,7 @@ def logout(request):
     'next' : get_next_url(request),
     }, context_instance=RequestContext(request))
 
+@decorators.render('badges.html', 'badges', _('badges'), weight=300)
 def badges(request):
     badges = [b.ondb for b in sorted(BadgesMeta.by_id.values(), lambda b1, b2: cmp(b1.name, b2.name))]
 
@@ -82,10 +84,10 @@ def badges(request):
     else:
         my_badges = []
 
-    return render_to_response('badges.html', {
-    'badges' : badges,
-    'mybadges' : my_badges,
-    }, context_instance=RequestContext(request))
+    return {
+        'badges' : badges,
+        'mybadges' : my_badges,
+    }
 
 def badge(request, id, slug):
     badge = Badge.objects.get(id=id)

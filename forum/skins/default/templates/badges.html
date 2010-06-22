@@ -4,14 +4,6 @@
 {% load humanize %}
 {% load i18n %}
 {% block title %}{% spaceless %}{% trans "Badges summary" %}{% endspaceless %}{% endblock %}
-{% block forejs %}
-       <script type="text/javascript">
-        $().ready(function(){
-            $("#nav_badges").attr('className',"on");
-        });
-         
-        </script>
-{% endblock %}
 {% block content %}
 <div class="headlineA">
         <span class="headMedals">{% trans "Badges" %}</span>

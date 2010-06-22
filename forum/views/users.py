@@ -13,17 +13,20 @@ from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
 from django.utils.html import strip_tags
 from django.utils import simplejson
-from django.core.urlresolvers import reverse
+from django.core.urlresolvers import reverse, NoReverseMatch
 from forum.forms import *
 from forum.utils.html import sanitize_html
 from datetime import datetime, date
 import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
+from forum.modules import ui
 
 import time
+import decorators
 
 USERS_PAGE_SIZE = 35# refactor - move to some constants file
 
+@decorators.render('users/users.html', 'users', _('users'), weight=200)
 def users(request):
     is_paginated = True
     sortby = request.GET.get('sort', 'reputation')
@@ -55,23 +58,22 @@ def users(request):
     except (EmptyPage, InvalidPage):
         users = objects_list.page(objects_list.num_pages)
 
-    return render_to_response('users/users.html', {
-    "users" : users,
-    "suser" : suser,
-    "keywords" : suser,
-    "tab_id" : sortby,
-    "context" : {
-    'is_paginated' : is_paginated,
-    'pages': objects_list.num_pages,
-    'page': page,
-    'has_previous': users.has_previous(),
-    'has_next': users.has_next(),
-    'previous': users.previous_page_number(),
-    'next': users.next_page_number(),
-    'base_url' : base_url
+    return {
+        "users" : users,
+        "suser" : suser,
+        "keywords" : suser,
+        "tab_id" : sortby,
+        "context" : {
+            'is_paginated' : is_paginated,
+            'pages': objects_list.num_pages,
+            'page': page,
+            'has_previous': users.has_previous(),
+            'has_next': users.has_next(),
+            'previous': users.previous_page_number(),
+            'next': users.next_page_number(),
+            'base_url' : base_url
+        }
     }
-
-    }, context_instance=RequestContext(request))
 
 def set_new_email(user, new_email, nomessage=False):
     if new_email != user.email:
@@ -185,7 +187,7 @@ def suspend(request, id):
 
     return decorators.RefreshPageCommand()
 
-def user_view(template, tab_name, tab_description, page_title, private=False):
+def user_view(template, tab_name, tab_title, tab_description, private=False, tabbed=True, weight=500):
     def decorator(fn):
         def decorated(request, id, slug=None):
             user = get_object_or_404(User, id=id)
@@ -193,23 +195,34 @@ def user_view(template, tab_name, tab_description, page_title, private=False):
                 return HttpResponseUnauthorized(request)
             context = fn(request, user)
 
-            rev_page_title = user.username + " - " + page_title
+            rev_page_title = user.username + " - " + tab_description
 
             context.update({
-            "tab_name" : tab_name,
+            "active_tab" : tab_name,
             "tab_description" : tab_description,
             "page_title" : rev_page_title,
             "can_view_private": (user == request.user) or request.user.is_superuser
             })
             return render_to_response(template, context, context_instance=RequestContext(request))
 
+        if tabbed:
+            def url_getter(vu):
+                try:
+                    return reverse(fn.__name__, kwargs={'id': vu.id, 'slug': slugify(vu.username)})
+                except NoReverseMatch:
+                    return reverse(fn.__name__, kwargs={'id': vu.id})
+
+            ui.register(ui.PROFILE_TABS, ui.ProfileTab(
+                tab_name, tab_title, tab_description,url_getter, private, weight
+            ))
+
         return decorated
 
     return decorator
 
 
-@user_view('users/stats.html', 'stats', _('user profile'), _('user overview'))
-def user_stats(request, user):
+@user_view('users/stats.html', 'stats', _('overview'), _('user overview'))
+def user_profile(request, user):
     questions = Question.objects.filter_state(deleted=False).filter(author=user).order_by('-added_at')
     answers = Answer.objects.filter_state(deleted=False).filter(author=user).order_by('-added_at')
 
@@ -238,7 +251,7 @@ def user_stats(request, user):
     "total_awards" : len(awards),
     }
 
-@user_view('users/recent.html', 'recent', _('recent user activity'), _('recent activity'))
+@user_view('users/recent.html', 'recent', _('recent activity'), _('recent user activity'))
 def user_recent(request, user):
     activities = user.actions.exclude(
             action_type__in=("voteup", "votedown", "voteupcomment", "flag", "newpage", "editpage")).order_by(
@@ -247,15 +260,7 @@ def user_recent(request, user):
     return {"view_user" : user, "activities" : activities}
 
 
-@user_view('users/votes.html', 'votes', _('user vote record'), _('votes'), True)
-def user_votes(request, user):
-    votes = user.votes.exclude(node__state_string__contains="(deleted").filter(
-            node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
-
-    return {"view_user" : user, "votes" : votes}
-
-
-@user_view('users/reputation.html', 'reputation', _('user reputation in the community'), _('user reputation'))
+@user_view('users/reputation.html', 'reputation', _('karma history'), _('graph of user karma'))
 def user_reputation(request, user):
     rep = list(user.reputes.order_by('date'))
     values = [r.value for r in rep]
@@ -270,13 +275,20 @@ def user_reputation(request, user):
 
     return {"view_user": user, "reputation": rep, "graph_data": graph_data}
 
-@user_view('users/questions.html', 'favorites', _('favorite questions'), _('favorite questions'))
+@user_view('users/votes.html', 'votes', _('votes'), _('user vote record'), True)
+def user_votes(request, user):
+    votes = user.votes.exclude(node__state_string__contains="(deleted").filter(
+            node__node_type__in=("question", "answer")).order_by('-voted_at')[:USERS_PAGE_SIZE]
+
+    return {"view_user" : user, "votes" : votes}
+
+@user_view('users/questions.html', 'favorites', _('favorites'), _('questions that user selected as his/her favorite'))
 def user_favorites(request, user):
     favorites = FavoriteAction.objects.filter(canceled=False, user=user)
 
     return {"favorites" : favorites, "view_user" : user}
 
-@user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True)
+@user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
     if request.method == 'POST':
         form = SubscriptionSettingsForm(request.POST)

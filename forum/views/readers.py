@@ -47,7 +47,7 @@ def index(request):
                          sort=request.utils.set_sort_method('active'),
                          base_path=reverse('questions'))
 
-@decorators.render('questions.html', 'unanswered')
+@decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
 def unanswered(request):
     return question_list(request,
                          Question.objects.filter(extra_ref=None),
@@ -56,7 +56,7 @@ def unanswered(request):
                          None,
                          _("Unanswered Questions"))
 
-@decorators.render('questions.html', 'questions')
+@decorators.render('questions.html', 'questions', _('questions'), weight=0)
 def questions(request):
     return question_list(request, Question.objects.all(), _('questions'), request.utils.set_sort_method('active'))
 
@@ -145,7 +145,8 @@ def question_search(request, keywords):
                          _("questions matching '%(keywords)s'") % {'keywords': keywords})
 
 
-def tags(request):#view showing a listing of available tags - plain list
+@decorators.render('tags.html', 'tags', _('tags'), weight=100)
+def tags(request):
     stag = ""
     is_paginated = True
     sortby = request.GET.get('sort', 'used')
@@ -169,22 +170,22 @@ def tags(request):#view showing a listing of available tags - plain list
     except (EmptyPage, InvalidPage):
         tags = objects_list.page(objects_list.num_pages)
 
-    return render_to_response('tags.html', {
-    "tags" : tags,
-    "stag" : stag,
-    "tab_id" : sortby,
-    "keywords" : stag,
-    "context" : {
-    'is_paginated' : is_paginated,
-    'pages': objects_list.num_pages,
-    'page': page,
-    'has_previous': tags.has_previous(),
-    'has_next': tags.has_next(),
-    'previous': tags.previous_page_number(),
-    'next': tags.next_page_number(),
-    'base_url' : reverse('tags') + '?sort=%s&' % sortby
+    return {
+        "tags" : tags,
+        "stag" : stag,
+        "tab_id" : sortby,
+        "keywords" : stag,
+        "context" : {
+            'is_paginated' : is_paginated,
+            'pages': objects_list.num_pages,
+            'page': page,
+            'has_previous': tags.has_previous(),
+            'has_next': tags.has_next(),
+            'previous': tags.previous_page_number(),
+            'next': tags.next_page_number(),
+            'base_url' : reverse('tags') + '?sort=%s&' % sortby
+        }
     }
-    }, context_instance=RequestContext(request))
 
 def get_answer_sort_order(request):
     view_dic = {"latest":"-added_at", "oldest":"added_at", "votes":"-score" }

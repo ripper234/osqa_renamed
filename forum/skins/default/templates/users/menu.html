@@ -10,7 +10,7 @@
     <ul id="user-menu-dropdown">
         <li class="item"><span class="user-edit"></span><a href="{% url edit_user id=user.id %}">{% trans "edit profile" %}</a></li>
         <li class="item"><span class="user-auth"></span><a href="{% url user_authsettings id=user.id %}">{% trans "authentication settings" %}</a></li>
-        <li class="item"><span class="user-subscriptions"></span><a href="{% url user_subscriptions id=user.id %}">{% trans "email notification settings" %}</a></li>
+        <li class="item"><span class="user-subscriptions"></span><a href="{% url user_subscriptions id=user.id,slug=user.username|slugify %}">{% trans "email notification settings" %}</a></li>
         {% ifnotequal user viewer %}
             {% if viewer.is_superuser %}
             <li class="separator">{% trans "Moderation tools" %}</li>
@@ -44,11 +44,11 @@
                         <a class="confirm" href="{% url user_powers id=user.id,action="grant",status="super" %}">{% trans "grant super user status" %}</a>
                     </li>
                 {% else %}
-                    {% ifequal viewer.id 1 %}
+                    {% if viewer.is_siteowner %}
                     <li class="item"><span class="user-superuser"></span>
                         <a class="confirm" href="{% url user_powers id=user.id,action="remove",status="super" %}">{% trans "remove super user status" %}</a>
                     </li>
-                    {% endifequal %}
+                    {% endif %}
                 {% endif %}
             {% endif %}
         {% endifnotequal %}
