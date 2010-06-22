@@ -1,5 +1,6 @@
 from django.utils.translation import ugettext as _
 from django.db.models import F
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from forum.models.action import ActionProxy
 from forum.models import Award, Badge, ValidationHash
 from forum import settings
@@ -94,7 +95,7 @@ class AwardAction(ActionProxy):
                 return Award.objects.get(user=user, badge=badge).action
             else:
                 return Award.objects.get(user=user, node=node, badge=badge).action
-        except:
+        except ObjectDoesNotExist:
             return None
 
     def describe(self, viewer=None):

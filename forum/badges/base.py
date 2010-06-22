@@ -1,7 +1,7 @@
 import re
 from string import lower
 
-from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import MultipleObjectsReturned
 from django.db.models.signals import post_save
 
 from forum.models import Badge, Node, Action
@@ -58,14 +58,20 @@ class AbstractBadge(object):
 
     @classmethod
     def award(cls, user, action, once=False):
-        if once:
-            node = None
-            awarded = AwardAction.get_for(user, cls.ondb)
-        else:
-            node = action.node
-            awarded = AwardAction.get_for(user, cls.ondb, node)
+        try:
+            if once:
+                node = None
+                awarded = AwardAction.get_for(user, cls.ondb)
+            else:
+                node = action.node
+                awarded = AwardAction.get_for(user, cls.ondb, node)
 
-        trigger = isinstance(action, Action) and action or None
+            trigger = isinstance(action, Action) and action or None
 
-        if not awarded:
-            AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=trigger))
+            if not awarded:
+                AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=trigger))
+        except MultipleObjectsReturned:
+            if node:
+                logging.error('Found multiple %s badges awarded for user %s (%s)' % (self.name, user.username, user.id))
+            else:
+                logging.error('Found multiple %s badges awarded for user %s (%s) and node %s' % (self.name, user.username, user.id, node.id))
