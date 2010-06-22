@@ -14,7 +14,7 @@
 {% block content %}
 <div class="tabBar">
     {% question_list_title %}
-    <a style="float:left" href="/feeds/rss" title="{% trans "subscribe to question RSS feed" %}"><img src="{% media "media/images/feed-icon-small.png" %}" alt=""></a>
+    <a style="float:left" href="{% url latest_questions_feed %}" title="{% trans "subscribe to question RSS feed" %}"><img src="{% media "media/images/feed-icon-small.png" %}" alt=""></a>
     {% question_sort_tabs sort_context %}
 </div>
 <div id="listA">{% for question in questions %}
