@@ -25,7 +25,9 @@ class SettingsSetForm(forms.Form):
         for setting in set:
             widget = setting.field_context.get('widget', None)
 
-            if widget is forms.RadioSelect or isinstance(widget, forms.RadioSelect):
+            if widget is forms.CheckboxSelectMultiple or widget is forms.SelectMultiple or isinstance(widget, forms.SelectMultiple):
+                field = forms.MultipleChoiceField(**setting.field_context)
+            elif widget is forms.RadioSelect or isinstance(widget, forms.RadioSelect):
                 field = forms.ChoiceField(**setting.field_context)
             elif isinstance(setting, (Setting.emulators.get(str, DummySetting), Setting.emulators.get(unicode, DummySetting))):
                 if not setting.field_context.get('widget', None):
@@ -108,11 +110,16 @@ class StringListWidget(forms.Widget):
             return data[name]
 
 class CommaStringListWidget(forms.Textarea):
+    def render(self, name, value, attrs=None):
+        return super(CommaStringListWidget, self).render(name, ', '.join(value), attrs)
+
+
     def value_from_datadict(self, data, files, name):
         if 'submit' in data:
             return map(strip, data[name].split(','))
         else:
             return ', '.join(data[name])    
+
 
 
 
