@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 <!-- template ask.html -->
-{% load i18n %}
-{% load extra_tags %}
+{% load i18n extra_tags extra_filters %}
 {% block title %}{% spaceless %}{% trans "Ask a question" %}{% endspaceless %}{% endblock %}
 {% block forejs %}
         <script type='text/javascript' src='{% media  "/media/js/wmd/showdown.js" %}'></script>
@@ -75,7 +74,7 @@
                 <p>{% blocktrans %}
                     After submiting your question, you will be redirected to the login/signup page.
                     Your question will be saved in the current session and will be published after you login with your existing account,
-                    or signup for a new account{% endblocktrans %}{% if "ask" in settings.REQUIRE_EMAIL_VALIDATION_TO %}
+                    or signup for a new account{% endblocktrans %}{% if "ask"|contained_in:settings.REQUIRE_EMAIL_VALIDATION_TO %}
                     {% trans "and validate your email." %}{% else %}.{% endif %}</p>
             </div>
             {% else %}
