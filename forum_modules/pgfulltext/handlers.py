@@ -3,12 +3,11 @@ from django.db.models import Q
 from forum.models.question import Question, QuestionManager
 from forum.modules import decorate
 
-repl_re = re.compile(r"^'|[^\'\-_\s\w]|'$", re.UNICODE)
-sing_quote_re = re.compile(r"\'+")
+word_re = re.compile(r'\w+', re.UNICODE)
 
 @decorate(QuestionManager.search, needs_origin=False)
 def question_search(self, keywords):
-    tsquery = " | ".join([k for k in repl_re.sub('', sing_quote_re.sub("'", keywords.strip())).split(' ') if k])
+    tsquery = " | ".join(word_re.findall(keywords))
     ilike = keywords + u"%%"
 
     return self.extra(
@@ -26,4 +25,7 @@ def question_search(self, keywords):
             select_params=[tsquery],
             order_by=['-ranking']
             )
+
+
+
 
