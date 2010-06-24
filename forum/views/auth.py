@@ -11,6 +11,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout
 from django.http import get_host
 from forum.actions import SuspendAction
+from forum.utils import html
+from forum import settings
+from writers import manage_pending_data
 import types
 import datetime
 import logging
@@ -25,12 +28,8 @@ from forum.authentication import AUTH_PROVIDERS
 from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answer
 from forum.actions import UserJoinsAction
 
-def signin_page(request, action=None):
-    if action is None:
-        request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
-    else:
-        request.session['on_signin_action'] = action
-        request.session['on_signin_url'] = reverse('auth_action_signin', kwargs={'action': action})
+def signin_page(request):
+    request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
 
     all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
 
@@ -263,6 +262,24 @@ def temp_signin(request, user, code):
     else:
         raise Http404()
 
+def send_validation_email(request):
+    if not request.user.is_authenticated():
+        return HttpResponseUnauthorized(request)
+    else:
+        try:
+            hash = ValidationHash.objects.get(user=request.user, type='email')
+            if hash.expiration < datetime.datetime.now():
+                hash.delete()
+                return send_validation_email(request)
+        except:
+            hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
+
+        send_template_email([request.user], "auth/mail_validation.html", {'validation_code': hash})
+        request.user.message_set.create(message=_("A message with an email validation link was just sent to your address."))
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+        
+
 def validate_email(request, user, code):
     user = get_object_or_404(User, id=user)
 
@@ -338,19 +355,6 @@ def remove_external_provider(request, id):
     association.delete()
     return HttpResponseRedirect(reverse('user_authsettings', kwargs={'id': association.user.id}))
 
-def newquestion_signin_action(user):
-    question = Question.objects.filter(author=user).order_by('-added_at')[0]
-    return question.get_absolute_url()
-
-def newanswer_signin_action(user):
-    answer = Answer.objects.filter(author=user).order_by('-added_at')[0]
-    return answer.get_absolute_url()
-
-POST_SIGNIN_ACTIONS = {
-'newquestion': newquestion_signin_action,
-'newanswer': newanswer_signin_action,
-}
-
 def login_and_forward(request, user, forward=None, message=None):
     if user.is_suspended():
         return forward_suspended_user(request, user)
@@ -358,35 +362,27 @@ def login_and_forward(request, user, forward=None, message=None):
     user.backend = "django.contrib.auth.backends.ModelBackend"
     login(request, user)
 
-    temp_data = request.session.pop('temp_node_data', None)
-    if temp_data:
-        request.POST = temp_data
-        node_type = request.session.pop('temp_node_type')
-
-        if node_type == "question":
-            from forum.views.writers import ask
-            return ask(request)
-        elif node_type == "answer":
-            from forum.views.writers import answer
-            return answer(request, request.session.pop('temp_question_id'))
-
-    if not forward:
-        signin_action = request.session.get('on_signin_action', None)
-        if not signin_action:
-            forward = request.session.get('on_signin_url', None)
-
-            if not forward:
-                forward = reverse('index')
-        else:
-            try:
-                forward = POST_SIGNIN_ACTIONS[signin_action](user)
-            except:
-                forward = reverse('index')
-
     if message is None:
         message = _("Welcome back %s, you are now logged in") % user.username
 
     request.user.message_set.create(message=message)
+
+    forward = request.session.get('on_signin_url', reverse('index'))
+    pending_data = request.session.get('pending_submission_data', None)
+
+    if pending_data and (user.email_isvalid or pending_data['type'] not in settings.REQUIRE_EMAIL_VALIDATION_TO):
+        submission_time = pending_data['time']
+        if submission_time < datetime.datetime.now() - datetime.timedelta(minutes=int(settings.HOLD_PENDING_POSTS_MINUTES)):
+            del request.session['pending_submission_data']
+        elif submission_time < datetime.datetime.now() - datetime.timedelta(minutes=int(settings.WARN_PENDING_POSTS_MINUTES)):
+            user.message_set.create(message=(_("You have a %s pending submission.") % pending_data['data_name']) + " %s, %s, %s" % (
+                html.hyperlink(reverse('manage_pending_data', kwargs={'action': _('save')}), _("save it")),
+                html.hyperlink(reverse('manage_pending_data', kwargs={'action': _('review')}), _("review")),
+                html.hyperlink(reverse('manage_pending_data', kwargs={'action': _('cancel')}), _("cancel"))
+            ))
+        else:
+            return manage_pending_data(request, _('save'), forward)
+
     return HttpResponseRedirect(forward)
 
 def forward_suspended_user(request, user, show_private_msg=True):

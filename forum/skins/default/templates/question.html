@@ -179,14 +179,18 @@
                     {% endspaceless %}
                 </div>
                 {% if not request.user.is_authenticated %}
-                    <div class="message">{% trans "you can answer anonymously and then login" %}</div>
+                    <div class="message">{% trans "You can answer anonymously and then login." %}</div>
                 {% else %}
                     <p class="message">
                         {% ifequal request.user question.author  %}
-                            {% trans "answer your own question only to give an answer" %}
+                            {% trans "Answer your own question only to give an answer." %}
                         {% else %}
-                            {% trans "please only give an answer, no discussions" %}
+                            {% trans "Please only give an answer, no discussions." %}
                         {% endifequal %}
+                        {% if not request.user.email_valid_and_can_answer %}
+                            {% blocktrans %}Remember, your answer will not be published until you validate your email.{% endblocktrans %}
+                            <a href="{% url send_validation_email %}">{% trans "Send me a validation link." %}</a>
+                        {% endif %}
                     </p>
                 {% endif %}
 

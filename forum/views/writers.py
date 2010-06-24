@@ -17,6 +17,7 @@ from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction,
 from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
+from forum.utils import html
 
 
 def upload(request):#ajax upload file to a question or answer
@@ -64,24 +65,42 @@ def upload(request):#ajax upload file to a question or answer
     return HttpResponse(result, mimetype="application/xml")
 
 def ask(request):
-    if request.POST and "text" in request.POST:
-        form = AskForm(request.POST, user=request.user)
-        if form.is_valid():
-            if request.user.is_authenticated():
-                ask_action = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
-                question = ask_action.node
+    form = None
 
-                if settings.WIKI_ON and request.POST.get('wiki', False):
-                    question.nstate.wiki = ask_action
+    if request.POST:
+        if request.session.pop('reviewing_pending_data', False):
+            form = AskForm(initial=request.POST, user=request.user)
+        elif "text" in request.POST:
+            form = AskForm(request.POST, user=request.user)
+            if form.is_valid():
+                if request.user.is_authenticated() and request.user.email_valid_and_can_ask():
+                    ask_action = AskAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                    question = ask_action.node
 
-                return HttpResponseRedirect(question.get_absolute_url())
-            else:
-                request.session['temp_node_data'] = request.POST
-                request.session['temp_node_type'] = 'question'
-                return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
-    elif request.method == "POST" and "go" in request.POST:
-        form = AskForm({'title': request.POST['q']}, user=request.user)
-    else:
+                    if settings.WIKI_ON and request.POST.get('wiki', False):
+                        question.nstate.wiki = ask_action
+
+                    return HttpResponseRedirect(question.get_absolute_url())
+                else:
+                    request.session['pending_submission_data'] = {
+                        'POST': request.POST,
+                        'data_name': _("question"),
+                        'type': 'ask',
+                        'submission_url': reverse('ask'),
+                        'time': datetime.datetime.now()
+                    }
+
+                    if request.user.is_authenticated():
+                        request.user.message_set.create(message=_("Your question is pending until you %s.") % html.hyperlink(
+                            reverse('send_validation_email'), _("validate your email")
+                        ))
+                        return HttpResponseRedirect(reverse('index'))
+                    else:
+                        return HttpResponseRedirect(reverse('auth_signin'))
+        elif "go" in request.POST:
+            form = AskForm({'title': request.POST['q']}, user=request.user)
+            
+    if not form:
         form = AskForm(user=request.user)
 
     return render_to_response('ask.html', {
@@ -197,25 +216,55 @@ def edit_answer(request, id):
 
 def answer(request, id):
     question = get_object_or_404(Question, id=id)
+
     if request.POST:
         form = AnswerForm(question, request.POST)
-        if form.is_valid():
-            if request.user.is_authenticated():
-                answer_action = AnswerAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(dict(question=question, **form.cleaned_data))
-                answer = answer_action.node
 
-                if settings.WIKI_ON and request.POST.get('wiki', False):
-                    answer.nstate.wiki = answer_action
-
-                return HttpResponseRedirect(answer.get_absolute_url())
-            else:
-                request.session['temp_node_data'] = request.POST
-                request.session['temp_node_type'] = 'answer'
-                request.session['temp_question_id'] = id
-                return HttpResponseRedirect(reverse('auth_action_signin', kwargs={'action': 'newquestion'}))
-        else:
+        if request.session.pop('reviewing_pending_data', False) or not form.is_valid():
             request.session['redirect_POST_data'] = request.POST
             return HttpResponseRedirect(question.get_absolute_url() + '#fmanswer')
 
+        if request.user.is_authenticated() and request.user.email_valid_and_can_answer():
+            answer_action = AnswerAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(dict(question=question, **form.cleaned_data))
+            answer = answer_action.node
+
+            if settings.WIKI_ON and request.POST.get('wiki', False):
+                answer.nstate.wiki = answer_action
+
+            return HttpResponseRedirect(answer.get_absolute_url())
+        else:
+            request.session['pending_submission_data'] = {
+                'POST': request.POST,
+                'data_name': _("answer"),
+                'type': 'answer',
+                'submission_url': reverse('answer', kwargs={'id': id}),
+                'time': datetime.datetime.now()
+            }
+
+            if request.user.is_authenticated():
+                request.user.message_set.create(message=_("Your answer is pending until you %s.") % html.hyperlink(
+                    reverse('send_validation_email'), _("validate your email")
+                ))
+                return HttpResponseRedirect(question.get_absolute_url())
+            else:
+                return HttpResponseRedirect(reverse('auth_signin'))
+
     return HttpResponseRedirect(question.get_absolute_url())
+
+
+def manage_pending_data(request, action, forward=None):
+    pending_data = request.session.pop('pending_submission_data', None)
+
+    if not pending_data:
+        raise Http404
+
+    if action == _("cancel"):
+        return HttpResponseRedirect(forward or request.META.get('HTTP_REFERER', '/'))
+    else:
+        if action == _("review"):
+            request.session['reviewing_pending_data'] = True
+
+        request.session['redirect_POST_data'] = pending_data['POST']
+        return HttpResponseRedirect(pending_data['submission_url'])
+
 

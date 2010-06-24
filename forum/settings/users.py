@@ -1,4 +1,5 @@
 from forms import CommaStringListWidget
+from django.forms import CheckboxSelectMultiple
 from base import Setting, SettingSet
 from django.utils.translation import ugettext as _
 
@@ -24,3 +25,20 @@ EMAIL_UNIQUE = Setting('EMAIL_UNIQUE', True, USERS_SET, dict(
 label = _("Force unique email"),
 help_text = _("Should each user have an unique email.")))
 
+REQUIRE_EMAIL_VALIDATION_TO = Setting('REQUIRE_EMAIL_VALIDATION_TO', [], USERS_SET, dict(
+label = _("Require email validation to..."),
+help_text = _("Which actions in this site, users without a valid email will be prevented from doing."),
+widget=CheckboxSelectMultiple,
+choices=(("ask", _("ask questions")), ("answer", _("provide answers")), ("comment", _("make comments")), ("flag", _("report posts"))),
+required=False,
+))
+
+HOLD_PENDING_POSTS_MINUTES = Setting('HOLD_PENDING_POSTS_MINUTES', 120, USERS_SET, dict(
+label=_("Hold pending posts for X minutes"),
+help_text=_("How much time in minutes a post should be kept in session until the user logs in or validates the email.")
+))
+
+WARN_PENDING_POSTS_MINUTES = Setting('WARN_PENDING_POSTS_MINUTES', 15, USERS_SET, dict(
+label=_("Warn about pending posts afer X minutes"),
+help_text=_("How much time in minutes a user that just logged in or validated his email should be warned about a pending post instead of publishing it automatically.")
+))

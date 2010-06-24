@@ -54,8 +54,6 @@ FORUM_SCRIPT_ALIAS = '' #no leading slash, default = '' empty string
 USE_I18N = True
 LANGUAGE_CODE = 'en'
 
-EMAIL_VALIDATION = 'off' #string - on|off
-
 DJANGO_VERSION = 1.1
 OSQA_DEFAULT_SKIN = 'default'
 

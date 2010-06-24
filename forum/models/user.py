@@ -90,6 +90,16 @@ def true_if_is_super_or_staff(fn):
 
     return decorated
 
+def false_if_validation_required_to(item):
+    def decorator(fn):
+        def decorated(self, *args, **kwargs):
+            if item in settings.REQUIRE_EMAIL_VALIDATION_TO and not self.email_isvalid:
+                return False
+            else:
+                return fn(self, *args, **kwargs)
+        return decorated
+    return decorator
+
 class User(BaseModel, DjangoUser):
     is_approved = models.BooleanField(default=False)
     email_isvalid = models.BooleanField(default=False)
@@ -116,7 +126,7 @@ class User(BaseModel, DjangoUser):
 
     @property
     def is_siteowner(self):
-        #temporary thing, for now lets just assume that the site owner will always be the first user of the application
+        #todo: temporary thing, for now lets just assume that the site owner will always be the first user of the application
         return self.id == 1
 
     @property
@@ -191,6 +201,7 @@ class User(BaseModel, DjangoUser):
     def can_vote_down(self):
         return self.reputation >= int(settings.REP_TO_VOTE_DOWN)
 
+    @false_if_validation_required_to('flag')
     def can_flag_offensive(self, post=None):
         if post is not None and post.author == self:
             return False
@@ -203,9 +214,10 @@ class User(BaseModel, DjangoUser):
         return self.reputation >= int(settings.REP_TO_VIEW_FLAGS)
 
     @true_if_is_super_or_staff
+    @false_if_validation_required_to('comment')
     def can_comment(self, post):
         return self == post.author or self.reputation >= int(settings.REP_TO_COMMENT
-                                                             ) or (post.__class__.__name__ == "Answer" and self == post.question.author)
+                ) or (post.__class__.__name__ == "Answer" and self == post.question.author)
 
     @true_if_is_super_or_staff
     def can_like_comment(self, comment):
@@ -270,6 +282,12 @@ class User(BaseModel, DjangoUser):
     @true_if_is_super_or_staff
     def can_upload_files(self):
         return self.reputation >= int(settings.REP_TO_UPLOAD)
+
+    def email_valid_and_can_ask(self):
+        return 'ask' not in settings.REQUIRE_EMAIL_VALIDATION_TO or self.email_isvalid
+
+    def email_valid_and_can_answer(self):
+        return 'answer' not in settings.REQUIRE_EMAIL_VALIDATION_TO or self.email_isvalid
 
     def check_password(self, old_passwd):
         self.__dict__.update(self.__class__.objects.filter(id=self.id).values('password')[0])

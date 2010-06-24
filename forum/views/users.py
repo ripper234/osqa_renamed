@@ -75,13 +75,6 @@ def users(request):
         }
     }
 
-def set_new_email(user, new_email, nomessage=False):
-    if new_email != user.email:
-        user.email = new_email
-        user.email_isvalid = False
-        user.save()
-    #if settings.EMAIL_VALIDATION == 'on':
-    #    send_new_email_key(user,nomessage=nomessage)
 
 @login_required
 def edit_user(request, id):
@@ -93,7 +86,9 @@ def edit_user(request, id):
         if form.is_valid():
             new_email = sanitize_html(form.cleaned_data['email'])
 
-            set_new_email(user, new_email)
+            if new_email != user.email:
+                user.email = new_email
+                user.email_isvalid = False
 
             if settings.EDITABLE_SCREEN_NAME:
                 user.username = sanitize_html(form.cleaned_data['username'])
@@ -108,6 +103,7 @@ def edit_user(request, id):
             user.save()
             EditProfileAction(user=user, ip=request.META['REMOTE_ADDR']).save()
 
+            request.user.message_set.create(message=_("Profile updated."))
             return HttpResponseRedirect(user.get_profile_url())
     else:
         form = EditUserForm(user)

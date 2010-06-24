@@ -69,7 +69,7 @@ class AbstractBadge(object):
             trigger = isinstance(action, Action) and action or None
 
             if not awarded:
-                AwardAction(user=user, node=node, ip=action.ip).save(data=dict(badge=cls.ondb, trigger=trigger))
+                AwardAction(user=user, node=node).save(data=dict(badge=cls.ondb, trigger=trigger))
         except MultipleObjectsReturned:
             if node:
                 logging.error('Found multiple %s badges awarded for user %s (%s)' % (self.name, user.username, user.id))

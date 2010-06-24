@@ -13,7 +13,7 @@ class UserJoinsAction(ActionProxy):
 
     def process_action(self):
         hash = ValidationHash.objects.create_new(self.user, 'email', [self.user.email])
-        send_template_email([self.user], "auth/email_validation.html", {'validation_code': hash})
+        send_template_email([self.user], "auth/welcome_email.html", {'validation_code': hash})
 
     def describe(self, viewer=None):
         return _("%(user)s %(have_has)s joined the %(app_name)s Q&A community") % {
