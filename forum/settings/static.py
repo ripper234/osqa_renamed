@@ -32,6 +32,17 @@ CUSTOM_HEADER = Setting('CUSTOM_HEADER', '', HEAD_AND_FOOT_SET, dict(
         widget=Textarea(attrs={'rows': '25'}),
         required=False))
 
+USE_ANNOUNCEMENT_BAR = Setting('USE_ANNOUNCEMENT_BAR', False, HEAD_AND_FOOT_SET, dict(
+        label = _("Show announcement bar"),
+        help_text = _("Some piece of content that goes under the search bar and can be used for announcements, etc."),
+        required=False))
+
+ANNOUNCEMENT_BAR = Setting('ANNOUNCEMENT_BAR', '', HEAD_AND_FOOT_SET, dict(
+        label = _("Announcement bar"),
+        help_text = _("The announcement bar content."),
+        widget=Textarea(attrs={'rows': '25'}),
+        required=False))
+
 USE_CUSTOM_FOOTER = Setting('USE_CUSTOM_FOOTER', False, HEAD_AND_FOOT_SET, dict(
         label = _("Use custom footer"),
         help_text = _("Do you want to use a custom footer."),
