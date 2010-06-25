@@ -139,7 +139,7 @@ blockquote {
     padding: 10px 0 1px 10px;
 }
 
-#wrapper {
+#wrapper, #announcement {
     margin: auto;
     padding: 0;
     width: 990px;
