@@ -22,7 +22,7 @@
                         class="ajax-command comment-delete" rel="nofollow"> </a>
                 {% endif %}
                 <span class="comment-age">({% diff_date comment.added_at %})</span>
-                <a class="comment-user userinfo" href="{{comment.user.get_profile_url}}">{{comment.user}}</a>
+                <a class="comment-user userinfo" href="{{comment.user.get_profile_url}}">{{comment.user.decorated_name}}</a>
                 {% if show_gravatar %}{% gravatar comment.user 18 %}{% endif %}
             </div>
         </div>
