@@ -4,7 +4,7 @@
     {% ifequal format "full" %}
 
     {% else %}
-        <a href="{{ user.get_absolute_url }}">{{ user.username }}</a>
+        <a href="{{ user.get_absolute_url }}">{{ user.decorated_name }}</a>
         <span class="score" title="{{ user.reputation }} {% trans "reputation" %}">{{ user.reputation }}</span>
         {% ifequal format "badges" %}
             {% if user.gold %}
@@ -28,6 +28,6 @@
         {% endifequal %}
     {% endifequal %}
 {% else %}
-    <a class="suspended-user" href="{{ user.get_absolute_url }}">{{ user.username }}</a>{% trans "(suspended)" %}
+    <a class="suspended-user" href="{{ user.get_absolute_url }}">{{ user.decorated_name }}</a>{% trans "(suspended)" %}
 {% endif %}
 {% endspaceless %}

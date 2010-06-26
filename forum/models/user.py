@@ -130,6 +130,17 @@ class User(BaseModel, DjangoUser):
         return self.id == 1
 
     @property
+    def decorated_name(self):
+        if settings.SHOW_STATUS_DIAMONDS:
+            if self.is_superuser:
+                return u"%s \u2666\u2666" % self.username
+
+            if self.is_staff:
+                return u"%s \u2666" % self.username
+
+        return self.username
+
+    @property
     def gravatar(self):
         return md5(self.email).hexdigest()
 

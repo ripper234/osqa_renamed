@@ -21,6 +21,11 @@ label = _("Disabled usernames"),
 help_text = _("A comma separated list of disabled usernames (usernames not allowed during a new user registration)."),
 widget=CommaStringListWidget))
 
+SHOW_STATUS_DIAMONDS = Setting('SHOW_STATUS_DIAMONDS', True, USERS_SET, dict(
+label=_("Show status diamonds"),
+help_text = _("Show status \"diamonds\" next to moderators or superusers usernames.")
+))
+
 EMAIL_UNIQUE = Setting('EMAIL_UNIQUE', True, USERS_SET, dict(
 label = _("Force unique email"),
 help_text = _("Should each user have an unique email.")))
@@ -42,3 +47,4 @@ WARN_PENDING_POSTS_MINUTES = Setting('WARN_PENDING_POSTS_MINUTES', 15, USERS_SET
 label=_("Warn about pending posts afer X minutes"),
 help_text=_("How much time in minutes a user that just logged in or validated his email should be warned about a pending post instead of publishing it automatically.")
 ))
+
