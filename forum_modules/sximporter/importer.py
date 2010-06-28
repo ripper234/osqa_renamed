@@ -854,6 +854,13 @@ def reset_sequences():
         db.execute_many(PG_SEQUENCE_RESETS)
         db.commit_transaction()
 
+def reindex_fts():
+    from south.db import db
+    if db.backend_name == "postgres":
+        db.start_transaction()
+        db.execute_many("UPDATE forum_node_revision set id = id WHERE TRUE;")
+        db.commit_transaction()
+
 
 def sximport(dump, options):
     try:
@@ -890,6 +897,7 @@ def sximport(dump, options):
 
     if triggers_disabled:
         enable_triggers()
+        reindex_fts()
 
 
 PG_DISABLE_TRIGGERS = """
