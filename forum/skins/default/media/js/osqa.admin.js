@@ -48,7 +48,7 @@ $(function() {
         var app_url = $anchor.attr('href');
 
         function rewrite_anchor() {
-            var val = app_url + $input.val();
+            var val = app_url + '/' +  $input.val();
 
             $anchor.attr('href', val);
             $anchor.html(val);
