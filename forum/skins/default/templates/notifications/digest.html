@@ -14,9 +14,11 @@
     {% subject %}{% blocktrans %}{{ prefix }} Daily digest{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        {% blocktrans %}
-        This is a brief of what's going on the {{ app_name }} community since our last update.
-        {% endblocktrans %}
+        <p style="{{ p_style }}">
+            {% blocktrans %}
+            This is a brief of what's going on the {{ app_name }} community since our last update.
+            {% endblocktrans %}
+        </p>                           
 
         {% if new_member_count %}
         <p style="{{ p_style }}">
