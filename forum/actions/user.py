@@ -5,7 +5,7 @@ from forum.models.action import ActionProxy
 from forum.models import Award, Badge, ValidationHash
 from forum import settings
 from forum.settings import APP_SHORT_NAME
-from forum.utils.mail import send_email, send_template_email
+from forum.utils.mail import send_template_email
 
 class UserJoinsAction(ActionProxy):
     def repute_users(self):

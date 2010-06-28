@@ -20,7 +20,7 @@ import logging
 
 from forum.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
         TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
-from forum.utils.mail import send_email, send_template_email
+from forum.utils.mail import send_template_email
 
 from forum.authentication.base import InvalidAuthentication
 from forum.authentication import AUTH_PROVIDERS

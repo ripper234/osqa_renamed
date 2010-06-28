@@ -2,7 +2,7 @@ import os
 import re
 import datetime
 from forum.models import User, Question, Comment, QuestionSubscription, SubscriptionSettings, Answer
-from forum.utils.mail import send_email, send_template_email
+from forum.utils.mail import send_template_email
 from django.utils.translation import ugettext as _
 from forum.actions import AskAction, AnswerAction, CommentAction, AcceptAnswerAction, UserJoinsAction, QuestionViewAction
 from forum import settings
