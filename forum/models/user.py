@@ -175,6 +175,18 @@ class User(BaseModel, DjangoUser):
     def get_absolute_url(self):
         return self.get_profile_url()
 
+    @models.permalink
+    def get_asked_url(self):
+        return ('user_questions', (), {'mode': _('asked-by'), 'user': self.id, 'slug': slugify(self.username)})
+
+    @models.permalink
+    def get_answered_url(self):
+        return ('user_questions', (), {'mode': _('answered-by'), 'user': self.id, 'slug': slugify(self.username)})
+
+    @models.permalink
+    def get_subscribed_url(self):
+        return ('user_questions', (), {'mode': _('subscribed-by'), 'user': self.id, 'slug': slugify(self.username)})
+
     def get_profile_link(self):
         profile_link = u'<a href="%s">%s</a>' % (self.get_profile_url(), self.username)
         return mark_safe(profile_link)

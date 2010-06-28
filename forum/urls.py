@@ -6,15 +6,12 @@ from django.conf.urls.defaults import *
 from django.conf import settings as djsettings
 from django.contrib import admin
 from forum import views as app
-from forum.feed import RssLastestQuestionsFeed
 from forum.sitemap import QuestionsSitemap
 from django.utils.translation import ugettext as _
 import logging
 
 admin.autodiscover()
-feeds = {
-    'rss': RssLastestQuestionsFeed
-}
+
 sitemaps = {
     'questions': QuestionsSitemap
 }
@@ -63,6 +60,9 @@ urlpatterns += patterns('',
                             name='related_questions'),
 
                         url(r'^%s%s$' % (_('questions/'), _('unanswered/')), app.readers.unanswered, name='unanswered'),
+                        url(r'^%s(?P<mode>[\w-]+)/(?P<user>\d+)/(?P<slug>.+)/$' % _('questions/'), app.readers.user_questions, name="user_questions"),
+
+
                         url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('edit/')), app.writers.edit_question,
                             name='edit_question'),
                         url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('close/')), app.commands.close,
@@ -135,8 +135,6 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)$' % _('badges/'), app.meta.badge, name='badge'),
                         # (r'^admin/doc/' % _('admin/doc'), include('django.contrib.admindocs.urls')),
                         url(r'^%s(.*)' % _('nimda/'), admin.site.root, name='osqa_admin'),
-                        url(r'^feeds/(?P<url>.*)/$', 'django.contrib.syndication.views.feed', {'feed_dict': feeds},
-                            name='feeds'),
                         url(r'^%s$' % _('upload/'), app.writers.upload, name='upload'),
                         url(r'^%s$' % _('search/'), app.readers.search, name='search'),
                         url(r'^%s$' % _('contact/'), app.meta.feedback, name='feedback'),
@@ -194,7 +192,7 @@ urlpatterns += patterns('',
                         url(r'^%s%s(?P<set_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.settings_set,
                             name="admin_set"),
 
-                        url(r'^feeds/rss/$', RssLastestQuestionsFeed, name="latest_questions_feed"),
+                        url(r'^feeds/rss/$', app.readers.feed, name="latest_questions_feed"),
 
                         url(r'^(?P<path>.+)$', app.meta.page, name="static_page")
                         )

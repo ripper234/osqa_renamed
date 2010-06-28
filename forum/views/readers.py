@@ -20,12 +20,14 @@ from django.utils.http import urlquote  as django_urlquote
 from django.template.defaultfilters import slugify
 from django.utils.safestring import mark_safe
 
-from forum.utils.html import sanitize_html
+from forum.utils.html import sanitize_html, hyperlink
 from forum.utils.diff import textDiff as htmldiff
 from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
 from forum.actions import QuestionViewAction
+from forum.http_responses import HttpResponseUnauthorized
+from forum.feed import RssQuestionFeed
 import decorators
 
 # used in index page
@@ -40,12 +42,21 @@ QUESTIONS_PAGE_SIZE = 30
 # used in answers
 ANSWERS_PAGE_SIZE = 10
 
+def feed(request):
+    return RssQuestionFeed(
+                Question.objects.filter_state(deleted=False).order_by('-last_activity_at'),
+                settings.APP_TITLE + _(' - ')+ _('latest questions'),
+                settings.APP_DESCRIPTION,
+                request)(request)
+
+
 @decorators.render('index.html')
 def index(request):
     return question_list(request,
                          Question.objects.all(),
                          sort=request.utils.set_sort_method('active'),
-                         base_path=reverse('questions'))
+                         base_path=reverse('questions'),
+                         feed_url=reverse('latest_questions_feed'))
 
 @decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
 def unanswered(request):
@@ -67,8 +78,37 @@ def tag(request, tag):
                          mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          request.utils.set_sort_method('active'),
                          None,
-                         mark_safe(_('Questions Tagged With <span class="tag">%(tag)s</span>') % {'tag': tag}),
+                         mark_safe(_('Questions Tagged With %(tag)s') % {'tag': tag}),
                          False)
+
+@decorators.render('questions.html', 'questions', tabbed=False)
+def user_questions(request, mode, user, slug):
+    user = get_object_or_404(User, id=user)
+
+    if mode == _('asked-by'):
+        questions = Question.objects.filter(author=user)
+        description = _("Questions asked by %s")
+    elif mode == _('answered-by'):
+        questions = Question.objects.filter(children__author=user, children__node_type='answer').distinct()
+        description = _("Questions answered by %s")
+    elif mode == _('subscribed-by'):
+        if not (request.user.is_superuser or request.user == user):
+            return HttpResponseUnauthorized(request)
+        questions = user.subscriptions
+
+        if request.user == user:
+            description = _("Questions you subscribed %s")
+        else:
+            description = _("Questions subscribed by %s")
+    else:
+        raise Http404
+
+
+    return question_list(request, questions,
+                         mark_safe(description % hyperlink(user.get_profile_url(), user.username)),
+                         request.utils.set_sort_method('active'),
+                         page_title=description % user.username)
+
 
 @decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial,
@@ -76,7 +116,8 @@ def question_list(request, initial,
                   sort=None,
                   base_path=None,
                   page_title=_("All Questions"),
-                  allowIgnoreTags=True):
+                  allowIgnoreTags=True,
+                  feed_url=None):
 
     questions = initial.filter_state(deleted=False)
 
@@ -97,6 +138,9 @@ def question_list(request, initial,
     if page_title is None:
         page_title = _("Questions")
 
+    if request.GET.get('type', None) == 'rss':
+        return RssQuestionFeed(questions, page_title, list_description, request)(request)
+
     keywords =  ""
     if request.GET.get("q"):
         keywords = request.GET.get("q").strip()
@@ -104,17 +148,20 @@ def question_list(request, initial,
     answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()
     answer_description = _("answers")
 
+    if not feed_url:
+        feed_url = request.path + "?type=rss"
+
     return {
     "questions" : questions,
     "questions_count" : questions.count(),
     "answer_count" : answer_count,
     "keywords" : keywords,
-    #"tags_autocomplete" : _get_tags_cache_json(),
     "list_description": list_description,
     "answer_description": answer_description,
     "base_path" : base_path,
     "page_title" : page_title,
     "tab" : "questions",
+    'feed_url': feed_url,
     }
 
 

@@ -6,11 +6,21 @@
 {% load humanize %}
 {% load question_list_tags %}
 		{% block usercontent %}
+
+		{% declare %}
+		    question_count = questions.count()
+		    show_more_questions_link = question_count > 15
+		    questions = questions[:15]
+
+		    answer_count = answers.count()
+		    show_more_answers_link = answer_count > 30
+		    answers = answers[:30]
+		{% enddeclare %}
 	
         <a name="questions"></a>
         {% spaceless %}
             <h2>
-                {% blocktrans count questions|length as counter %}
+                {% blocktrans count question_count as counter %}
                 <span class="count">1</span> Question
                 {% plural %}
                 <span class="count">{{counter}}</span> Questions
@@ -21,12 +31,17 @@
 		    {% for question in questions %}
 		        {% question_list_item question favorite_count=yes signature_type=badges %}
 		    {% endfor %}
+            {% if show_more_questions_link %}
+                <div class="short-summary"  style="text-align: right">
+                    <a href="{{ view_user.get_asked_url }}">{% blocktrans with view_user.username as username %}View all questions by {{ username }}{% endblocktrans %}</a>
+                </div>
+            {% endif %}
 		</div>
 		<br clear="all"/>
         <a name="answers"></a>
         {% spaceless %}
             <h2>
-                {% blocktrans count answers|length as counter %}
+                {% blocktrans count answer_count as counter %}
                 <span class="count">1</span> Answer
                 {% plural %}
                 <span class="count">{{counter}}</span> Answers
@@ -50,8 +65,13 @@
                 </div>
             </div>
             {% endfor %}
+            {% if show_more_answers_link %}
+                <div class="short-summary"  style="text-align: right">
+                    <a href="{{ view_user.get_answered_url }}">{% blocktrans with view_user.username as username %}View all questions answered by {{ username }}{% endblocktrans %}</a>
+                </div>
+            {% endif %}
         </div>
-        <br/>
+        <br clear="all"/>
         <a name="votes"></a>
         {% spaceless %}
             <h2>

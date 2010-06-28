@@ -13,6 +13,9 @@ def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
         def decorated(request, *args, **kwargs):
             context = func(request, *args, **kwargs)
 
+            if isinstance(context, HttpResponse):
+                return context
+
             if tab is not None:
                 context['tab'] = tab
 
@@ -31,6 +34,9 @@ def list(paginate, default_page_size):
     def decorator(func):
         def decorated(request, *args, **kwargs):
             context = func(request, *args, **kwargs)
+
+            if isinstance(context, HttpResponse):
+                return context
 
             pagesize = request.utils.page_size(default_page_size)
             page = int(request.GET.get('page', 1))
