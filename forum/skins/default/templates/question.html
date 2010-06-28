@@ -178,6 +178,7 @@
                     </div>
                     {% endspaceless %}
                 </div>
+                {% comment %}
                 {% if not request.user.is_authenticated %}
                     <div class="message">{% trans "You can answer anonymously and then login." %}</div>
                 {% else %}
@@ -193,6 +194,7 @@
                         {% endif %}
                     </p>
                 {% endif %}
+                {% endcomment %}
 
                 <div id="description" class="" >
                     <div id="wmd-button-bar" class="wmd-panel"></div>
