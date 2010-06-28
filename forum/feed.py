@@ -1,9 +1,7 @@
 try:
     from django.contrib.syndication.views import Feed, FeedDoesNotExist
-    old_version = False
 except:
     from django.contrib.syndication.feeds import Feed, FeedDoesNotExist
-    old_version = True
 
 from django.utils.translation import ugettext as _
 from models import Question
@@ -18,9 +16,6 @@ class RssQuestionFeed(Feed):
         self._description = description
         self._question_list = question_list
         self._url = request.path
-
-        if old_version:
-            super(Feed, self).__init__(request, '')
 
     def title(self):
         return self._title
