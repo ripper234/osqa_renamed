@@ -226,22 +226,24 @@ def request_temp_login(request):
         form = TemporaryLoginRequestForm(request.POST)
 
         if form.is_valid():
-            user = form.user_cache
+            users = form.user_cache
 
-            if user.is_suspended():
-                return forward_suspended_user(request, user, False)
+            for u in users:
+                if u.is_suspended():
+                    return forward_suspended_user(request, u, False)
 
-            try:
-                hash = get_object_or_404(ValidationHash, user=user, type='templogin')
-                if hash.expiration < datetime.datetime.now():
-                    hash.delete()
-                    return request_temp_login(request)
-            except:
-                hash = ValidationHash.objects.create_new(user, 'templogin', [user.id])
+            for u in users:
+                try:
+                    hash = get_object_or_404(ValidationHash, user=u, type='templogin')
+                    if hash.expiration < datetime.datetime.now():
+                        hash.delete()
+                        return request_temp_login(request)
+                except:
+                    hash = ValidationHash.objects.create_new(u, 'templogin', [u.id])
 
-            send_template_email([user], "auth/temp_login_email.html", {'temp_login_code': hash})
+                send_template_email([u], "auth/temp_login_email.html", {'temp_login_code': hash})
 
-            request.user.message_set.create(message=_("An email has been sent with your temporary login key"))
+                request.user.message_set.create(message=_("An email has been sent with your temporary login key"))
 
             return HttpResponseRedirect(reverse('index'))
     else:
@@ -367,7 +369,9 @@ def login_and_forward(request, user, forward=None, message=None):
 
     request.user.message_set.create(message=message)
 
-    forward = request.session.get('on_signin_url', reverse('index'))
+    if not forward:
+        forward = request.session.get('on_signin_url', reverse('index'))
+        
     pending_data = request.session.get('pending_submission_data', None)
 
     if pending_data and (user.email_isvalid or pending_data['type'] not in settings.REQUIRE_EMAIL_VALIDATION_TO):

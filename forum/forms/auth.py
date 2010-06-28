@@ -26,12 +26,12 @@ class TemporaryLoginRequestForm(forms.Form):
     )
 
     def clean_email(self):
-        try:
-            user = User.objects.get(email=self.cleaned_data['email'])
-        except:
+        users = list(User.objects.filter(email=self.cleaned_data['email']))
+
+        if not len(users):
             raise forms.ValidationError(_("Sorry, but this email is not on our database."))
 
-        self.user_cache = user
+        self.user_cache = users
         return self.cleaned_data['email']
 
 
