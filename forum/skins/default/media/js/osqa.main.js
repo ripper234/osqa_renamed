@@ -163,6 +163,8 @@ function show_dialog (extern) {
 
     $dialog = $(html);
     $('body').append($dialog);
+    var message = $('.dialog-content')[0];
+    message.style.visibility = "hidden";
 
     if (options.dim === false) {
         $dialog.css({
@@ -189,8 +191,10 @@ function show_dialog (extern) {
         left: "-=" + (options.dim.w / 2),
         width: options.dim.w,
         height: options.dim.h
-    }, 200);
-    
+    }, 200, function() {
+        message.style.visibility = "visible";
+    });
+
     $dialog.find('.dialog-no').click(function() {
         default_close_function($dialog);
     });
