@@ -105,7 +105,6 @@ def ask(request):
 
     return render_to_response('ask.html', {
         'form' : form,
-        'email_validation_faq_url':reverse('faq') + '#validate',
         }, context_instance=RequestContext(request))
 
 @login_required
