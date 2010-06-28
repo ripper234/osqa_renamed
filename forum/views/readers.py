@@ -149,7 +149,11 @@ def question_list(request, initial,
     answer_description = _("answers")
 
     if not feed_url:
-        feed_url = request.path + "?type=rss"
+        req_params = "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in ('page', 'pagesize', 'sort')])
+        if req_params:
+            req_params = '&' + req_params
+
+        feed_url = mark_safe(request.path + "?type=rss" + req_params)
 
     return {
     "questions" : questions,

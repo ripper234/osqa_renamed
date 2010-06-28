@@ -1711,3 +1711,9 @@ div.dialog.prompt .dialog-content select, div.dialog.prompt .dialog-content text
 .suspended-user {
     text-decoration: line-through;
 }
+
+.feed-icon {
+    width: 14px;
+    height: 14px;
+    float: left;
+}
