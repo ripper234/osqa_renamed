@@ -26,7 +26,7 @@ class QuestionsSitemap(Sitemap):
     def get_urls(self, page=1):
         urls = []
         for item in self.paginator.page(page).object_list:
-            loc = "http://%s%s" % (settings.APP_URL, self.__get('location', item))
+            loc = "%s%s" % (settings.APP_URL, self.__get('location', item))
             url_info = {
                 'location':   loc,
                 'lastmod':    self.__get('lastmod', item, None),
