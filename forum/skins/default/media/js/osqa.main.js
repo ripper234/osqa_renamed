@@ -435,6 +435,7 @@ $(function() {
             function show_comment_form() {
                 $container.slideDown('slow');
                 $add_comment_link.fadeOut('slow');
+                $textarea.focus();
                 window.setInterval(function() {
                     process_form_changes();
                 }, 200);
