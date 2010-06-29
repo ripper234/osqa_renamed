@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <!-- base_content.html -->
-{% load i18n extra_tags extra_filters markup %}
+{% load i18n extra_tags extra_filters markup ui_registry %}
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
@@ -55,6 +55,7 @@
         {% endif %}
         {% block forejs %}{% endblock %}
         <link rel="search" type="application/opensearchdescription+xml" href="{% url opensearch %}" title="{{ settings.APP_SHORT_NAME }} Search" />
+        {% loadregistry head_content %}{% endloadregistry %}
     </head>
     <body>
         <div class="notify" style="display:none">

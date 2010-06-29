@@ -10,6 +10,7 @@ class Registry(list):
         self.append(register)
 
 
+HEAD_CONTENT = 'HEAD_CONTENT'
 HEADER_LINKS = 'HEADER_LINKS'
 PAGE_TOP_TABS = 'PAGE_TOP_TABS'
 FOOTER_LINKS = 'FOOTER_LINKS'
@@ -17,6 +18,7 @@ PROFILE_TABS = 'PROFILE_TABS'
 
 
 __CONTAINER = {
+    HEAD_CONTENT: Registry(),
     HEADER_LINKS: Registry(),
     PAGE_TOP_TABS: Registry(),
     FOOTER_LINKS: Registry(),

@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from django import template
 from forum.utils import html
 
 class Visibility(object):
@@ -82,6 +83,14 @@ class Link(ObjectBase):
             html.hyperlink(self.url(context), self.text(context), **self.attrs(context)),
             self.post_code(context))
 
+class Include(ObjectBase):
+    def __init__(self, tpl, visibility=None, weight=500):
+        super(Include, self).__init__(visibility, weight)
+        self.template = template.loader.get_template(tpl)
+
+    def render(self, context):
+        return self.template.render(context)
+        
 
 class LoopContext(LoopBase):
     def __init__(self, loop_context, visibility=None, weight=500):
