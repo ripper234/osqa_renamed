@@ -229,12 +229,11 @@ function show_message(evt, msg, callback) {
     });
 }
 
-function load_prompt(evt, url) {
+function load_prompt(evt, el, url) {
     $.get(url, function(data) {
-        var $dialog = show_dialog({
-            html: data,
+        var doptions = {
+         html: data,
             extra_class: 'prompt',
-            event: evt,
             yes_callback: function() {
                 var postvars = {};
                 $dialog.find('input, textarea, select').each(function() {
@@ -248,7 +247,13 @@ function load_prompt(evt, url) {
                 }, 'json');
             },
             show_no: true
-        });
+        }
+
+        if (!el.is('.centered')) {
+            doptions.event = evt;
+        }
+
+        var $dialog = show_dialog(doptions);
     });
 }
 
@@ -297,12 +302,11 @@ $(function() {
         var el = $(this);
 
         if (el.is('.withprompt')) {
-            load_prompt(evt, el.attr('href'));
+            load_prompt(evt, el, el.attr('href'));
         } else if(el.is('.confirm')) {
-            $dialog = show_dialog({
+            var doptions = {
                 html: messages.confirm,
                 extra_class: 'confirm',
-                event: evt,
                 yes_callback: function() {
                     start_command();
                     $.getJSON(el.attr('href'), function(data) {
@@ -315,7 +319,12 @@ $(function() {
                 yes_text: messages.yes,
                 show_no: true,
                 no_text: messages.no
-            });
+            }
+
+            if (!el.is('.centered')) {
+                doptions.event = evt;
+            }
+            var $dialog = show_dialog(doptions);
         } else {
             start_command();
             $.getJSON(el.attr('href'), function(data) {

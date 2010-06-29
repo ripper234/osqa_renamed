@@ -16,6 +16,7 @@ from django.utils import simplejson
 from django.core.urlresolvers import reverse, NoReverseMatch
 from forum.forms import *
 from forum.utils.html import sanitize_html
+from forum.modules import decorate
 from datetime import datetime, date
 import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
@@ -133,7 +134,7 @@ def user_powers(request, id, action, status):
     return HttpResponseRedirect(user.get_profile_url())
 
 
-@decorators.command
+@decorate.withfn(decorators.command)
 def award_points(request, id):
     if (not request.POST) and request.POST.get('points', None):
         raise decorators.CommandException(_("Invalid request type"))
@@ -151,7 +152,7 @@ def award_points(request, id):
     return dict(reputation=user.reputation)
 
 
-@decorators.command
+@decorate.withfn(decorators.command)
 def suspend(request, id):
     user = get_object_or_404(User, id=id)
 

@@ -100,6 +100,8 @@ def decorate(origin, needs_origin=True, mode=DecoratableObject.MODE_OVERRIDE):
     def decorator(fn):
         return fn
 
+    return decorator
+
 
 def _decorate_params(origin):
     return decorate(origin, mode=DecoratableObject.MODE_PARAMS)
@@ -110,3 +112,18 @@ def _decorate_result(origin):
     return decorate(origin, mode=DecoratableObject.MODE_RESULT)
 
 decorate.result = _decorate_result
+
+def _decorate_with(fn):
+    def decorator(origin):
+        if not isinstance(origin, DecoratableObject):
+            mod = inspect.getmodule(origin)
+
+            name = origin.__name__
+            origin = DecoratableObject(origin)
+
+        origin._decorate(fn, True, False)
+        return origin
+    return decorator
+
+
+decorate.withfn = _decorate_with

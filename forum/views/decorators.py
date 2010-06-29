@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response
 from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.utils.translation import ungettext, ugettext as _
-from forum.modules import ui
+from forum.modules import ui, decorate
 import logging
 
 def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
@@ -87,35 +87,33 @@ class RefreshPageCommand(HttpResponse):
                 content=simplejson.dumps({'commands': {'refresh_page': []}, 'success': True}),
                 mimetype="application/json")
 
-def command(func):
-    def decorated(request, *args, **kwargs):
-        try:
-            response = func(request, *args, **kwargs)
+def command(func, request, *args, **kwargs):
+    try:
+        response = func(request, *args, **kwargs)
 
-            if isinstance(response, HttpResponse):
-                return response
+        if isinstance(response, HttpResponse):
+            return response
 
-            response['success'] = True
-        except Exception, e:
-            import traceback
-            #traceback.print_exc()
+        response['success'] = True
+    except Exception, e:
+        import traceback
+        #traceback.print_exc()
 
-            if isinstance(e, CommandException):
-                response = {
-                'success': False,
-                'error_message': e.message
-                }
-            else:
-                logging.error("%s: %s" % (func.__name__, str(e)))
-                logging.error(traceback.format_exc())
-                response = {
-                'success': False,
-                'error_message': _("We're sorry, but an unknown error ocurred.<br />Please try again in a while.")
-                }
-
-        if request.is_ajax():
-            return HttpResponse(simplejson.dumps(response), mimetype="application/json")
+        if isinstance(e, CommandException):
+            response = {
+            'success': False,
+            'error_message': e.message
+            }
         else:
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+            logging.error("%s: %s" % (func.__name__, str(e)))
+            logging.error(traceback.format_exc())
+            response = {
+            'success': False,
+            'error_message': _("We're sorry, but an unknown error ocurred.<br />Please try again in a while.")
+            }
 
-    return decorated
+    if request.is_ajax():
+        return HttpResponse(simplejson.dumps(response), mimetype="application/json")
+    else:
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+

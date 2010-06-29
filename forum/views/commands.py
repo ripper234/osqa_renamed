@@ -13,6 +13,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
 from decorators import command, CommandException, RefreshPageCommand
+from forum.modules import decorate
 from forum import settings
 import logging
 
@@ -57,7 +58,7 @@ class CannotDoubleActionException(CommandException):
                 )
 
 
-@command
+@decorate.withfn(command)
 def vote_post(request, id, vote_type):
     post = get_object_or_404(Node, id=id).leaf
     user = request.user
@@ -113,7 +114,7 @@ def vote_post(request, id, vote_type):
 
     return response
 
-@command
+@decorate.withfn(command)
 def flag_post(request, id):
     if not request.POST:
         return render_to_response('node/report.html', {'types': settings.FLAG_TYPES})
@@ -149,7 +150,7 @@ def flag_post(request, id):
 
     return {'message': _("Thank you for your report. A moderator will review your submission shortly.")}
 
-@command
+@decorate.withfn(command)
 def like_comment(request, id):
     comment = get_object_or_404(Comment, id=id)
     user = request.user
@@ -179,7 +180,7 @@ def like_comment(request, id):
     }
     }
 
-@command
+@decorate.withfn(command)
 def delete_comment(request, id):
     comment = get_object_or_404(Comment, id=id)
     user = request.user
@@ -199,7 +200,7 @@ def delete_comment(request, id):
     }
     }
 
-@command
+@decorate.withfn(command)
 def mark_favorite(request, id):
     question = get_object_or_404(Question, id=id)
 
@@ -221,7 +222,7 @@ def mark_favorite(request, id):
     }
     }
 
-@command
+@decorate.withfn(command)
 def comment(request, id):
     post = get_object_or_404(Node, id=id)
     user = request.user
@@ -262,7 +263,7 @@ def comment(request, id):
         return {
         'commands': {
         'insert_comment': [
-                id, comment.id, comment.comment, user.username, user.get_profile_url(),
+                id, comment.id, comment.comment, user.decorated_name, user.get_profile_url(),
                 reverse('delete_comment', kwargs={'id': comment.id}),
                 reverse('node_markdown', kwargs={'id': comment.id})
                 ]
@@ -275,7 +276,7 @@ def comment(request, id):
         }
         }
 
-@command
+@decorate.withfn(command)
 def node_markdown(request, id):
     user = request.user
 
@@ -286,7 +287,7 @@ def node_markdown(request, id):
     return HttpResponse(node.body, mimetype="text/plain")
 
 
-@command
+@decorate.withfn(command)
 def accept_answer(request, id):
     user = request.user
 
@@ -316,7 +317,7 @@ def accept_answer(request, id):
 
     return {'commands': commands}
 
-@command
+@decorate.withfn(command)
 def delete_post(request, id):
     post = get_object_or_404(Node, id=id)
     user = request.user
@@ -339,7 +340,7 @@ def delete_post(request, id):
 
     return ret
 
-@command
+@decorate.withfn(command)
 def close(request, id, close):
     if close and not request.POST:
         return render_to_response('node/report.html', {'types': settings.CLOSE_TYPES})
@@ -368,7 +369,7 @@ def close(request, id, close):
 
     return RefreshPageCommand()
 
-@command
+@decorate.withfn(command)
 def wikify(request, id):
     node = get_object_or_404(Node, id=id)
     user = request.user
@@ -392,7 +393,7 @@ def wikify(request, id):
 
     return RefreshPageCommand()
 
-@command
+@decorate.withfn(command)
 def convert_to_comment(request, id):
     user = request.user
     answer = get_object_or_404(Answer, id=id)
@@ -425,7 +426,7 @@ def convert_to_comment(request, id):
 
     return RefreshPageCommand()
 
-@command
+@decorate.withfn(command)
 def subscribe(request, id):
     question = get_object_or_404(Question, id=id)
 
