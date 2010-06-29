@@ -4,9 +4,9 @@ from forum import settings
 
 register = template.Library()
 
-@register.inclusion_tag('sidebar/recent_tags.html')
-def recent_tags():
-    return {'tags': Tag.active.order_by('-id')[:settings.RECENT_TAGS_SIZE]}
+@register.inclusion_tag('sidebar/markdown_help.html')
+def markdown_help():
+    return {}
 
 @register.inclusion_tag('sidebar/recent_awards.html')
 def recent_awards():
@@ -29,3 +29,9 @@ def sidebar_lower():
         'wrap': not settings.SIDEBAR_LOWER_DONT_WRAP,
         'blockid': 'sidebar-lower'
     }
+
+@register.inclusion_tag('sidebar/recent_tags.html')
+def recent_tags():
+    return {'tags': Tag.active.order_by('-id')[:settings.RECENT_TAGS_SIZE]}
+
+    
