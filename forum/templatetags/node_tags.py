@@ -96,6 +96,12 @@ def post_controls(post, user):
                 controls.append(post_control(_('delete'), reverse('delete_post', kwargs={'id': post.id}),
                         command=True, confirm=True))
 
+        if user.can_delete_post(post):
+            menu.append(post_control(_('see revisions'),
+                        reverse('revisions',
+                        kwargs={'id': post.id}),
+                        command=False, confirm=False))
+
         if settings.WIKI_ON:
             if (not post.nis.wiki) and user.can_wikify(post):
                 menu.append(post_control(_('mark as community wiki'), reverse('wikify', kwargs={'id': post.id}),

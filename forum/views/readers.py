@@ -340,11 +340,10 @@ REVISION_TEMPLATE = template.loader.get_template('node/revision.html')
 def revisions(request, id):
     post = get_object_or_404(Node, id=id).leaf
     revisions = list(post.revisions.order_by('revised_at'))
-
     rev_ctx = []
 
     for i, revision in enumerate(revisions):
-        rev_ctx.append(dict(inst=revision, html=REVISION_TEMPLATE.render(template.Context({
+        rev_ctx.append(dict(inst=revision, html=template.loader.get_template('node/revision.html').render(template.Context({
         'title': revision.title,
         'html': revision.html,
         'tags': revision.tagname_list(),
@@ -359,6 +358,8 @@ def revisions(request, id):
             rev_ctx[i]['summary'] = _('Revision n. %(rev_number)d') % {'rev_number': revision.revision}
         else:
             rev_ctx[i]['summary'] = revision.summary
+
+    rev_ctx.reverse()
 
     return render_to_response('revisions.html', {
     'post': post,

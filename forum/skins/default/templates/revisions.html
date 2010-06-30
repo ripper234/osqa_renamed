@@ -6,28 +6,31 @@
 {% load humanize %}
 {% block title %}{% spaceless %}{% trans "Revision history" %}{% endspaceless %}{% endblock %}
 {% block forejs %}
-        <script type="text/javascript">
-        //todo - take this out into .js file 
-        $().ready(function(){
-            $("#nav_questions").attr('className',"on");
-            $('div.revision div[id^=rev-header-]').bind('click', function(){
-                var revId = this.id.substr(11);
-                toggleRev(revId); 
-            
-            });
-            lanai.highlightSyntax();
-        });
-        
-        function toggleRev(id) {
-            var arrow = $("#rev-arrow-" + id);
-            var visible = arrow.attr("src").indexOf("hide") > -1;
+    <script type="text/javascript">
 
-            var path = $.i18n._('/') + "media/images/expander-arrow-" + 
-                        (visible ? "show" : "hide") + ".gif";
-            arrow.attr("src", path);
-            $("#rev-body-" + id).slideToggle("fast");
+        $(document).ready(function() {
+            rev_bodies = $('div.rev-body');
+            if(rev_bodies.length > 0)toggleRev(rev_bodies.length);
+            if(rev_bodies.length > 1)toggleRev(rev_bodies.length-1);
+
+            for(var index = 0; index < rev_bodies.length; index++) {
+                rev_bodies.get(index);
+            }
+        });
+
+        function toggleRev(id) {
+            var rev_body = $('div#rev-body-' + id).get(0);
+            var rev_arrow = $('img#rev-arrow-' + id).get(0);
+            if (rev_body.style.display == "none") {
+                rev_body.style.display = "";
+                rev_arrow.src="{% media  "/media/images/expander-arrow-hide.gif" %}"
+            } else {
+                rev_body.style.display = "none";
+                rev_arrow.src="{% media  "/media/images/expander-arrow-show.gif" %}"
+            }
         }
-        </script>
+        
+    </script>
 {% endblock %}
         
 {% block content %}
@@ -42,13 +45,15 @@
           <div class="header-controls">
             <table width="100%">
                 <tr>
-                    <td width="20" style="vertical-align:middle"><img id="rev-arrow-{{ revision.revision }}" 
-                                                                src="{% media  "/media/images/expander-arrow-show.gif" %}"
-                                                                alt="{% trans "click to hide/show revision" %}"/>
+                    <td width="20" style="vertical-align:middle"><img id="rev-arrow-{{ revision.inst.revision }}"
+                                                                      class="rev-arrow"
+                                                                      onclick="toggleRev({{ revision.inst.revision }})"
+                                                                      src="{% media  "/media/images/expander-arrow-show.gif" %}"
+                                                                      alt="{% trans "click to hide/show revision" %}"/>
                     </td>
                     <td width="30px" style="vertical-align:middle"><span class="revision-number" title="{% trans "revision" %} {{ revision.inst.revision }}">{{ revision.inst.revision }}</span></td>
                     <td width="200px" style="vertical-align:middle">
-                        <div class="summary"><span>{{ revision.summary }}</span></div>
+                        <div class="summary"><span>{{ revision.inst.summary }}</span></div>
                     </td>
                     <td align="right">
                         <div class="revision-mark" >
@@ -60,7 +65,7 @@
             </table>
           </div>
         </div>
-        <div id="rev-body-{{ revision.inst.revision }}" class="diff body">
+        <div id="rev-body-{{ revision.inst.revision }}" class="diff body rev-body" style="display:none">
             {{ revision.diff|safe }}
         </div>
       </div>
