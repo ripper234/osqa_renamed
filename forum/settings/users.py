@@ -23,7 +23,8 @@ widget=CommaStringListWidget))
 
 SHOW_STATUS_DIAMONDS = Setting('SHOW_STATUS_DIAMONDS', True, USERS_SET, dict(
 label=_("Show status diamonds"),
-help_text = _("Show status \"diamonds\" next to moderators or superusers usernames.")
+help_text = _("Show status \"diamonds\" next to moderators or superusers usernames."),
+required=False,
 ))
 
 EMAIL_UNIQUE = Setting('EMAIL_UNIQUE', True, USERS_SET, dict(
