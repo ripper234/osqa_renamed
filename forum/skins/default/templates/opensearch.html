@@ -4,5 +4,5 @@
    <ShortName>{{ settings.APP_SHORT_NAME }} {% trans "Search" %}</ShortName>
    <Description>{% trans "Search" %} {{ settings.APP_SHORT_NAME }} {% trans "using your browser." %}</Description>
    <Tags>{{ settings.APP_KEYWORDS }}</Tags>
-   <Url type="text/html" template="{{ settings.APP_URL }}/search/?q={searchTerms}&amp;t=question"/>
+   <Url type="text/html" template="{{ settings.APP_URL }}/{% trans "search" %}/?q={searchTerms}&amp;t=question"/>
 </OpenSearchDescription>
