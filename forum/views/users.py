@@ -186,7 +186,7 @@ def suspend(request, id):
 
 def user_view(template, tab_name, tab_title, tab_description, private=False, tabbed=True, weight=500):
     def decorator(fn):
-        def decorated(request, id, slug=None):
+        def decorated(fn, request, id, slug=None):
             user = get_object_or_404(User, id=id)
             if private and not (user == request.user or request.user.is_superuser):
                 return HttpResponseUnauthorized(request)
@@ -213,8 +213,7 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
                 tab_name, tab_title, tab_description,url_getter, private, weight
             ))
 
-        return decorated
-
+        return decorate.withfn(decorated)(fn)
     return decorator
 
 
@@ -247,7 +246,7 @@ def user_profile(request, user):
     "awards": awards,
     "total_awards" : len(awards),
     }
-
+    
 @user_view('users/recent.html', 'recent', _('recent activity'), _('recent user activity'))
 def user_recent(request, user):
     activities = user.actions.exclude(

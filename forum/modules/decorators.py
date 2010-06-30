@@ -116,13 +116,12 @@ decorate.result = _decorate_result
 def _decorate_with(fn):
     def decorator(origin):
         if not isinstance(origin, DecoratableObject):
-            mod = inspect.getmodule(origin)
+            decoratable = DecoratableObject(origin)
+        else:
+            decoratable = origin
 
-            name = origin.__name__
-            origin = DecoratableObject(origin)
-
-        origin._decorate(fn, True, False)
-        return origin
+        decoratable._decorate(fn, True, False)
+        return decoratable
     return decorator
 
 
