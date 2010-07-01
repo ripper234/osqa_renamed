@@ -92,7 +92,7 @@ class Command(NoArgsCommand):
 
         EMAIL_DIGEST_CONTROL.set_value(digest_control)
 
-        users = User.objects.filter(subscription_settings__enable_notifications=True)
+        users = User.objects.filter(subscription_settings__enable_notifications=True, subscription_settings__send_digest=True)
         new_members = User.objects.filter(is_active=True, date_joined__gt=from_date).annotate(n_actions=models.Count('actions')).order_by('-n_actions')
 
         new_member_count = new_members.count()

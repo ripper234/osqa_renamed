@@ -287,26 +287,28 @@ def user_favorites(request, user):
 
 @user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
-    if request.method == 'POST':
-        form = SubscriptionSettingsForm(request.POST)
+    if request.method == 'POST':        
+        form = SubscriptionSettingsForm(data=request.POST, instance=user.subscription_settings)
 
-        if 'notswitch' in request.POST:
-            user.subscription_settings.enable_notifications = not user.subscription_settings.enable_notifications
-            user.subscription_settings.save()
+        if form.is_valid():
+            if form.cleaned_data['user'] != user.id:
+                return HttpResponseUnauthorized(request)
 
-            if user.subscription_settings.enable_notifications:
-                request.user.message_set.create(message=_('Notifications are now enabled'))
-            else:
-                request.user.message_set.create(message=_('Notifications are now disabled'))
+            if 'notswitch' in request.POST:
+                user.subscription_settings.enable_notifications = not user.subscription_settings.enable_notifications
+                user.subscription_settings.save()
 
-        form.is_valid()
-        for k, v in form.cleaned_data.items():
-            setattr(user.subscription_settings, k, v)
+                if user.subscription_settings.enable_notifications:
+                    request.user.message_set.create(message=_('Notifications are now enabled'))
+                else:
+                    request.user.message_set.create(message=_('Notifications are now disabled'))
 
-        user.subscription_settings.save()
-        request.user.message_set.create(message=_('New subscription settings are now saved'))
+            form.save()
+            request.user.message_set.create(message=_('New subscription settings are now saved'))
+        else:
+            print form.errors
     else:
-        form = SubscriptionSettingsForm(user.subscription_settings.__dict__)
+        form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
     notificatons_on = user.subscription_settings.enable_notifications
 

@@ -111,6 +111,11 @@
                     {{ form.notify_reply_to_comments }}{% trans "Notify me when someone replies to one of my comments on any post using the <pre>@username</pre> notation" %}
                 </td>
             </tr>
+            <tr>
+                <td>
+                    {{ form.send_digest }}{% trans "Send me the daily digest with information about the site activity" %}
+                </td>
+            </tr>
         </table>
         <div class="submit-row">
             <input type="submit" class="submit" name="save" value="{% trans "Update" %}"/>
@@ -120,6 +125,7 @@
             <input type="submit" class="submit" name="notswitch" value="{% trans "Start notifications" %}"/>            
             {% endif %}
         </div>
+        {{ form.user }}
     </form>
     </div>
 {% endblock %}

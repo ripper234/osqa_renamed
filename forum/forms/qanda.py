@@ -266,30 +266,23 @@ class EditUserForm(forms.Form):
                         
                     raise forms.ValidationError(_('this email has already been registered, please use another one'))
         return self.cleaned_data['email']
+        
 
 NOTIFICATION_CHOICES = (
     ('i', _('Instantly')),
-    ('d', _('Daily')),
-    ('w', _('Weekly')),
+    #('d', _('Daily')),
+    #('w', _('Weekly')),
     ('n', _('No notifications')),
 )
 
-class SubscriptionSettingsForm(forms.Form):
+class SubscriptionSettingsForm(forms.ModelForm):
+    user = forms.IntegerField(widget=forms.HiddenInput)
     member_joins = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
     new_question = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
     new_question_watched_tags = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
     subscribed_questions = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
 
-    all_questions = forms.BooleanField(required=False, initial=False)
-    all_questions_watched_tags = forms.BooleanField(required=False, initial=False)
-    questions_asked = forms.BooleanField(required=False, initial=False)
-    questions_answered = forms.BooleanField(required=False, initial=False)
-    questions_commented = forms.BooleanField(required=False, initial=False)
-    questions_viewed = forms.BooleanField(required=False, initial=False)
+    class Meta:
+        model = SubscriptionSettings
 
-    notify_answers = forms.BooleanField(required=False, initial=False)
-    notify_reply_to_comments = forms.BooleanField(required=False, initial=False)
-    notify_comments_own_post = forms.BooleanField(required=False, initial=False)
-    notify_comments = forms.BooleanField(required=False, initial=False)
-    notify_accepted = forms.BooleanField(required=False, initial=False)
 
