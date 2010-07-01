@@ -41,6 +41,7 @@ class ActionManager(CachedManager):
 
 class Action(BaseModel):
     user = models.ForeignKey('User', related_name="actions")
+    real_user = models.ForeignKey('User', related_name="proxied_actions", null=True)
     ip   = models.CharField(max_length=16)
     node = models.ForeignKey('Node', null=True, related_name="actions")
     action_type = models.CharField(max_length=16)
@@ -235,6 +236,9 @@ class ActionProxy(Action):
         'node_name': node.friendly_name,
         'node_desc': node_desc,
         }
+
+    def affected_links(self, viewer):
+        return ", ".join([self.hyperlink(u.get_profile_url(), self.friendly_username(viewer, u)) for u in set([r.user for r in self.reputes.all()])])
 
     class Meta:
         proxy = True

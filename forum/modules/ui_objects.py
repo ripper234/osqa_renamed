@@ -89,6 +89,8 @@ class Include(ObjectBase):
         self.template = template.loader.get_template(tpl)
 
     def render(self, context):
+        if not isinstance(context, template.Context):
+            context = template.Context(context)
         return self.template.render(context)
         
 
@@ -117,17 +119,19 @@ class PageTab(LoopBase):
 
 
 class ProfileTab(LoopBase):
-    def __init__(self, name, title, description, url_getter, private=False, weight=500):
+    def __init__(self, name, title, description, url_getter, private=False, render_to=None, weight=500):
         super(ProfileTab, self).__init__(weight=weight)
         self.name = name
         self.title = title
         self.description = description
         self.url_getter = url_getter
         self.private = private
+        self.render_to = render_to
 
     def can_render(self, context):
-        return not self.private or (
-            context['view_user'] == context['request'].user or context['request'].user.is_superuser)
+        return (not self.render_to or (self.render_to(context['view_user']))) and (
+            not self.private or (
+            context['view_user'] == context['request'].user or context['request'].user.is_superuser))
 
     def update_context(self, context):        
         context.update(dict(

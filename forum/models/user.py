@@ -1,4 +1,5 @@
 from base import *
+from utils import PickledObjectField
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User as DjangoUser, AnonymousUser as DjangoAnonymousUser
@@ -123,6 +124,16 @@ class User(BaseModel, DjangoUser):
 
     def __unicode__(self):
         return self.username
+
+    @property
+    def prop(self):
+        prop = self.__dict__.get('_prop', None)
+
+        if prop is None:
+            prop = UserPropertyDict(self)
+            self._prop = prop
+
+        return prop
 
     @property
     def is_siteowner(self):
@@ -349,6 +360,64 @@ class User(BaseModel, DjangoUser):
     class Meta:
         app_label = 'forum'
 
+class UserProperty(models.Model):
+    user = models.ForeignKey(User, related_name='properties')
+    key = models.CharField(max_length=16)
+    value = PickledObjectField()
+
+    class Meta:
+        app_label = 'forum'
+        unique_together = ('user', 'key')
+
+class UserPropertyDict(object):
+    def __init__(self, user):
+        self.__dict__['_user'] = user
+
+    def __get_property(self, name):
+        if self.__dict__.get('__%s__' % name, None):
+            return self.__dict__['__%s__' % name]
+        try:
+            user = self.__dict__['_user']
+            prop = UserProperty.objects.get(user=user, key=name)
+            self.__dict__['__%s__' % name] = prop
+            self.__dict__[name] = prop.value
+            return prop
+        except:
+            return None
+
+
+    def __getattr__(self, name):
+        if self.__dict__.get(name, None):
+            return self.__dict__[name]
+
+        prop = self.__get_property(name)
+
+        if prop:
+            return prop.value
+        else:
+            return None
+
+    def __setattr__(self, name, value):
+        current = self.__get_property(name)
+
+        if value is not None:
+            if current:
+                current.value = value
+                self.__dict__[name] = value
+                current.save()
+            else:
+                user = self.__dict__['_user']
+                prop = UserProperty(user=user, value=value, key=name)
+                prop.save()
+                self.__dict__[name] = value
+                self.__dict__['__%s__' % name] = prop
+        else:
+            if current:
+                current.delete()
+                del self.__dict__[name]
+                del self.__dict__['__%s__' % name]
+
+
 class SubscriptionSettings(models.Model):
     user = models.OneToOneField(User, related_name='subscription_settings')
 
@@ -374,6 +443,8 @@ class SubscriptionSettings(models.Model):
     notify_comments_own_post = models.BooleanField(default=True)
     notify_comments = models.BooleanField(default=False)
     notify_accepted = models.BooleanField(default=False)
+
+    send_digest = models.BooleanField(default=True)
 
     class Meta:
         app_label = 'forum'

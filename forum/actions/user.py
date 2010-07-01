@@ -1,13 +1,14 @@
 from django.utils.translation import ugettext as _
 from django.db.models import F
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from forum.models.action import ActionProxy
-from forum.models import Award, Badge, ValidationHash
+from forum.models import Award, Badge, ValidationHash, User
 from forum import settings
 from forum.settings import APP_SHORT_NAME
 from forum.utils.mail import send_template_email
 
 class UserJoinsAction(ActionProxy):
+    verb = _("joined")
+
     def repute_users(self):
         self.repute(self.user, int(settings.INITIAL_REP))
 
@@ -23,6 +24,8 @@ class UserJoinsAction(ActionProxy):
         }
 
 class EditProfileAction(ActionProxy):
+    verb = _("edited profile")
+
     def describe(self, viewer=None):
         return _("%(user)s edited %(hes_or_your)s %(profile_link)s") % {
         'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
@@ -31,26 +34,46 @@ class EditProfileAction(ActionProxy):
         }
 
 class BonusRepAction(ActionProxy):
-    def process_data(self, value):
+    verb = _("gave bonus")
+
+    def process_data(self, value, affected):
         self._value = value
+        self._affected = affected
+
 
     def repute_users(self):
-        self.repute(self.user, self._value)
-        self.user.message_set.create(
-                message=_("Congratulations, you have been awarded an extra %s reputation points.") % self._value +
-                '<br />%s' % self.extra.get('message', _('Thank you')))
+        self.repute(self._affected, self._value)
+
+        if self._value > 0:
+            self._affected.message_set.create(
+                    message=_("Congratulations, you have been awarded an extra %s reputation points.") % self._value +
+                    '<br />%s' % self.extra.get('message', _('Thank you')))
+        else:
+            self._affected.message_set.create(
+                    message=_("You have been penalized in %s reputation points.") % self._value +
+                    '<br />%s' % self.extra.get('message', ''))
 
     def describe(self, viewer=None):
         value = self.extra.get('value', _('unknown'))
         message = self.extra.get('message', '')
 
-        return _("%(user)s %(was_were)s awarded %(value)s reputation points: %(message)s") % {
-        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-        'was_were': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
-        'value': value, 'message': message
-        }
+        try:
+            if int(value) > 0:
+                return _("%(user)s awarded an extra %(value)s reputation points to %(users)s: %(message)s") % {
+                'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+                'value': value, 'users':self.affected_links(viewer), 'message': message
+                }
+            else:
+                return _("%(user)s penalised %(users)s in %(value)s reputation points: %(message)s") % {
+                'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+                'value': value, 'users':self.affected_links(viewer), 'message': message
+                }
+        except Exception, e:
+            return ''
 
 class AwardAction(ActionProxy):
+    verb = _("was awarded")
+
     def process_data(self, badge, trigger):
         self.__dict__['_badge'] = badge
         self.__dict__['_trigger'] = trigger
@@ -95,7 +118,7 @@ class AwardAction(ActionProxy):
                 return Award.objects.get(user=user, badge=badge).action
             else:
                 return Award.objects.get(user=user, node=node, badge=badge).action
-        except ObjectDoesNotExist:
+        except:
             return None
 
     def describe(self, viewer=None):
@@ -106,18 +129,25 @@ class AwardAction(ActionProxy):
         }
 
 class SuspendAction(ActionProxy):
+    verb = _("suspended")
+
     def process_data(self, **kwargs):
+        self._suspended = kwargs.pop('suspended')
         self.extra = kwargs
 
+    def repute_users(self):
+        self.repute(self._suspended, 0)
+
     def process_action(self):
-        self.user.is_active = False
-        self.user.save()
+        self._suspended.is_active = False
+        self._suspended.save()
 
     def cancel_action(self):
-        self.user.is_active = True
-        self.user._pop_suspension_cache()
-        self.user.save()
-        self.user.message_set.create(message=_("Your suspension has been removed."))
+        for u in User.objects.filter(reputes__action=self).distinct():
+            u.is_active = True
+            u._pop_suspension_cache()
+            u.save()
+            u.message_set.create(message=_("Your suspension has been removed."))
 
     def describe(self, viewer=None):
         if self.extra.get('bantype', 'indefinitely') == 'forxdays' and self.extra.get('forxdays', None):
@@ -125,8 +155,7 @@ class SuspendAction(ActionProxy):
         else:
             suspension = _("indefinetely")
 
-        return _("%(user)s %(were_was)s suspended %(suspension)s: %(msg)s") % {
+        return _("%(user)s suspended %(users)s %(suspension)s: %(msg)s") % {
         'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
-        'were_was': self.viewer_or_user_verb(viewer, self.user, _('were'), _('was')),
-        'suspension': suspension, 'msg': self.extra.get('publicmsg', _('Bad behaviour'))
+        'users': self.affected_links(viewer), 'suspension': suspension, 'msg': self.extra.get('publicmsg', _('Bad behaviour'))
         }

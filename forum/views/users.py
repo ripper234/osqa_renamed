@@ -147,7 +147,7 @@ def award_points(request, id):
 
     extra = dict(message=request.POST.get('message', ''), awarding_user=request.user.id, value=points)
 
-    BonusRepAction(user=user, extra=extra).save(data=dict(value=points))
+    BonusRepAction(user=request.user, extra=extra).save(data=dict(value=points, affected=user))
 
     return dict(reputation=user.reputation)
 
@@ -156,22 +156,22 @@ def award_points(request, id):
 def suspend(request, id):
     user = get_object_or_404(User, id=id)
 
+    if not request.user.is_superuser:
+        raise decorators.CommandException(_("Only superusers can suspend other users"))
+
     if not request.POST:
         if user.is_suspended():
             suspension = user.suspension
-            suspension.cancel(ip=request.META['REMOTE_ADDR'])
+            suspension.cancel(user=request.user, ip=request.META['REMOTE_ADDR'])
             return decorators.RefreshPageCommand()
         else:
             return render_to_response('users/suspend_user.html')
-
-    if not request.user.is_superuser:
-        raise decorators.CommandException(_("Only superusers can ban other users"))
 
     data = {
     'bantype': request.POST.get('bantype', 'indefinetly').strip(),
     'publicmsg': request.POST.get('publicmsg', _('Bad behaviour')),
     'privatemsg': request.POST.get('privatemsg', None) or request.POST.get('publicmsg', ''),
-    'suspender': request.user.id
+    'suspended': user
     }
 
     if data['bantype'] == 'forxdays':
@@ -180,11 +180,12 @@ def suspend(request, id):
         except:
             raise decorators.CommandException(_('Invalid numeric argument for the number of days.'))
 
-    SuspendAction(user=user, ip=request.META['REMOTE_ADDR']).save(data=data)
+    SuspendAction(user=request.user, ip=request.META['REMOTE_ADDR']).save(data=data)
 
     return decorators.RefreshPageCommand()
 
-def user_view(template, tab_name, tab_title, tab_description, private=False, tabbed=True, weight=500):
+
+def user_view(template, tab_name, tab_title, tab_description, private=False, tabbed=True, render_to=None, weight=500):
     def decorator(fn):
         def decorated(fn, request, id, slug=None):
             user = get_object_or_404(User, id=id)
@@ -210,7 +211,7 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
                     return reverse(fn.__name__, kwargs={'id': vu.id})
 
             ui.register(ui.PROFILE_TABS, ui.ProfileTab(
-                tab_name, tab_title, tab_description,url_getter, private, weight
+                tab_name, tab_title, tab_description,url_getter, private, render_to, weight
             ))
 
         return decorate.withfn(decorated)(fn)
