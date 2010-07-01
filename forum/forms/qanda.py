@@ -182,8 +182,8 @@ class RevisionForm(forms.Form):
     def __init__(self, post, *args, **kwargs):
         super(RevisionForm, self).__init__(*args, **kwargs)
 
-        revisions = post.revisions.all().values_list(
-            'revision', 'author__username', 'revised_at', 'summary')
+        revisions = post.revisions.all().values_list('revision', 'author__username', 'revised_at', 'summary').order_by('-revised_at')
+
         date_format = '%c'
         self.fields['revision'].choices = [
             (r[0], u'%s - %s (%s) %s' % (r[0], r[1], r[2].strftime(date_format), r[3]))
