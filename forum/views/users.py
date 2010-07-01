@@ -305,8 +305,6 @@ def user_subscriptions(request, user):
 
             form.save()
             request.user.message_set.create(message=_('New subscription settings are now saved'))
-        else:
-            print form.errors
     else:
         form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
