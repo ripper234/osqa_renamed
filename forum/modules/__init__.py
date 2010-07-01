@@ -1,6 +1,7 @@
 import os
 import types
 import re
+import logging
 
 from django.template import Template, TemplateDoesNotExist
 from django.conf import settings
@@ -29,9 +30,10 @@ def get_modules_script(script_name):
             #print repr(type(e)) + m.__name__ + ":" + str(e)
             pass
         except:
-            pass
-            #import sys, traceback
-            #traceback.print_exc(file=sys.stdout)
+            import traceback
+            logging.error("Error importing %s from module %s: \n %s" % (
+                script_name, m.__name__, traceback.format_exc()
+            ))
 
     return all
 
