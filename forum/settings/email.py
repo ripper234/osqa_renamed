@@ -62,4 +62,4 @@ required=False))
 
 
 
-EMAIL_DIGEST_CONTROL = Setting('EMAIL_DIGEST_CONTROL', None)
+EMAIL_DIGEST_FLAG = Setting('EMAIL_DIGEST_FLAG', None)

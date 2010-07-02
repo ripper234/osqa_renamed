@@ -3,7 +3,7 @@ from forum.models import *
 from django.db import models
 from forum.utils.mail import send_template_email
 from django.core.management.base import NoArgsCommand
-from forum.settings.email import EMAIL_DIGEST_CONTROL
+from forum.settings.email import EMAIL_DIGEST_FLAG
 from django.utils import translation
 import logging
 
@@ -79,18 +79,18 @@ class Command(NoArgsCommand):
         except:
             logging.error("Unable to set the locale in the send emails cron job")
 
-        digest_control = EMAIL_DIGEST_CONTROL.value
+        digest_control = EMAIL_DIGEST_FLAG.value
 
         if digest_control is None:
-            digest_control = KeyValue(key='DIGEST_CONTROL', value={
+            digest_control = {
             'LAST_DAILY': datetime.datetime.now() - datetime.timedelta(days=1),
             'LAST_WEEKLY': datetime.datetime.now() - datetime.timedelta(days=1),
-            })
+            }
 
-        from_date = digest_control.value['LAST_DAILY']
-        digest_control.value['LAST_DAILY'] = datetime.datetime.now()
+        from_date = digest_control['LAST_DAILY']
+        digest_control['LAST_DAILY'] = datetime.datetime.now()
 
-        EMAIL_DIGEST_CONTROL.set_value(digest_control)
+        EMAIL_DIGEST_FLAG.set_value(digest_control)
 
         users = User.objects.filter(subscription_settings__enable_notifications=True, subscription_settings__send_digest=True)
         new_members = User.objects.filter(is_active=True, date_joined__gt=from_date).annotate(n_actions=models.Count('actions')).order_by('-n_actions')
