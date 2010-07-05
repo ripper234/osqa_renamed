@@ -299,6 +299,8 @@ $(function() {
     $('a.ajax-command').live('click', function(evt) {
         if (running) return false;
 
+        $('.context-menu-dropdown').slideUp('fast');
+
         var el = $(this);
 
         if (el.is('.withprompt')) {
@@ -344,7 +346,8 @@ $(function() {
             $dropdown.slideToggle('fast', function() {
                 if ($dropdown.is(':visible')) {
                    $dropdown.one('clickoutside', function() {
-                        $dropdown.slideUp('fast')
+                       if ($dropdown.is(':visible'))
+                            $dropdown.slideUp('fast');
                     });
                 }
             });    

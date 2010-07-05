@@ -15,24 +15,19 @@
 {% block forejs %}
     {% if request.user.is_superuser or request.user == view_user %}
         <script type="text/javascript">google.load("jquery", "1.4.2");google.load("jqueryui", "1.8.1");</script>
-        <script src="{% media "/media/js/osqa.user.js" %}" type="text/javascript"></script>
+        <script type="text/javascript">
+            response_commands['update_profile_karma'] = function(new_karma) {
+                $('#user-reputation').css('background', 'yellow');
+                $('#user-reputation').html(new_karma);
+                $('#user-reputation').animate({ backgroundColor: "transparent" }, 1000);
+            }
+        </script>
 
         <link rel="stylesheet" href="http://jquery-ui.googlecode.com/svn/tags/latest/themes/base/jquery-ui.css" type="text/css" media="all" />
         <link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" />
         <link rel="stylesheet" type="text/css" media="screen" href="{% media "/media/style/user.css" %}"/>
     {% endif %}
-    <script type="text/javascript">
-        var viewUserID = {{view_user.id}};
-        $().ready(function(){
-            {% ifequal view_user request.user%}
-                $("#nav_profile").attr('className',"on");
-            {% else %}
-                $("#nav_users").attr('className',"on");
-            {% endifequal %}
-        });
-    </script>
-    {% block userjs %}
-    {% endblock %}
+    {% block userjs %}{% endblock %}
 {% endblock %}
 {% block content %}
     <div id="mainbar-full">
@@ -40,6 +35,5 @@
         {% include "users/tabs.html" %}
         {% block usercontent %}
         {% endblock %}
-        {%comment%}{% include "users/footer.html" %}{%endcomment%}
 	</div>
 {% endblock %}<!-- end user.html -->

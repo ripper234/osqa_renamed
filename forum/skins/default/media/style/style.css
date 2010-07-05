@@ -1622,6 +1622,7 @@ div.dialog, .context-menu-dropdown {
     top: 1.5em;
     text-align: left;
     list-style-type: none;
+    z-index: 500;
 }
 
 .context-menu-dropdown li.item {
@@ -1661,6 +1662,7 @@ div.dialog, .context-menu-dropdown {
 
 div.dialog .dialog-content {
     padding: 12px 12px 37px 12px;
+    z-index: 1000;
 }
 
 div.dialog .dialog-buttons {

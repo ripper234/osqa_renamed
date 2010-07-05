@@ -2,6 +2,8 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django import template
 from forum.utils import html
+from ui import Registry
+from copy import copy
 
 class Visibility(object):
     def __init__(self, level='public'):
@@ -15,16 +17,27 @@ class Visibility(object):
             self.by_reputation = False
 
         self.level = level
+        self.negated = False
 
     def show_to(self, user):
         if self.by_reputation:
-            return user.is_authenticated() and (user.reputation >= int(self.level) or user.is_staff or user.is_superuser)
+            res = user.is_authenticated() and (user.reputation >= int(self.level) or user.is_staff or user.is_superuser)
         else:
-            return self.level == 'public' or (user.is_authenticated() and (
+            res = self.level == 'public' or (user.is_authenticated() and (
                 self.level == 'authenticated' or (
                 self.level == 'superuser' and user.is_superuser) or (
                 self.level == 'staff' and (user.is_staff or user.is_superuser)) or (
                 self.level == 'owner' and user.is_siteowner)))
+
+        if self.negated:
+            return not res
+        else:
+            return res
+
+    def __invert__(self):
+        inverted = copy(self)
+        inverted.negated = True
+        
 
 Visibility.PUBLIC = Visibility('public')
 Visibility.AUTHENTICATED = Visibility('authenticated')
@@ -49,7 +62,8 @@ class ObjectBase(object):
 
         def __call__(self, context):
             if callable(self.argument):
-                return self.argument(context['request'].user, context)
+                user = context.get('request', None) and context['request'].user or None
+                return self.argument(user, context)
             else:
                 return self.argument
 
@@ -57,8 +71,14 @@ class ObjectBase(object):
         self.visibility = visibility
         self.weight = weight
 
+    def _visible_to(self, user):
+        return (not self.visibility) or (self.visibility and self.visibility.show_to(user))
+
     def can_render(self, context):
-        return (not self.visibility) or (self.visibility and self.visibility.show_to(context['request'].user))
+        try:
+            return self._visible_to(context['request'].user)
+        except KeyError:
+            return True
 
     def render(self, context):
         return ''
@@ -140,3 +160,47 @@ class ProfileTab(LoopBase):
             tab_description = self.description,
             tab_url=self.url_getter(context['view_user'])
         ))
+
+
+class AjaxMenuItem(ObjectBase):
+    def __init__(self, label, url, a_attrs=None, span_label='', span_attrs=None, visibility=None, weight=500):
+        super(AjaxMenuItem, self).__init__(visibility, weight)
+        self.label = self.Argument(label)
+        self.url = self.Argument(url)
+        self.a_attrs = self.Argument(a_attrs or {})
+        self.span_label = self.Argument(span_label)
+        self.span_attrs = self.Argument(span_attrs or {})
+
+    def render(self, context):
+        return html.buildtag('li',
+            html.buildtag('span', self.span_label(context), **self.span_attrs(context)) + \
+            html.hyperlink(self.url(context), self.label(context), **self.a_attrs(context)),
+            **{'class': 'item'})
+
+class AjaxMenuGroup(ObjectBase, Registry):
+    def __init__(self, label, items, visibility=None, weight=500):
+        super(AjaxMenuGroup, self).__init__(visibility, weight)
+        self.label = label
+
+        for item in items:
+            self.add(item)
+
+    def can_render(self, context):
+        if super(AjaxMenuGroup, self).can_render(context):
+            for item in self:
+                if item.can_render(context): return True
+
+        return False
+
+    def render(self, context):
+        return html.buildtag('li', self.label, **{'class': 'separator'}) + "".join([
+            item.render(context) for item in self if item.can_render(context)
+        ])
+
+class UserMenuItem(AjaxMenuItem):
+    def __init__(self, render_to=None, *args, **kwargs):
+        super(UserMenuItem, self).__init__(*args, **kwargs)
+        self.render_to = render_to
+
+    def can_render(self, context):
+        return (not self.render_to or (self.render_to(context['user']))) and super(UserMenuItem, self)._visible_to(context['viewer'])

@@ -331,13 +331,13 @@ class User(BaseModel, DjangoUser):
     def suspension(self):
         if self.__dict__.get('_suspension_dencache_', False) != None:
             try:
-                self.__dict__['_suspension_dencache_'] = self.actions.get(action_type="suspend", canceled=False)
+                self.__dict__['_suspension_dencache_'] = self.reputes.get(action__action_type="suspend", action__canceled=False).action
             except ObjectDoesNotExist:
                 self.__dict__['_suspension_dencache_'] = None
             except MultipleObjectsReturned:
                 logging.error("Multiple suspension actions found for user %s (%s)" % (self.username, self.id))
-                self.__dict__['_suspension_dencache_'] = self.actions.filter(action_type="suspend", canceled=False
-                                                                             ).order_by('-action_date')[0]
+                self.__dict__['_suspension_dencache_'] = self.reputes.filter(action__action_type="suspend", action__canceled=False
+                                                                             ).order_by('-action__action_date')[0]
 
         return self.__dict__['_suspension_dencache_']
 
@@ -419,7 +419,7 @@ class UserPropertyDict(object):
 
 
 class SubscriptionSettings(models.Model):
-    user = models.OneToOneField(User, related_name='subscription_settings')
+    user = models.OneToOneField(User, related_name='subscription_settings', editable=False)
 
     enable_notifications = models.BooleanField(default=True)
 

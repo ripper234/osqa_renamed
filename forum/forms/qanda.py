@@ -276,7 +276,7 @@ NOTIFICATION_CHOICES = (
 )
 
 class SubscriptionSettingsForm(forms.ModelForm):
-    user = forms.IntegerField(widget=forms.HiddenInput)
+    enable_notifications = forms.BooleanField(widget=forms.HiddenInput, required=False)
     member_joins = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
     new_question = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
     new_question_watched_tags = forms.ChoiceField(widget=forms.RadioSelect, choices=NOTIFICATION_CHOICES)
@@ -284,5 +284,6 @@ class SubscriptionSettingsForm(forms.ModelForm):
 
     class Meta:
         model = SubscriptionSettings
+
 
 

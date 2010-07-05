@@ -10,9 +10,9 @@
 {% endfor %}
 {% if menu|length %}
     <span class="action-link-separator">|</span>
-    <span id="node-{{ node.id }}-menu" class="context-menu">
-        <span id="node-{{ node.id }}-menu-trigger" class="action-link context-menu-trigger">{% trans "more" %} &#9660;</span>
-        <ul id="node-{{ node.id }}-menu-dropdown" class="context-menu-dropdown">
+    <span id="node-{{ post.id }}-menu" class="context-menu">
+        <span id="node-{{ post.id }}-menu-trigger" class="action-link context-menu-trigger">{% trans "more" %} &#9660;</span>
+        <ul id="node-{{ post.id }}-menu-dropdown" class="context-menu-dropdown">
             {% for item in menu %}
             <li class="item"><a class="{{ item.classes }}" href="{{ item.url }}" title="{{ item.title }}" >{{ item.text }}</a></li>
             {% endfor %}

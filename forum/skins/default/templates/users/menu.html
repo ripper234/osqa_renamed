@@ -1,57 +1,8 @@
-{% load i18n %}
-{% load smart_if %}
+{% load i18n smart_if ui_registry %}
 
-<script type="text/javascript">
-    messages['points'] = "{% trans "Points" %}"
-</script>
-
-<div id="user-menu-container">
-    <span id="user-menu">{% trans "User tools" %} &#9660;</span>
-    <ul id="user-menu-dropdown">
-        <li class="item"><span class="user-edit"></span><a href="{% url edit_user id=user.id %}">{% trans "edit profile" %}</a></li>
-        <li class="item"><span class="user-auth"></span><a href="{% url user_authsettings id=user.id %}">{% trans "authentication settings" %}</a></li>
-        <li class="item"><span class="user-subscriptions"></span><a href="{% url user_subscriptions id=user.id,slug=user.username|slugify %}">{% trans "email notification settings" %}</a></li>
-        {% ifnotequal user viewer %}
-            {% if viewer.is_superuser %}
-            <li class="separator">{% trans "Moderation tools" %}</li>
-            {% if not user.is_superuser %}
-                {% if user.is_suspended %}
-                <li class="item"><span></span>
-                    <a href="{% url user_suspend id=user.id %}" class="ajax-command confirm" id="suspend-user">{% trans "withdraw suspension" %}</a>
-                </li>
-                {% else %}
-                <li class="item"><span></span>
-                    <a href="{% url user_suspend id=user.id %}" class="ajax-command withprompt" id="suspend-user">{% trans "suspend this user" %}</a>
-                </li>
-                {% endif %}
-            {% endif %}
-            {% if not user.is_suspended %}
-                <li class="item"><span class="user-award_rep"></span>
-                    <a href="{% url user_award_points id=user.id %}" id="award-rep-points">{% trans "reputation bonus" %}</a>
-                </li>
-            {% endif %}
-                {% if not user.is_superuser %}
-                    {% if not user.is_staff %}
-                    <li class="item"><span class="user-moderator"></span>
-                        <a class="confirm" href="{% url user_powers id=user.id,action="grant",status="staff" %}">{% trans "grant moderator status" %}</a>
-                    </li>
-                    {% else %}
-                    <li class="item"><span class="user-moderator"></span>
-                        <a class="confirm" href="{% url user_powers id=user.id,action="remove",status="staff" %}">{% trans "remove moderator status" %}</a>
-                    </li>
-                    {% endif %}
-                    <li class="item"><span class="user-superuser"></span>
-                        <a class="confirm" href="{% url user_powers id=user.id,action="grant",status="super" %}">{% trans "grant super user status" %}</a>
-                    </li>
-                {% else %}
-                    {% if viewer.is_siteowner %}
-                    <li class="item"><span class="user-superuser"></span>
-                        <a class="confirm" href="{% url user_powers id=user.id,action="remove",status="super" %}">{% trans "remove super user status" %}</a>
-                    </li>
-                    {% endif %}
-                {% endif %}
-            {% endif %}
-        {% endifnotequal %}
+<div id="user-menu-container" class="context-menu">
+    <span id="user-menu" class="context-menu-trigger">{% trans "User tools" %} &#9660;</span>
+    <ul id="user-menu-dropdown" class="context-menu-dropdown">
+        {% loadregistry user_menu %}{% endloadregistry %}
     </ul>
 </div>
-

@@ -115,10 +115,13 @@ def edit_user(request, id):
     }, context_instance=RequestContext(request))
 
 
-@login_required
+@decorate.withfn(decorators.command)
 def user_powers(request, id, action, status):
     if not request.user.is_superuser:
-        return HttpResponseUnauthorized(request)
+        raise decorators.CommandException(_("Only superusers are allowed to alter other users permissions."))
+
+    if (action == 'remove' and 'status' == 'super') and not request.user.is_siteowner():
+        raise decorators.CommandException(_("Only the site owner can remove the super user status from other user."))
 
     user = get_object_or_404(User, id=id)
     new_state = action == 'grant'
@@ -131,26 +134,32 @@ def user_powers(request, id, action, status):
         raise Http404()
 
     user.save()
-    return HttpResponseRedirect(user.get_profile_url())
+    return decorators.RefreshPageCommand()
 
 
 @decorate.withfn(decorators.command)
 def award_points(request, id):
-    if (not request.POST) and request.POST.get('points', None):
-        raise decorators.CommandException(_("Invalid request type"))
+    if not request.POST:
+        return render_to_response('users/karma_bonus.html')
 
     if not request.user.is_superuser:
         raise decorators.CommandException(_("Only superusers are allowed to award reputation points"))
 
+    try:
+        points = int(request.POST['points'])
+    except:
+        raise decorators.CommandException(_("Invalid number of points to award."))
+
     user = get_object_or_404(User, id=id)
-    points = int(request.POST['points'])
 
     extra = dict(message=request.POST.get('message', ''), awarding_user=request.user.id, value=points)
 
     BonusRepAction(user=request.user, extra=extra).save(data=dict(value=points, affected=user))
 
-    return dict(reputation=user.reputation)
-
+    return {'commands': {
+            'update_profile_karma': [user.reputation]
+        }}
+    
 
 @decorate.withfn(decorators.command)
 def suspend(request, id):
@@ -159,7 +168,7 @@ def suspend(request, id):
     if not request.user.is_superuser:
         raise decorators.CommandException(_("Only superusers can suspend other users"))
 
-    if not request.POST:
+    if not request.POST.get('bantype', None):
         if user.is_suspended():
             suspension = user.suspension
             suspension.cancel(user=request.user, ip=request.META['REMOTE_ADDR'])
@@ -196,6 +205,7 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
             rev_page_title = user.username + " - " + tab_description
 
             context.update({
+            "tab": "users",
             "active_tab" : tab_name,
             "tab_description" : tab_description,
             "page_title" : rev_page_title,
@@ -287,30 +297,31 @@ def user_favorites(request, user):
 
 @user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
+    enabled = user.subscription_settings.enable_notifications
+
     if request.method == 'POST':        
         form = SubscriptionSettingsForm(data=request.POST, instance=user.subscription_settings)
 
         if form.is_valid():
-            if form.cleaned_data['user'] != user.id:
-                return HttpResponseUnauthorized(request)
+            form.save()
+            message = _('New subscription settings are now saved')
 
             if 'notswitch' in request.POST:
-                user.subscription_settings.enable_notifications = not user.subscription_settings.enable_notifications
-                user.subscription_settings.save()
+                enabled = not enabled
 
-                if user.subscription_settings.enable_notifications:
-                    request.user.message_set.create(message=_('Notifications are now enabled'))
+                if enabled:
+                    message = _('Notifications are now enabled')
                 else:
-                    request.user.message_set.create(message=_('Notifications are now disabled'))
+                    message = _('Notifications are now disabled')
 
-            form.save()
-            request.user.message_set.create(message=_('New subscription settings are now saved'))
+            user.subscription_settings.enable_notifications = enabled
+            user.subscription_settings.save()
+
+            request.user.message_set.create(message=message)
     else:
         form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
-    notificatons_on = user.subscription_settings.enable_notifications
-
-    return {'view_user':user, 'notificatons_on': notificatons_on, 'form':form}
+    return {'view_user':user, 'notificatons_on': enabled, 'form':form}
 
 @login_required
 def account_settings(request):

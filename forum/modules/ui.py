@@ -1,13 +1,13 @@
 
 
 class Registry(list):
-    def add(self, register):
+    def add(self, item):
         for i, r in enumerate(self):
-            if r.weight > register.weight:
-                self.insert(i, register)
+            if r.weight > item.weight:
+                self.insert(i, item)
                 return
 
-        self.append(register)
+        self.append(item)
 
 
 HEAD_CONTENT = 'HEAD_CONTENT'
@@ -16,6 +16,8 @@ PAGE_TOP_TABS = 'PAGE_TOP_TABS'
 FOOTER_LINKS = 'FOOTER_LINKS'
 PROFILE_TABS = 'PROFILE_TABS'
 
+USER_MENU = 'USER_MENU'
+
 
 __CONTAINER = {
     HEAD_CONTENT: Registry(),
@@ -23,6 +25,8 @@ __CONTAINER = {
     PAGE_TOP_TABS: Registry(),
     FOOTER_LINKS: Registry(),
     PROFILE_TABS: Registry(),
+
+    USER_MENU: Registry(),
 }
 
 
