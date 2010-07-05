@@ -200,6 +200,10 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
             user = get_object_or_404(User, id=id)
             if private and not (user == request.user or request.user.is_superuser):
                 return HttpResponseUnauthorized(request)
+
+            if render_to and (not render_to(user)):
+                return HttpResponseRedirect(user.get_profile_url())
+                
             context = fn(request, user)
 
             rev_page_title = user.username + " - " + tab_description

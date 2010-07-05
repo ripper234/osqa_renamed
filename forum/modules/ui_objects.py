@@ -78,7 +78,13 @@ class ObjectBase(object):
         try:
             return self._visible_to(context['request'].user)
         except KeyError:
-            return True
+            try:
+                return self._visible_to(context['viewer'])
+            except KeyError:
+                if self.visibility:
+                    return False
+                else:
+                    return True
 
     def render(self, context):
         return ''
