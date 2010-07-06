@@ -49,6 +49,9 @@ class PaginatorContext(object):
         else:
             self.has_pagesize = False
 
+        self.force_sort = None
+        self.sticky_sort = False
+
 
 
 class labels(object):
@@ -83,10 +86,6 @@ def paginated(request, list_name, context, tpl_context):
     else:
         pagesize = 30
 
-
-
-
-
     try:
         page = int(request.GET.get(labels.PAGE, 1))
     except ValueError:
@@ -99,10 +98,10 @@ def paginated(request, list_name, context, tpl_context):
     if context.has_sort:
         if request.GET.get(labels.SORT, None):
             sort = request.GET[labels.SORT]
-            if session_prefs.get('sticky_sort', False):
+            if context.sticky_sort or session_prefs.get('sticky_sort', False):
                 session_prefs[labels.SORT] = sort
         else:
-            sort = session_prefs.get(labels.SORT, context.default_sort)
+            sort = context.force_sort or session_prefs.get(labels.SORT, context.default_sort)
 
         if not sort in context.sort_methods:
             sort = context.default_sort

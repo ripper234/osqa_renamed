@@ -111,24 +111,17 @@
                 <div class="tabBar">
                     <a name="sort-top"></a>
                     <div class="headQuestions">
-                    {% blocktrans count answers|length as counter %}
+                    {% blocktrans count answers.count as counter %}
                     One Answer:
                     {% plural %}
                     {{counter}} Answers:
                     {% endblocktrans %}
                     </div>
-                    <div class="tabsA">
-                         <a id="oldest" href="{{ question.get_absolute_url }}?sort=oldest#sort-top"
-                            title="{% trans "oldest answers will be shown first" %}">{% trans "oldest answers" %}</a>
-                        <a id="latest" href="{{ question.get_absolute_url }}?sort=latest#sort-top"
-                            title="{% trans "newest answers will be shown first" %}">{% trans "newest answers" %}</a>
-                        <a id="votes" href="{{ question.get_absolute_url }}?sort=votes#sort-top" 
-                            title="{% trans "most voted answers will be shown first" %}">{% trans "popular answers" %}</a>   
-                    </div>
+                    {{ answers.sort_tabs }}
                 </div>
-                {% cnprog_paginator context %}
+                {{ answers.page_numbers }}
   
-                {% for answer in answers %}
+                {% for answer in answers.page %}
                     <a name="{{ answer.id }}"></a>
                     <div id="answer-container-{{ answer.id }}" class="answer {% if answer.nis.accepted %}accepted-answer{% endif %} {% ifequal answer.author_id question.author_id %} answered-by-owner{% endifequal %} {% if answer.nis.deleted %}deleted{% endif %}">
                         <table style="width:100%;">
@@ -159,7 +152,7 @@
                     </div>
                 {% endfor %}
                 <div class="paginator-container-left">
-                    {% cnprog_paginator context %}
+                    {{ answers.page_numbers }}
                 </div>
             {% endif %}
         <form id="fmanswer" action="{% url answer question.id %}" method="post">

@@ -52,6 +52,17 @@ class QuestionListPaginatorContext(pagination.PaginatorContext):
             (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most voted questions"))),
         ), pagesizes=(15, 30, 50))
 
+class AnswerPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (AnswerPaginatorContext, self).__init__('ANSWER_LIST', sort_methods=(
+            (_('oldest'), pagination.SimpleSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
+            (_('latest'), pagination.SimpleSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
+            (_('votes'), pagination.SimpleSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
+        ), default_sort=_('votes'), pagesizes=(5, 10, 20))
+
+        self.sticky_sort = True
+    
+
 def feed(request):
     return RssQuestionFeed(
                 Question.objects.filter_state(deleted=False).order_by('-last_activity_at'),
@@ -189,7 +200,8 @@ def question_search(request, keywords):
 
     if can_rank:
         paginator_context = QuestionListPaginatorContext()
-        paginator_context.sort_methods[_('ranking')] = pagination.SimpleSort(_('ranking'), '-ranking', _("most relevant questions"))
+        paginator_context.sort_methods[_('ranking')] = pagination.SimpleSort(_('relevance'), '-ranking', _("most relevant questions"))
+        paginator_context.force_sort = _('ranking')
     else:
         paginator_context = None
 
@@ -243,19 +255,6 @@ def tags(request):
         }
     }
 
-def get_answer_sort_order(request):
-    view_dic = {"latest":"-added_at", "oldest":"added_at", "votes":"-score" }
-
-    view_id = request.GET.get('sort', request.session.get('answer_sort_order', None))
-
-    if view_id is None or not view_id in view_dic:
-        view_id = "votes"
-
-    if view_id != request.session.get('answer_sort_order', None):
-        request.session['answer_sort_order'] = view_id
-
-    return (view_id, view_dic[view_id])
-
 def update_question_view_times(request, question):
     if not 'last_seen_in_question' in request.session:
         request.session['last_seen_in_question'] = {}
@@ -278,6 +277,7 @@ def match_question_slug(slug):
 
     return None
 
+@decorators.render("question.html", 'questions', tabbed=False)
 def question(request, id, slug):
     try:
         question = Question.objects.get(id=id)
@@ -289,9 +289,6 @@ def question(request, id, slug):
 
         raise Http404()
 
-    page = int(request.GET.get('page', 1))
-    view_id, order_by = get_answer_sort_order(request)
-
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
 
@@ -300,14 +297,7 @@ def question(request, id, slug):
     else:
         answer_form = AnswerForm(question)
 
-    answers = request.user.get_visible_answers(question)
-
-    if answers is not None:
-        answers = [a for a in answers.order_by("-marked", order_by)
-                   if not a.nis.deleted or a.author == request.user]
-
-    objects_list = Paginator(answers, ANSWERS_PAGE_SIZE)
-    page_objects = objects_list.page(page)
+    answers = request.user.get_visible_answers(question).order_by("-marked")
 
     update_question_view_times(request, question)
 
@@ -319,25 +309,13 @@ def question(request, id, slug):
     else:
         subscription = False
 
-    return render_to_response('question.html', {
+    return pagination.paginated(request, 'answers', AnswerPaginatorContext(), {
     "question" : question,
     "answer" : answer_form,
-    "answers" : page_objects.object_list,
-    "tab_id" : view_id,
+    "answers" : answers,
     "similar_questions" : question.get_related_questions(),
     "subscription": subscription,
-    "context" : {
-    'is_paginated' : True,
-    'pages': objects_list.num_pages,
-    'page': page,
-    'has_previous': page_objects.has_previous(),
-    'has_next': page_objects.has_next(),
-    'previous': page_objects.previous_page_number(),
-    'next': page_objects.next_page_number(),
-    'base_url' : request.path + '?sort=%s&' % view_id,
-    'extend_url' : "#sort-top"
-    }
-    }, context_instance=RequestContext(request))
+    })
 
 
 REVISION_TEMPLATE = template.loader.get_template('node/revision.html')
