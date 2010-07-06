@@ -144,12 +144,14 @@ blockquote {
     margin: auto;
     padding: 0;
     width: 990px;
+    background-color: #FFF;
 }
 
 #roof {
     background: none repeat scroll 0 0 #FFFFFF;
     margin-top: 0;
     position: relative;
+    width: 990px;
 }
 
 #room {
@@ -181,7 +183,7 @@ blockquote {
     padding-bottom: 0;
     padding-top: 6px;
     text-align: center;
-    width: 100%;
+    width: 990px;
 }
 
 #top {
