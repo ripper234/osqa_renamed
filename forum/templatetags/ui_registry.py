@@ -1,5 +1,6 @@
 from django import template
 from forum.modules import ui
+import logging
 
 register = template.Library()
 
@@ -15,9 +16,15 @@ class LoadRegistryNode(template.Node):
 
         for ui_object in self.registry:
             if ui_object.can_render(context):
-                if result:
-                    result += separator
-                result += ui_object.render(context)
+                try:
+                    if result:
+                        result += separator
+                    result += ui_object.render(context)
+                except Exception, e:
+                    import traceback
+                    logging.error("Exception %s rendering ui objects %s: \n%s" % (
+                        e, ui_object, traceback.format_exc()
+                    ))
 
         return result
 
@@ -45,8 +52,15 @@ class LoopRegistryNode(template.Node):
 
         for ui_object in self.registry:
             if ui_object.can_render(context):
-                ui_object.update_context(context)
-                result += self.nodelist.render(context)
+                try:
+                    ui_object.update_context(context)
+                    result += self.nodelist.render(context)
+                except Exception, e:
+                    import traceback
+                    logging.error("Exception %s updating ui loop context %s: \n%s" % (
+                        e, ui_object, traceback.format_exc()
+                    ))
+
 
         return result
 

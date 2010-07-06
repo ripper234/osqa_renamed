@@ -480,10 +480,10 @@ def matching_tags(request):
 
 def related_questions(request):
     if request.POST and request.POST.get('title', None):
+        can_rank, questions = Question.objects.search(request.POST['title'])
         return HttpResponse(simplejson.dumps(
                 [dict(title=q.title, url=q.get_absolute_url(), score=q.score, summary=q.summary)
-                 for q in Question.objects.search(request.POST['title']).filter_state(deleted=False)[0:10]]),
-                            mimetype="application/json")
+                 for q in questions.filter_state(deleted=False)[0:10]]), mimetype="application/json")
     else:
         raise Http404()
 

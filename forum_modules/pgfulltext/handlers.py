@@ -10,7 +10,7 @@ def question_search(self, keywords):
     tsquery = " | ".join(word_re.findall(keywords))
     ilike = keywords + u"%%"
 
-    return self.extra(
+    return True, self.extra(
             tables = ['forum_rootnode_doc'],
             select={
             'ranking': """
@@ -23,7 +23,6 @@ def question_search(self, keywords):
                            """],
             params=[tsquery, ilike],
             select_params=[tsquery],
-            order_by=['-ranking']
             )
 
 

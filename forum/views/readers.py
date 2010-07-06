@@ -22,6 +22,7 @@ from django.utils.safestring import mark_safe
 
 from forum.utils.html import sanitize_html, hyperlink
 from forum.utils.diff import textDiff as htmldiff
+from forum.utils import pagination
 from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
@@ -41,6 +42,15 @@ DEFAULT_PAGE_SIZE = 60
 QUESTIONS_PAGE_SIZE = 30
 # used in answers
 ANSWERS_PAGE_SIZE = 10
+
+class QuestionListPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (QuestionListPaginatorContext, self).__init__('QUESTIONS_LIST', sort_methods=(
+            (_('active'), pagination.SimpleSort(_('active'), '-last_activity_at', _("most recently updated questions"))),
+            (_('newest'), pagination.SimpleSort(_('newest'), '-added_at', _("most recently asked questions"))),
+            (_('hottest'), pagination.SimpleSort(_('hottest'), '-extra_count', _("hottest questions"))),
+            (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most voted questions"))),
+        ), pagesizes=(15, 30, 50))
 
 def feed(request):
     return RssQuestionFeed(
@@ -109,31 +119,19 @@ def user_questions(request, mode, user, slug):
                          request.utils.set_sort_method('active'),
                          page_title=description % user.username)
 
-
-@decorators.list('questions', QUESTIONS_PAGE_SIZE)
 def question_list(request, initial,
                   list_description=_('questions'),
                   sort=None,
                   base_path=None,
                   page_title=_("All Questions"),
                   allowIgnoreTags=True,
-                  feed_url=None):
+                  feed_url=None,
+                  paginator_context=None):
 
     questions = initial.filter_state(deleted=False)
 
     if request.user.is_authenticated() and allowIgnoreTags:
-        questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad'))
-                                     )
-
-    if sort is not False:
-        if sort is None:
-            sort = request.utils.sort_method('latest')
-        else:
-            request.utils.set_sort_method(sort)
-
-        view_dic = {"latest":"-added_at", "active":"-last_activity_at", "hottest":"-extra_count", "mostvoted":"-score" }
-
-        questions=questions.order_by(view_dic.get(sort, '-added_at'))
+        questions = questions.filter(~Q(tags__id__in = request.user.marked_tags.filter(user_selections__reason = 'bad')))
 
     if page_title is None:
         page_title = _("Questions")
@@ -149,13 +147,13 @@ def question_list(request, initial,
     answer_description = _("answers")
 
     if not feed_url:
-        req_params = "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in ('page', 'pagesize', 'sort')])
+        req_params = "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (_('page'), _('pagesize'), _('sort'))])
         if req_params:
             req_params = '&' + req_params
 
         feed_url = mark_safe(request.path + "?type=rss" + req_params)
 
-    return {
+    return pagination.paginated(request, 'questions', paginator_context or QuestionListPaginatorContext(), {
     "questions" : questions,
     "questions_count" : questions.count(),
     "answer_count" : answer_count,
@@ -166,7 +164,7 @@ def question_list(request, initial,
     "page_title" : page_title,
     "tab" : "questions",
     'feed_url': feed_url,
-    }
+    })
 
 
 def search(request):
@@ -187,13 +185,20 @@ def search(request):
 
 @decorators.render('questions.html')
 def question_search(request, keywords):
-    initial = Question.objects.search(keywords)
+    can_rank, initial = Question.objects.search(keywords)
+
+    if can_rank:
+        paginator_context = QuestionListPaginatorContext()
+        paginator_context.sort_methods[_('ranking')] = pagination.SimpleSort(_('ranking'), '-ranking', _("most relevant questions"))
+    else:
+        paginator_context = None
 
     return question_list(request, initial,
                          _("questions matching '%(keywords)s'") % {'keywords': keywords},
                          False,
                          "%s?t=question&q=%s" % (reverse('search'),django_urlquote(keywords)),
-                         _("questions matching '%(keywords)s'") % {'keywords': keywords})
+                         _("questions matching '%(keywords)s'") % {'keywords': keywords},
+                         paginator_context=paginator_context)
 
 
 @decorators.render('tags.html', 'tags', _('tags'), weight=100)

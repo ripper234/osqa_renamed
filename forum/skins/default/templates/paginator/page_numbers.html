@@ -1,0 +1,25 @@
+{% spaceless %}
+{% load i18n %}
+
+<div class="paginator">
+    {% if has_previous %}
+        <span class="prev"><a href="{{ previous_url }}" title="{% trans "previous" %}">&laquo; {% trans "previous" %}</a></span>
+    {% endif %}
+    {% for range in page_numbers %}
+        {% if range %}
+            {% for num, url in range %}
+                {% ifequal num current %}
+                    <span class="curr">{{ num }}</span>
+                {% else %}
+                     <span class="page"><a href="{{ url }}" >{{ num }}</a></span>
+                {% endifequal %}
+            {% endfor %}
+        {% else %}
+          ...
+        {% endif %}
+    {% endfor %}
+    {% if has_next %}
+        <span class="next"><a href="{{ next_url }}" title="{% trans "next page" %}">{% trans "next page" %} &raquo;</a></span>    
+    {% endif %}
+</div>
+{% endspaceless %}

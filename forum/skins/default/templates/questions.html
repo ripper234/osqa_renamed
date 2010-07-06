@@ -8,23 +8,24 @@
 {% block title %}{% spaceless %}{{ page_title }}{% endspaceless %}{% endblock %}
 
 {% block forejs %}
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="/feeds/rss">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ feed_url }}">
 {% endblock %}
 
 {% block content %}
+
 <div class="tabBar">
     {% question_list_title %}
     <a class="feed-icon" style="background-image:url('{% media "media/images/feed-icon-small.png" %}');" href="{{ feed_url }}" title="{% trans "subscribe to question RSS feed" %}"></a>
-    {% question_sort_tabs sort_context %}
+    {{ questions.sort_tabs }}
 </div>
-<div id="listA">{% for question in questions %}
+<div id="listA">{% for question in questions.page %}
     {% question_list_item question %}
 {% endfor %}</div>
 {% endblock %}
 
 {% block tail %}
-    <div class="pager">{% cnprog_paginator pagination_context %}</div>
-    <div class="pagesize">{% cnprog_pagesize pagination_context %}</div>
+    <div class="pager">{{ questions.page_numbers }}</div>
+    <div class="pagesize">{{ questions.page_sizes }}</div>
 {% endblock %}
 
 {% block sidebar %}
@@ -32,7 +33,7 @@
     {% sidebar_upper %}
     {% tag_selector %}
     {% sidebar_lower %}
-    {% question_list_related_tags questions %}
+    {% question_list_related_tags questions.page %}
 
 {% endblock %}
 <!-- end questions.html -->

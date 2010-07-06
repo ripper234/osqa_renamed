@@ -579,7 +579,7 @@ a.medal:hover {
     position: relative;
 }
 
-.tabsA a {
+.tabsA a, .sticky-sort-tabs {
     background: none repeat scroll 0 0 #EEEEEE;
     border-bottom: 1px solid #CCCCCC;
     border-right: 1px solid #CCCCCC;
@@ -589,8 +589,23 @@ a.medal:hover {
     height: 20px;
     line-height: 22px;
     margin: 5px 4px 0 0;
-    padding: 0 11px;
     text-decoration: none;
+}
+
+.tabsA a {
+    padding: 0 11px;    
+}
+
+.sticky-sort-tabs {
+    width: 20px;
+    padding: 0;
+}
+
+.sticky-sort-tabs input {
+    border: 0;
+    height: 14px;
+    width: 14px;
+    margin: 2px;
 }
 
 .tabsA a.on, .tabsA a:hover {

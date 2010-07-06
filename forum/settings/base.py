@@ -60,6 +60,7 @@ class BaseSetting(object):
             return v
         except KeyValue.DoesNotExist:
             self._temp = (self.default, datetime.now() + timedelta(seconds=TMP_MINICACHE_SECONDS))
+            self.save(self.default)
         except Exception, e:
             logging.error("Error retrieving setting from database (%s): %s" % (self.name, str(e)))
             
