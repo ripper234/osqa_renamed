@@ -65,7 +65,7 @@ def post_controls(post, user):
         post_type = post.node_type
 
         if post_type == "answer":
-            controls.append(post_control(_('permanent link'), '#%d' % post.id, title=_("answer permanent link")))
+            controls.append(post_control(_('permanent link'), post.get_absolute_url(), title=_("answer permanent link")))
 
         edit_url = reverse('edit_' + post_type, kwargs={'id': post.id})
         if user.can_edit_post(post):

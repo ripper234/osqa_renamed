@@ -17,6 +17,14 @@ class SimpleSort(object):
     def apply(self, objects):
         return objects.order_by(self.order_by)
 
+class DummySort(object):
+    def __init__(self, label, description=''):
+        self.label = label
+        self.description = description
+
+    def apply(self, objects):
+        return objects
+
 
 class PaginatorContext(object):
     visible_page_range = 5
@@ -24,7 +32,8 @@ class PaginatorContext(object):
 
     base_path = None
 
-    def __init__(self, id, sort_methods=None, default_sort=None, pagesizes=None, default_pagesize=None):
+    def __init__(self, id, sort_methods=None, default_sort=None, force_sort = None, sticky_sort=False,
+                 pagesizes=None, default_pagesize=None):
         self.id = id
         if sort_methods:
             self.has_sort = True
@@ -49,9 +58,72 @@ class PaginatorContext(object):
         else:
             self.has_pagesize = False
 
-        self.force_sort = None
-        self.sticky_sort = False
+        self.force_sort = force_sort
+        self.sticky_sort = sticky_sort
 
+    def session_preferences(self, request):
+        return request.session.get('paginator_%s' % self.id, {})
+
+    def pagesize(self, request, session_prefs=None):
+        if not session_prefs:
+            session_prefs = self.session_preferences(request)
+
+
+        if self.has_pagesize:
+            if request.GET.get(labels.PAGESIZE, None):
+                try:
+                    pagesize = int(request.GET[labels.PAGESIZE])
+                except ValueError:
+                    logging.error('Found invalid page size "%s", loading %s, refered by %s' % (
+                        request.GET.get(labels.PAGESIZE, ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
+                    ))
+                    raise Http404()
+
+                session_prefs[labels.PAGESIZE] = pagesize
+            else:
+                pagesize = session_prefs.get(labels.PAGESIZE, self.default_pagesize)
+
+            if not pagesize in self.pagesizes:
+                pagesize = self.default_pagesize
+        else:
+            pagesize = 30
+
+        return pagesize
+
+    def page(self, request):
+        try:
+            return int(request.GET.get(labels.PAGE, 1))
+        except ValueError:
+            logging.error('Found invalid page number "%s", loading %s, refered by %s' % (
+                request.GET.get(labels.PAGE, ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
+            ))
+            raise Http404()
+
+    def sort(self, request, session_prefs=None):
+        if not session_prefs:
+            session_prefs = self.session_preferences(request)
+
+        sort = None
+        if self.has_sort:
+            if request.GET.get(labels.SORT, None):
+                sort = request.GET[labels.SORT]
+                if self.sticky_sort or session_prefs.get('sticky_sort', False):
+                    session_prefs[labels.SORT] = sort
+            else:
+                sort = self.force_sort or session_prefs.get(labels.SORT, self.default_sort)
+
+            if not sort in self.sort_methods:
+                sort = self.default_sort
+
+        return sort
+
+    def sorted(self, objects, request, session_prefs=None):
+        sort = self.sort(request, session_prefs)
+
+        if sort:
+            objects = self.sort_methods[sort].apply(objects)
+
+        return sort, objects
 
 
 class labels(object):
@@ -64,49 +136,13 @@ page_sizes_template = template.loader.get_template('paginator/page_sizes.html')
 sort_tabs_template = template.loader.get_template('paginator/sort_tabs.html')
 
 def paginated(request, list_name, context, tpl_context):
-    session_prefs = request.session.get('paginator_%s' % context.id, {})
+    session_prefs = context.session_preferences(request)
+
     objects = tpl_context[list_name]
 
-    if context.has_pagesize:
-        if request.GET.get(labels.PAGESIZE, None):
-            try:
-                pagesize = int(request.GET[labels.PAGESIZE])
-            except ValueError:
-                logging.error('Found invalid page size "%s", loading %s, refered by %s' % (
-                    request.GET.get(labels.PAGESIZE, ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
-                ))
-                raise Http404()
-
-            session_prefs[labels.PAGESIZE] = pagesize
-        else:
-            pagesize = session_prefs.get(labels.PAGESIZE, context.default_pagesize)
-
-        if not pagesize in context.pagesizes:
-            pagesize = context.default_pagesize
-    else:
-        pagesize = 30
-
-    try:
-        page = int(request.GET.get(labels.PAGE, 1))
-    except ValueError:
-        logging.error('Found invalid page number "%s", loading %s, refered by %s' % (
-            request.GET.get(labels.PAGE, ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
-        ))
-        raise Http404()
-
-    sort = None
-    if context.has_sort:
-        if request.GET.get(labels.SORT, None):
-            sort = request.GET[labels.SORT]
-            if context.sticky_sort or session_prefs.get('sticky_sort', False):
-                session_prefs[labels.SORT] = sort
-        else:
-            sort = context.force_sort or session_prefs.get(labels.SORT, context.default_sort)
-
-        if not sort in context.sort_methods:
-            sort = context.default_sort
-
-        objects = context.sort_methods[sort].apply(objects)
+    pagesize = context.pagesize(request, session_prefs)
+    page = context.page(request)
+    sort, objects = context.sorted(objects, request, session_prefs)
 
     paginator = Paginator(objects, pagesize)
 

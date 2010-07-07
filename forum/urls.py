@@ -93,8 +93,10 @@ urlpatterns += patterns('',
 
                         url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('question/'),
                             'django.views.generic.simple.redirect_to', {'url': '/questions/%(id)s/%(slug)s'}),
-                        url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('questions/'), app.readers.question, name='question'
-                            ),
+                        url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)$' % _('questions/'), app.readers.question, name='question'),
+                        url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]*)/(?P<answer>\d+)$' % _('questions/'), app.readers.question),
+
+
                         url(r'^%s$' % _('tags/'), app.readers.tags, name='tags'),
                         url(r'^%s(?P<tag>.*)/$' % _('tags/'), app.readers.tag, name='tag_questions'),
 

@@ -16,7 +16,7 @@ class Answer(Node):
         return self.question.headline
 
     def get_absolute_url(self):
-        return '%s#%s' % (self.question.get_absolute_url(), self.id)
+        return '%s/%s' % (self.question.get_absolute_url(), self.id)
 
 
 class AnswerRevision(NodeRevision):

@@ -52,15 +52,20 @@ class QuestionListPaginatorContext(pagination.PaginatorContext):
             (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most voted questions"))),
         ), pagesizes=(15, 30, 50))
 
+class AnswerSort(pagination.SimpleSort):
+    def apply(self, objects):
+        if self.label == _('votes'):
+            return objects.order_by('-marked', self.order_by, 'added_at')
+        else:
+            return objects.order_by('-marked', self.order_by)
+
 class AnswerPaginatorContext(pagination.PaginatorContext):
     def __init__(self):
         super (AnswerPaginatorContext, self).__init__('ANSWER_LIST', sort_methods=(
-            (_('oldest'), pagination.SimpleSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
-            (_('latest'), pagination.SimpleSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
-            (_('votes'), pagination.SimpleSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
-        ), default_sort=_('votes'), pagesizes=(5, 10, 20))
-
-        self.sticky_sort = True
+            (_('oldest'), AnswerSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
+            (_('newest'), AnswerSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
+            (_('votes'), AnswerSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
+        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20))
     
 
 def feed(request):
@@ -277,27 +282,63 @@ def match_question_slug(slug):
 
     return None
 
+def answer_redirect(request, answer):
+    pc = AnswerPaginatorContext()
+
+    sort = pc.sort(request)
+
+    if sort == _('oldest'):
+        filter = Q(added_at__lt=answer.added_at)
+    elif sort == _('newest'):
+        filter = Q(added_at__gt=answer.added_at)
+    elif sort == _('votes'):
+        filter = Q(score__gt=answer.score) | Q(score=answer.score, added_at__lt=answer.added_at)
+    else:
+        raise Http404()
+        
+    count = answer.question.answers.filter(Q(marked=True) | filter).count()
+    pagesize = pc.pagesize(request)
+
+    page = count / pagesize
+    
+    if count % pagesize:
+        page += 1
+
+    return HttpResponsePermanentRedirect("%s?%s=%s#%s" % (
+        answer.question.get_absolute_url(), _('page'), page, answer.id))
+
 @decorators.render("question.html", 'questions', tabbed=False)
-def question(request, id, slug):
+def question(request, id, slug, answer=None):
     try:
         question = Question.objects.get(id=id)
     except:
         if slug:
             question = match_question_slug(slug)
             if question is not None:
-                return HttpResponsePermanentRedirect(question.get_absolute_url())
+                return HttpResponseRedirect(question.get_absolute_url())
 
         raise Http404()
 
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
 
+    if answer:
+        answer = get_object_or_404(Answer, id=answer)
+
+        if (question.nis.deleted and not request.user.can_view_deleted_post(question)) or answer.question != question:
+            raise Http404
+
+        if answer.marked:
+            return HttpResponsePermanentRedirect(question.get_absolute_url())
+
+        return answer_redirect(request, answer)
+
     if request.POST:
         answer_form = AnswerForm(question, request.POST)
     else:
         answer_form = AnswerForm(question)
 
-    answers = request.user.get_visible_answers(question).order_by("-marked")
+    answers = request.user.get_visible_answers(question)
 
     update_question_view_times(request, question)
 
