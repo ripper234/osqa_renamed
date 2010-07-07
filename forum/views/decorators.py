@@ -10,7 +10,7 @@ import logging
 
 def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
     def decorator(func):
-        def decorated(request, *args, **kwargs):
+        def decorated(func, request, *args, **kwargs):
             context = func(request, *args, **kwargs)
 
             if isinstance(context, HttpResponse):
@@ -26,7 +26,7 @@ def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
             ui.register(ui.PAGE_TOP_TABS,
                         ui.PageTab(tab, tab_title, lambda: reverse(func.__name__), weight=weight))
             
-        return decorated
+        return decorate.withfn(decorated)(func)
 
     return decorator
 

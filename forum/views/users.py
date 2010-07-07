@@ -21,60 +21,38 @@ from datetime import datetime, date
 import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
 from forum.modules import ui
+from forum.utils import pagination
 
 import time
 import decorators
+
+class UserReputationSort(pagination.SimpleSort):
+    def apply(self, objects):
+        return objects.order_by('-is_active', self.order_by)
+
+class UserListPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (UserListPaginatorContext, self).__init__('USERS_LIST', sort_methods=(
+            (_('reputation'), UserReputationSort(_('reputation'), '-reputation', _("sorted by reputation"))),
+            (_('newest'), pagination.SimpleSort(_('recent'), '-date_joined', _("newest members"))),
+            (_('last'), pagination.SimpleSort(_('oldest'), 'date_joined', _("oldest members"))),
+            (_('name'), pagination.SimpleSort(_('by username'), 'username', _("sorted by username"))),
+        ), pagesizes=(20, 35, 60))
 
 USERS_PAGE_SIZE = 35# refactor - move to some constants file
 
 @decorators.render('users/users.html', 'users', _('users'), weight=200)
 def users(request):
-    is_paginated = True
-    sortby = request.GET.get('sort', 'reputation')
     suser = request.REQUEST.get('q', "")
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
+    users = User.objects.all()
 
     if suser == "":
-        if sortby == "newest":
-            objects_list = Paginator(User.objects.all().order_by('-date_joined'), USERS_PAGE_SIZE)
-        elif sortby == "last":
-            objects_list = Paginator(User.objects.all().order_by('date_joined'), USERS_PAGE_SIZE)
-        elif sortby == "user":
-            objects_list = Paginator(User.objects.all().order_by('username'), USERS_PAGE_SIZE)
-        # default
-        else:
-            objects_list = Paginator(User.objects.all().order_by('-is_active', '-reputation'), USERS_PAGE_SIZE)
-        base_url = reverse('users') + '?sort=%s&' % sortby
-    else:
-        sortby = "reputation"
-        objects_list = Paginator(User.objects.filter(username__icontains=suser).order_by('-reputation'), USERS_PAGE_SIZE
-                                 )
-        base_url = reverse('users') + '?name=%s&sort=%s&' % (suser, sortby)
+        users = users.filter(username__icontains=suser)
 
-    try:
-        users = objects_list.page(page)
-    except (EmptyPage, InvalidPage):
-        users = objects_list.page(objects_list.num_pages)
-
-    return {
+    return pagination.paginated(request, 'users', UserListPaginatorContext(), {
         "users" : users,
         "suser" : suser,
-        "keywords" : suser,
-        "tab_id" : sortby,
-        "context" : {
-            'is_paginated' : is_paginated,
-            'pages': objects_list.num_pages,
-            'page': page,
-            'has_previous': users.has_previous(),
-            'has_next': users.has_next(),
-            'previous': users.previous_page_number(),
-            'next': users.next_page_number(),
-            'base_url' : base_url
-        }
-    }
+    })
 
 
 @login_required

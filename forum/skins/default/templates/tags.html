@@ -27,23 +27,20 @@
 <!-- Tabs -->
 <div class="tabBar">
     <div class="headQuestions">{% trans "Tag list" %}</div>
-    <div class="tabsA">
-        <a id="sort_name" href="{% url tags %}?sort=name" class="off" title="{% trans "sorted alphabetically" %}">{% trans "by name" %}</a>
-        <a id="sort_used" href="{% url tags %}?sort=used" class="off" title="{% trans "sorted by frequency of tag use" %}">{% trans "by popularity" %}</a>
-    </div>
+    {{ tags.paginator.sort_tabs }}
 </div>
 <div id="searchtags">
 <p>
 {% if stag %}
     {% trans "All tags matching query" %} '<span class="darkred"><strong>{{ stag }}</strong></span>':
 {% endif %}
-{% if not tags.object_list %}
+{% if not tags.paginator.count %}
     <span>{% trans "Nothing found" %}</span>
 {% endif %}
 </p>
-{% if tags.object_list %}
+{% if tags.paginator.count %}
 <ul class="tagsList tags">
-{% for tag in tags.object_list %}
+{% for tag in tags.paginator.page %}
    <li>
     <a href="{% url tag_questions tag|urlencode %}" title="{% trans "see questions tagged" %}'{{ tag }}'{% trans "using tags" %}" rel="tag">
         {{ tag }}
@@ -60,7 +57,7 @@
 {% endblock %}
 {% block tail %}
 <div class="pager">
-    {% cnprog_paginator context %}
+    {{ tags.paginator.page_numbers }}
 </div>              
 {% endblock %}
 <!-- end tags.html -->

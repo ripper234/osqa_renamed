@@ -31,18 +31,6 @@ from forum.http_responses import HttpResponseUnauthorized
 from forum.feed import RssQuestionFeed
 import decorators
 
-# used in index page
-#refactor - move these numbers somewhere?
-INDEX_PAGE_SIZE = 30
-INDEX_AWARD_SIZE = 15
-INDEX_TAGS_SIZE = 25
-# used in tags list
-DEFAULT_PAGE_SIZE = 60
-# used in questions
-QUESTIONS_PAGE_SIZE = 30
-# used in answers
-ANSWERS_PAGE_SIZE = 10
-
 class QuestionListPaginatorContext(pagination.PaginatorContext):
     def __init__(self):
         super (QuestionListPaginatorContext, self).__init__('QUESTIONS_LIST', sort_methods=(
@@ -66,6 +54,13 @@ class AnswerPaginatorContext(pagination.PaginatorContext):
             (_('newest'), AnswerSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
             (_('votes'), AnswerSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
         ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20))
+
+class TagPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (TagPaginatorContext, self).__init__('TAG_LIST', sort_methods=(
+            (_('name'), pagination.SimpleSort(_('by name'), 'name', _("sorted alphabetically"))),
+            (_('used'), pagination.SimpleSort(_('by popularity'), '-used_count', _("sorted by frequency of tag use"))),
+        ), default_sort=_('used'), pagesizes=(30, 60, 120))
     
 
 def feed(request):
@@ -221,44 +216,18 @@ def question_search(request, keywords):
 @decorators.render('tags.html', 'tags', _('tags'), weight=100)
 def tags(request):
     stag = ""
-    is_paginated = True
-    sortby = request.GET.get('sort', 'used')
-    try:
-        page = int(request.GET.get('page', '1'))
-    except ValueError:
-        page = 1
+    tags = Tag.active.all()
 
     if request.method == "GET":
         stag = request.GET.get("q", "").strip()
-        if stag != '':
-            objects_list = Paginator(Tag.active.filter(name__contains=stag), DEFAULT_PAGE_SIZE)
-        else:
-            if sortby == "name":
-                objects_list = Paginator(Tag.active.order_by("name"), DEFAULT_PAGE_SIZE)
-            else:
-                objects_list = Paginator(Tag.active.order_by("-used_count"), DEFAULT_PAGE_SIZE)
+        if stag:
+            tags = tags.filter(name__contains=stag)
 
-    try:
-        tags = objects_list.page(page)
-    except (EmptyPage, InvalidPage):
-        tags = objects_list.page(objects_list.num_pages)
-
-    return {
+    return pagination.paginated(request, 'tags', TagPaginatorContext(), {
         "tags" : tags,
         "stag" : stag,
-        "tab_id" : sortby,
-        "keywords" : stag,
-        "context" : {
-            'is_paginated' : is_paginated,
-            'pages': objects_list.num_pages,
-            'page': page,
-            'has_previous': tags.has_previous(),
-            'has_next': tags.has_next(),
-            'previous': tags.previous_page_number(),
-            'next': tags.next_page_number(),
-            'base_url' : reverse('tags') + '?sort=%s&' % sortby
-        }
-    }
+        "keywords" : stag
+    })
 
 def update_question_view_times(request, question):
     if not 'last_seen_in_question' in request.session:

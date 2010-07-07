@@ -171,8 +171,8 @@ def paginated(request, list_name, context, tpl_context):
 
         if hasattr(object_list, 'lazy'):
             return object_list.lazy()
-        return page_obj.object_list
-    objects.page = get_page
+        return object_list
+    paginator.page = get_page()
 
     total_pages = paginator.num_pages
 
@@ -225,9 +225,9 @@ def paginated(request, list_name, context, tpl_context):
                 'current': page,
                 'page_numbers': page_numbers
             }))
-        objects.page_numbers = page_nums
+        paginator.page_numbers = page_nums
     else:
-        objects.page_numbers = ''
+        paginator.page_numbers = ''
 
     if pagesize:
         def page_sizes():
@@ -243,9 +243,9 @@ def paginated(request, list_name, context, tpl_context):
                 'sizes': sizes
             }))
 
-        objects.page_sizes = page_sizes
+        paginator.page_sizes = page_sizes
     else:
-        objects.page_sizes = ''
+        paginator.page_sizes = ''
 
     if sort:
         def sort_tabs():
@@ -257,10 +257,11 @@ def paginated(request, list_name, context, tpl_context):
                 'sorts': sorts,
                 'sticky': session_prefs.get('sticky_sort', False)
             }))
-        objects.sort_tabs = sort_tabs()
+        paginator.sort_tabs = sort_tabs()
     else:
-        objects.sort_tabs = ''
+        paginator.sort_tabs = ''
 
     request.session['paginator_%s' % context.id] = session_prefs
+    objects.paginator = paginator
     tpl_context[list_name] = objects
     return tpl_context
