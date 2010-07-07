@@ -152,6 +152,10 @@ class User(BaseModel, DjangoUser):
         return self.username
 
     @property
+    def last_activity(self):
+        return self.actions.order_by('-action_date')[0].action_date
+
+    @property
     def gravatar(self):
         return md5(self.email).hexdigest()
 
