@@ -44,15 +44,15 @@ def opensearch(request):
 
 def feedback(request):
     if request.method == "POST":
-        form = FeedbackForm(request.POST)
+        form = FeedbackForm(request.user, data=request.POST)
         if form.is_valid():
-            context = {'user': request.user}
-
-            if not request.user.is_authenticated:
-                context['email'] = form.cleaned_data.get('email', None)
-            context['message'] = form.cleaned_data['message']
-            context['name'] = form.cleaned_data.get('name', None)
-            context['ip'] = request.META['REMOTE_ADDR']
+            context = {
+                 'user': request.user,
+                 'email': request.user.is_authenticated() and request.user.email or form.cleaned_data.get('email', None),
+                 'message': form.cleaned_data['message'],
+                 'name': request.user.is_authenticated() and request.user.username or form.cleaned_data.get('name', None),
+                 'ip': request.META['REMOTE_ADDR'],
+            }
 
             recipients = User.objects.filter(is_superuser=True)
             send_template_email(recipients, "notifications/feedback.html", context)
@@ -61,7 +61,7 @@ def feedback(request):
             request.user.message_set.create(message=msg)
             return HttpResponseRedirect(get_next_url(request))
     else:
-        form = FeedbackForm(initial={'next':get_next_url(request)})
+        form = FeedbackForm(request.user, initial={'next':get_next_url(request)})
 
     return render_to_response('feedback.html', {'form': form}, context_instance=RequestContext(request))
 

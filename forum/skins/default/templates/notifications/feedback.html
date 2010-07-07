@@ -13,13 +13,8 @@
 
     {% htmlcontent notifications/base.html %}
         <p style="{{ p_style }}}">
-            {% trans "Sender" %}:
-            {% if user.is_authenticated %}
-                {{ user.username }} <br /> {% trans "email" %}:{{ user.email }}
-            {% else %}
-                {% if name %}{{ name }}{% else %}{% trans "anonymous" %}{% endif %}
-                {% if email %}{% trans "email" %}:{{ email }}{% endif %}
-            {% endif %}
+            {% trans "Sender" %}:{% if name %}{{ name }}{% else %}{% trans "anonymous" %}{% endif %}<br />
+            {% trans "email" %}: {{ email }}
             <br/>
                 ip: {{ ip }}
         </p>
@@ -31,13 +26,8 @@
     {% endhtmlcontent %}
 
 {% textcontent notifications/base_text.html %}
-{% if user.is_authenticated %}
-{% trans "Sender" %}: {{ user.username }}
-{% trans "email" %}: {{ user.email }}
-{% else %}
 {% trans "Sender" %}: {% if name %}{{ name }}{% else %}{% trans "anonymous" %}{% endif %}
-{% if email %}{% trans "email" %}: {{ email }}{% endif %}
-{% endif %}
+{% trans "email" %}: {{ email }}
 ip: {{ ip }}
 
 {% trans "Message body:" %} {{ message }}
