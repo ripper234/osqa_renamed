@@ -303,6 +303,9 @@ def answer_redirect(request, answer):
     
     if count % pagesize:
         page += 1
+        
+    if page == 0:
+        page = 1
 
     return HttpResponsePermanentRedirect("%s?%s=%s#%s" % (
         answer.question.get_absolute_url(), _('page'), page, answer.id))
