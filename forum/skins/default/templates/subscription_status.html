@@ -1,6 +1,7 @@
-{% load i18n %}
-
-<h3 class="subtitle">{% trans "Subscription" %}:</h3>
+{% spaceless %}
+{% load i18n extra_tags %}
+<h3 class="subtitle">{% trans "Follow this question" %}</h3>
+<strong>{% trans "By Email" %}:</strong>
 {% if request.user.is_authenticated %}
     <div class="subscription-status">
         {% if subscription %}
@@ -29,3 +30,15 @@
 {% else %}
     <p>{% trans "Once you sign in you will be able to subscribe for any updates here" %}</p>
 {% endif %}
+<strong>{% trans "By RSS" %}:</strong>
+<p>
+    <a class="feed-icon" style="background-image:url('{% media "media/images/feed-icon-small.png" %}');"
+        href="{{ question.get_absolute_url }}?type=rss" title="{% trans "subscribe to answers" %}"></a>
+    {% trans "Answers" %}
+</p>
+<p>
+    <a class="feed-icon" style="background-image:url('{% media "media/images/feed-icon-small.png" %}');"
+        href="{{ question.get_absolute_url }}?type=rss&comments=yes" title="{% trans "subscribe to comments and answers" %}"></a>
+    {% trans "Answers and Comments" %}
+</p>
+{% endspaceless %}

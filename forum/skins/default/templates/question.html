@@ -13,6 +13,7 @@
 {% block title %}{% spaceless %}{{ question.headline }}{% endspaceless %}{% endblock %}
 {% block forejs %}
         <link rel="canonical" href="{{settings.APP_URL}}{{question.get_absolute_url}}" />
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ question.get_absolute_url }}?type=rss">
         {% if not question.nis.closed %}
         <script type='text/javascript' src='{% media  "/media/js/wmd/showdown.js" %}'></script>
         <script type='text/javascript' src='{% media  "/media/js/wmd/wmd.js" %}'></script>

@@ -28,7 +28,7 @@ from forum.models import *
 from forum.forms import get_next_url
 from forum.actions import QuestionViewAction
 from forum.http_responses import HttpResponseUnauthorized
-from forum.feed import RssQuestionFeed
+from forum.feed import RssQuestionFeed, RssAnswerFeed
 import decorators
 
 class QuestionListPaginatorContext(pagination.PaginatorContext):
@@ -148,7 +148,8 @@ def question_list(request, initial,
         page_title = _("Questions")
 
     if request.GET.get('type', None) == 'rss':
-        return RssQuestionFeed(questions, page_title, list_description, request)(request)
+        questions = questions.order_by('-added_at')
+        return RssQuestionFeed(request, questions, page_title, list_description)(request)
 
     keywords =  ""
     if request.GET.get("q"):
@@ -293,6 +294,9 @@ def question(request, id, slug=None, answer=None):
 
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
+
+    if request.GET.get('type', None) == 'rss':
+        return RssAnswerFeed(request, question, include_comments=request.GET.get('comments', None) == 'yes')(request)
 
     if answer:
         answer = get_object_or_404(Answer, id=answer)

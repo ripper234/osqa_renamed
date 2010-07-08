@@ -7,21 +7,22 @@ except:
 
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
 from models import Question
 from forum import settings
 
+class BaseNodeFeed(Feed):
+    if old_version:
+        title_template = "feeds/rss_title.html"
+        description_template = "feeds/rss_description.html"
 
-class RssQuestionFeed(Feed):
-    copyright = settings.APP_COPYRIGHT
-
-    def __init__(self, question_list, title, description, request):
+    def __init__(self, request, title, description, url):
         self._title = title
-        self._description = description
-        self._question_list = question_list
-        self._url = request.path + "&" + "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in ('page', 'pagesize', 'sort')])
+        self._description = mark_safe(description)
+        self._url = url
 
         if old_version:
-            super(RssQuestionFeed, self).__init__('', request)
+            super(BaseNodeFeed, self).__init__('', request)
 
     def title(self):
         return self._title
@@ -29,8 +30,17 @@ class RssQuestionFeed(Feed):
     def link(self):
         return self._url
 
+    def description(self):
+        return self._description
+
+    def item_title(self, item):
+        return item.title
+
+    def item_description(self, item):
+        return item.html
+
     def item_link(self, item):
-        return item.get_absolute_url()
+        return item.leaf.get_absolute_url()
 
     def item_author_name(self, item):
         return item.author.username
@@ -41,16 +51,52 @@ class RssQuestionFeed(Feed):
     def item_pubdate(self, item):
         return item.added_at
 
-    def item_categories(self, item):
-        return item.tagname_list()  
-
-    def items(self, item):
-       return self._question_list[:30]
-
     if old_version:
         def __call__(self, request):
             feedgen = self.get_feed('')
             response = HttpResponse(mimetype=feedgen.mime_type)
             feedgen.write(response, 'utf-8')
             return response
-            
+
+
+class RssQuestionFeed(BaseNodeFeed):
+    def __init__(self, request, question_list, title, description):
+        url = request.path + "&" + "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (_('page'), _('pagesize'), _('sort'))])
+        super(RssQuestionFeed, self).__init__(request, title, description, url)
+
+        self._question_list = question_list
+
+    def item_categories(self, item):
+        return item.tagname_list()  
+
+    def items(self):
+       return self._question_list[:30]
+
+class RssAnswerFeed(BaseNodeFeed):
+    if old_version:
+        title_template = "feeds/rss_answer_title.html"
+
+    def __init__(self, request, question, include_comments=False):
+        super(RssAnswerFeed, self).__init__(request, _("Answers to: %s") % question.title, question.html, question.get_absolute_url())
+        self._question = question
+        self._include_comments = include_comments
+
+    def items(self):
+        if self._include_comments:
+            qs = self._question.all_children
+        else:
+            qs = self._question.answers
+
+        return qs.filter_state(deleted=False).order_by('-added_at')[:30]
+
+    def item_title(self, item):
+        if item.node_type == "answer":
+            return _("Answer by %s") % item.author.username
+        else:
+            return _("Comment by %(cauthor)s on %(pauthor)s's %(qora)s") % dict(
+                cauthor=item.author.username, pauthor=item.parent.author.username, qora=(item.parent.node_type == "answer" and _("answer") or _("question"))
+            )
+
+
+
+
