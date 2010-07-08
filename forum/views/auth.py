@@ -346,6 +346,7 @@ def auth_settings(request, id):
     'form': form,
     'has_password': user_.has_usable_password(),
     'auth_keys': auth_keys_list,
+    'allow_local_auth': AUTH_PROVIDERS.get('local', None),
     }, context_instance=RequestContext(request))
 
 def remove_external_provider(request, id):
