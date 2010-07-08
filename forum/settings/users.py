@@ -39,6 +39,11 @@ choices=(("ask", _("ask questions")), ("answer", _("provide answers")), ("commen
 required=False,
 ))
 
+DONT_NOTIFY_UNVALIDATED = Setting('DONT_NOTIFY_UNVALIDATED', True, USERS_SET, dict(
+label = _("Don't notify to invalid emails"),
+help_text = _("Do not notify users with unvalidated emails."),
+required=False))
+
 HOLD_PENDING_POSTS_MINUTES = Setting('HOLD_PENDING_POSTS_MINUTES', 120, USERS_SET, dict(
 label=_("Hold pending posts for X minutes"),
 help_text=_("How much time in minutes a post should be kept in session until the user logs in or validates the email.")

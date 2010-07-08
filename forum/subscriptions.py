@@ -15,6 +15,14 @@ def create_subscription_if_not_exists(question, user):
         subscription = QuestionSubscription(question=question, user=user)
         subscription.save()
 
+def filter_subscribers(subscribers):
+    subscribers = subscribers.exclude(is_active=False)
+
+    if settings.DONT_NOTIFY_UNVALIDATED:
+        return subscribers.exclude(email_isvalid=False)
+    else:
+        return subscribers
+
 def question_posted(action, new):
     question = action.node
 
@@ -24,6 +32,8 @@ def question_posted(action, new):
               Q(marked_tags__name__in=question.tagnames.split(' ')) &
               Q(tag_selections__reason='good'))
     ).exclude(id=question.author.id).distinct()
+
+    subscribers = filter_subscribers(subscribers)
 
     send_template_email(subscribers, "notifications/newquestion.html", {'question': question})
 
@@ -52,6 +62,8 @@ def answer_posted(action, new):
             subscription_settings__notify_answers=True,
             subscription_settings__subscribed_questions='i'
     ).exclude(id=answer.author.id).distinct()
+
+    subscribers = filter_subscribers(subscribers)
 
     send_template_email(subscribers, "notifications/newanswer.html", {'answer': answer})
 
@@ -82,6 +94,8 @@ def comment_posted(action, new):
             q_filter, subscription_settings__subscribed_questions='i', subscription_settings__enable_notifications=True
     ).exclude(id=comment.user.id).distinct()
 
+    subscribers = filter_subscribers(subscribers)
+
 
     send_template_email(subscribers, "notifications/newcomment.html", {'comment': comment})
 
@@ -100,6 +114,8 @@ def answer_accepted(action, new):
             subscription_settings__subscribed_questions='i'
     ).exclude(id=action.node.nstate.accepted.by.id).distinct()
 
+    subscribers = filter_subscribers(subscribers)
+
     send_template_email(subscribers, "notifications/answeraccepted.html", {'answer': action.node})
 
 AcceptAnswerAction.hook(answer_accepted)
@@ -110,6 +126,8 @@ def member_joined(action, new):
             subscription_settings__enable_notifications=True,
             subscription_settings__member_joins='i'
     ).exclude(id=action.user.id).distinct()
+
+    subscribers = filter_subscribers(subscribers)
 
     send_template_email(subscribers, "notifications/newmember.html", {'newmember': action.user})
 
