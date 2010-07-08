@@ -58,10 +58,10 @@ class TagPaginatorContext(pagination.PaginatorContext):
 
 def feed(request):
     return RssQuestionFeed(
+                request,
                 Question.objects.filter_state(deleted=False).order_by('-last_activity_at'),
                 settings.APP_TITLE + _(' - ')+ _('latest questions'),
-                settings.APP_DESCRIPTION,
-                request)(request)
+                settings.APP_DESCRIPTION)(request)
 
 
 @decorators.render('index.html')
