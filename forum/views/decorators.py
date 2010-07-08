@@ -9,10 +9,8 @@ from forum.modules import ui, decorate
 import logging
 
 def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
-    def decorator(func):
-        def decorated(func, request, *args, **kwargs):
-            context = func(request, *args, **kwargs)
-
+    def decorator(func):        
+        def decorated(context, request, *args, **kwargs):
             if isinstance(context, HttpResponse):
                 return context
 
@@ -22,11 +20,11 @@ def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
             return render_to_response(context.pop('template', template), context,
                                       context_instance=RequestContext(request))
 
-        if tabbed and tab:
+        if tabbed and tab and tab_title:
             ui.register(ui.PAGE_TOP_TABS,
                         ui.PageTab(tab, tab_title, lambda: reverse(func.__name__), weight=weight))
             
-        return decorate.withfn(decorated)(func)
+        return decorate.result.withfn(decorated, needs_params=True)(func)
 
     return decorator
 

@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from django import template
 from forum.utils import html
+from forum.models.user import AnonymousUser
 from ui import Registry
 from copy import copy
 
@@ -62,7 +63,7 @@ class ObjectBase(object):
 
         def __call__(self, context):
             if callable(self.argument):
-                user = context.get('request', None) and context['request'].user or None
+                user = context.get('request', None) and context['request'].user or AnonymousUser()
                 return self.argument(user, context)
             else:
                 return self.argument
@@ -81,10 +82,7 @@ class ObjectBase(object):
             try:
                 return self._visible_to(context['viewer'])
             except KeyError:
-                if self.visibility:
-                    return False
-                else:
-                    return True
+                return self._visible_to(AnonymousUser())
 
     def render(self, context):
         return ''

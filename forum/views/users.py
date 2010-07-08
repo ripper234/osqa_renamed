@@ -174,26 +174,31 @@ def suspend(request, id):
 
 def user_view(template, tab_name, tab_title, tab_description, private=False, tabbed=True, render_to=None, weight=500):
     def decorator(fn):
-        def decorated(fn, request, id, slug=None):
+        def params(request, id, slug=None):
             user = get_object_or_404(User, id=id)
             if private and not (user == request.user or request.user.is_superuser):
                 return HttpResponseUnauthorized(request)
 
             if render_to and (not render_to(user)):
                 return HttpResponseRedirect(user.get_profile_url())
-                
-            context = fn(request, user)
 
+            return [request, user], {}
+
+        decorated = decorate.params.withfn(params)(fn)
+
+        def result(context, request, user):
             rev_page_title = user.username + " - " + tab_description
 
             context.update({
-            "tab": "users",
-            "active_tab" : tab_name,
-            "tab_description" : tab_description,
-            "page_title" : rev_page_title,
-            "can_view_private": (user == request.user) or request.user.is_superuser
+                "tab": "users",
+                "active_tab" : tab_name,
+                "tab_description" : tab_description,
+                "page_title" : rev_page_title,
+                "can_view_private": (user == request.user) or request.user.is_superuser
             })
             return render_to_response(template, context, context_instance=RequestContext(request))
+
+        decorated = decorate.result.withfn(result, needs_params=True)(decorated)
 
         if tabbed:
             def url_getter(vu):
@@ -206,7 +211,7 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
                 tab_name, tab_title, tab_description,url_getter, private, render_to, weight
             ))
 
-        return decorate.withfn(decorated)(fn)
+        return decorated
     return decorator
 
 

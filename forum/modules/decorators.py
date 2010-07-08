@@ -5,17 +5,26 @@ class DecoratableObject(object):
     MODE_PARAMS = 1
     MODE_RESULT = 2
 
-    def __init__(self, fn):
-        a = inspect.getargspec(fn)
+    def __init__(self, fn, is_method=False):
         self._callable = fn
+        self.is_method = is_method
+
         self._params_decoration = None
         self._result_decoration = None
 
-    def _decorate(self, fn, needs_origin, method=False):
+    def _decorate(self, fn, mode, **kwargs):
+        if mode == self.MODE_OVERRIDE:
+            self._decorate_full(fn, **kwargs)
+        elif mode == self.MODE_PARAMS:
+            self._decorate_params(fn)
+        elif mode == self.MODE_RESULT:
+            self._decorate_result(fn, **kwargs)
+
+    def _decorate_full(self, fn, needs_origin=True):
         origin = self._callable
 
         if needs_origin:
-            if method:
+            if self.is_method:
                 self._callable = lambda inst, *args, **kwargs: fn(inst, origin, *args, **kwargs)
             else:
                 self._callable = lambda *args, **kwargs: fn(origin, *args, **kwargs)
@@ -28,10 +37,11 @@ class DecoratableObject(object):
 
         self._params_decoration.append(fn)
 
-    def _decorate_result(self, fn):
+    def _decorate_result(self, fn, needs_params=False):
         if not self._result_decoration:
             self._result_decoration = []
 
+        fn._needs_params = needs_params
         self._result_decoration.append(fn)
 
     def __call__(self, *args, **kwargs):
@@ -43,86 +53,96 @@ class DecoratableObject(object):
 
         if self._result_decoration:
             for dec in self._result_decoration:
-                res = dec(res)
+                if dec._needs_params:
+                    res = dec(res, *args, **kwargs)
+                else:
+                    res = dec(res)
 
         return res
 
-
-def _create_decorator(origin, needs_origin, mode, method=False):
-    def decorator(fn):
-        if mode == DecoratableObject.MODE_OVERRIDE:
-            origin._decorate(fn, needs_origin, method=method)
-        elif mode == DecoratableObject.MODE_PARAMS:
-            origin._decorate_params(fn)
-        elif mode == DecoratableObject.MODE_RESULT:
-            origin._decorate_result(fn)
-
-        return fn
-
-    return decorator
-
-
-def _decorate_method(origin, needs_origin, mode):
-    if not hasattr(origin, '_decoratable_obj'):
-        name = origin.__name__
-        cls = origin.im_class
-
-        decoratable = DecoratableObject(origin)
-
-        def decoratable_method(self, *args, **kwargs):
-            return decoratable(self, *args, **kwargs)
-
-        decoratable_method._decoratable_obj = decoratable
-        setattr(cls, name, decoratable_method)
-    else:
-        decoratable = origin._decoratable_obj
-
-    return _create_decorator(decoratable, needs_origin, mode, method=True)
-
-def _decorate_function(origin, needs_origin, mode):
+def _check_decoratable(origin, install=True):
     if not isinstance(origin, DecoratableObject):
-        mod = inspect.getmodule(origin)
+        if inspect.ismethod(origin) and not hasattr(origin, '_decoratable_obj'):
+            decoratable = DecoratableObject(origin)
 
-        name = origin.__name__
-        origin = DecoratableObject(origin)
-        setattr(mod, name, origin)
+            def decoratable_method(self, *args, **kwargs):
+                return decoratable(self, *args, **kwargs)
 
-    return _create_decorator(origin, needs_origin, mode)
+            decoratable_method._decoratable_obj = decoratable
+
+            def decoratable_decorate(fn, mode, **kwargs):
+                decoratable._decorate(fn, mode, **kwargs)
+
+            decoratable_method._decorate = decoratable_decorate
+
+            if install:
+                setattr(origin.im_class, origin.__name__, decoratable_method)
+
+            return decoratable_method
+                
+        elif inspect.isfunction(origin):
+            decoratable = DecoratableObject(origin)
+
+            if install:
+                setattr(inspect.getmodule(origin), origin.__name__, decoratable)
+
+            return decoratable
+
+    return origin
 
 
-def decorate(origin, needs_origin=True, mode=DecoratableObject.MODE_OVERRIDE):
-    if inspect.ismethod(origin):
-        return _decorate_method(origin, needs_origin, mode)
-
-    if inspect.isfunction(origin) or isinstance(origin, DecoratableObject):
-        return _decorate_function(origin, needs_origin, mode)
+def decorate(origin, needs_origin=True):
+    origin = _check_decoratable(origin)
 
     def decorator(fn):
-        return fn
-
+        origin._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=needs_origin)
+        
     return decorator
 
 
 def _decorate_params(origin):
-    return decorate(origin, mode=DecoratableObject.MODE_PARAMS)
+    origin = _check_decoratable(origin)
+
+    def decorator(fn):
+        origin._decorate(fn, DecoratableObject.MODE_PARAMS)
+
+    return decorator
 
 decorate.params = _decorate_params
 
-def _decorate_result(origin):
-    return decorate(origin, mode=DecoratableObject.MODE_RESULT)
+def _decorate_result(origin, needs_params=False):
+    origin = _check_decoratable(origin)
+
+    def decorator(fn):
+        origin._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
+
+    return decorator
 
 decorate.result = _decorate_result
 
 def _decorate_with(fn):
     def decorator(origin):
-        if not isinstance(origin, DecoratableObject):
-            decoratable = DecoratableObject(origin)
-        else:
-            decoratable = origin
-
-        decoratable._decorate(fn, True, False)
-        return decoratable
+        origin = _check_decoratable(origin)
+        origin._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=True)
+        return origin
     return decorator
 
-
 decorate.withfn = _decorate_with
+
+def _decorate_result_with(fn, needs_params=False):
+    def decorator(origin):
+        origin = _check_decoratable(origin)
+        origin._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
+        return origin
+    return decorator
+
+decorate.result.withfn = _decorate_result_with
+
+def _decorate_params_with(fn):
+    def decorator(origin):
+        origin = _check_decoratable(origin)
+        origin._decorate(fn, DecoratableObject.MODE_PARAMS)
+        return origin
+    return decorator
+
+decorate.params.withfn = _decorate_params_with

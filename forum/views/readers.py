@@ -279,7 +279,7 @@ def answer_redirect(request, answer):
     return HttpResponsePermanentRedirect("%s?%s=%s#%s" % (
         answer.question.get_absolute_url(), _('page'), page, answer.id))
 
-@decorators.render("question.html", 'questions', tabbed=False)
+@decorators.render("question.html", 'questions')
 def question(request, id, slug, answer=None):
     try:
         question = Question.objects.get(id=id)
