@@ -1,8 +1,8 @@
 try:
-    from django.contrib.syndication.views import Feed, FeedDoesNotExist
+    from django.contrib.syndication.views import Feed, FeedDoesNotExist, add_domain
     old_version = False
 except:
-    from django.contrib.syndication.feeds import Feed, FeedDoesNotExist
+    from django.contrib.syndication.feeds import Feed, FeedDoesNotExist, add_domain
     old_version = True
 
 from django.http import HttpResponse
@@ -10,6 +10,11 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from models import Question
 from forum import settings
+from forum.modules import decorate
+
+@decorate(add_domain, needs_origin=False)
+def add_domain(domain, url):
+    return "%s%s" % (settings.APP_URL, url)
 
 class BaseNodeFeed(Feed):
     if old_version:
