@@ -294,7 +294,7 @@ class Guru(AbstractBadge):
 
     def award_to(self, action):
         if (action.node.node_type == "answer") and (action.node.accepted) and (
-        action.node.score >= int(settings.ENLIGHTENED_UP_VOTES)):
+        action.node.score >= int(settings.GURU_UP_VOTES)):
             return action.node.author
 
 
