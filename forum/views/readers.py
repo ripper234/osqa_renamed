@@ -32,13 +32,13 @@ from forum.feed import RssQuestionFeed
 import decorators
 
 class QuestionListPaginatorContext(pagination.PaginatorContext):
-    def __init__(self):
-        super (QuestionListPaginatorContext, self).__init__('QUESTIONS_LIST', sort_methods=(
+    def __init__(self, id='QUESTIONS_LIST', prefix='', default_pagesize=30):
+        super (QuestionListPaginatorContext, self).__init__(id, sort_methods=(
             (_('active'), pagination.SimpleSort(_('active'), '-last_activity_at', _("most recently updated questions"))),
             (_('newest'), pagination.SimpleSort(_('newest'), '-added_at', _("most recently asked questions"))),
             (_('hottest'), pagination.SimpleSort(_('hottest'), '-extra_count', _("hottest questions"))),
             (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most voted questions"))),
-        ), pagesizes=(15, 30, 50))
+        ), pagesizes=(15, 30, 50), default_pagesize=default_pagesize, prefix=prefix)
 
 class AnswerSort(pagination.SimpleSort):
     def apply(self, objects):
@@ -48,12 +48,12 @@ class AnswerSort(pagination.SimpleSort):
             return objects.order_by('-marked', self.order_by)
 
 class AnswerPaginatorContext(pagination.PaginatorContext):
-    def __init__(self):
-        super (AnswerPaginatorContext, self).__init__('ANSWER_LIST', sort_methods=(
+    def __init__(self, id='ANSWER_LIST', prefix='', default_pagesize=10):
+        super (AnswerPaginatorContext, self).__init__(id, sort_methods=(
             (_('oldest'), AnswerSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
             (_('newest'), AnswerSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
             (_('votes'), AnswerSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
-        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20))
+        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20), default_pagesize=default_pagesize, prefix=prefix)
 
 class TagPaginatorContext(pagination.PaginatorContext):
     def __init__(self):
@@ -164,7 +164,7 @@ def question_list(request, initial,
 
         feed_url = mark_safe(request.path + "?type=rss" + req_params)
 
-    return pagination.paginated(request, 'questions', paginator_context or QuestionListPaginatorContext(), {
+    return pagination.paginated(request, ('questions', paginator_context or QuestionListPaginatorContext()), {
     "questions" : questions,
     "questions_count" : questions.count(),
     "answer_count" : answer_count,
@@ -223,7 +223,7 @@ def tags(request):
         if stag:
             tags = tags.filter(name__contains=stag)
 
-    return pagination.paginated(request, 'tags', TagPaginatorContext(), {
+    return pagination.paginated(request, ('tags', TagPaginatorContext()), {
         "tags" : tags,
         "stag" : stag,
         "keywords" : stag
@@ -322,7 +322,7 @@ def question(request, id, slug, answer=None):
     else:
         subscription = False
 
-    return pagination.paginated(request, 'answers', AnswerPaginatorContext(), {
+    return pagination.paginated(request, ('answers', AnswerPaginatorContext()), {
     "question" : question,
     "answer" : answer_form,
     "answers" : answers,

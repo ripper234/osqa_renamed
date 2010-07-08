@@ -22,6 +22,7 @@ import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
 from forum.modules import ui
 from forum.utils import pagination
+from forum.views.readers import QuestionListPaginatorContext, AnswerPaginatorContext
 
 import time
 import decorators
@@ -39,6 +40,14 @@ class UserListPaginatorContext(pagination.PaginatorContext):
             (_('name'), pagination.SimpleSort(_('by username'), 'username', _("sorted by username"))),
         ), pagesizes=(20, 35, 60))
 
+class UserAnswersPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (UserAnswersPaginatorContext, self).__init__('USER_ANSWER_LIST', sort_methods=(
+            (_('oldest'), pagination.SimpleSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
+            (_('newest'), pagination.SimpleSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
+            (_('votes'), pagination.SimpleSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
+        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20), default_pagesize=20, prefix=_('answers'))
+
 USERS_PAGE_SIZE = 35# refactor - move to some constants file
 
 @decorators.render('users/users.html', 'users', _('users'), weight=200)
@@ -49,7 +58,7 @@ def users(request):
     if suser == "":
         users = users.filter(username__icontains=suser)
 
-    return pagination.paginated(request, 'users', UserListPaginatorContext(), {
+    return pagination.paginated(request, ('users', UserListPaginatorContext()), {
         "users" : users,
         "suser" : suser,
     })
@@ -231,7 +240,9 @@ def user_profile(request, user):
     awards = [(Badge.objects.get(id=b['id']), b['count']) for b in
               Badge.objects.filter(awards__user=user).values('id').annotate(count=Count('cls')).order_by('-count')]
 
-    return {
+    return pagination.paginated(request, (
+    ('questions', QuestionListPaginatorContext('USER_QUESTION_LIST', _('questions'), 15)),
+    ('answers', UserAnswersPaginatorContext())), {
     "view_user" : user,
     "questions" : questions,
     "answers" : answers,
@@ -243,7 +254,7 @@ def user_profile(request, user):
     "user_tags" : user_tags[:50],
     "awards": awards,
     "total_awards" : len(awards),
-    }
+    })
     
 @user_view('users/recent.html', 'recent', _('recent activity'), _('recent user activity'))
 def user_recent(request, user):

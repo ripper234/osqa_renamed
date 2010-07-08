@@ -325,6 +325,10 @@ blockquote {
     width: 740px;
 }
 
+#listA .short-summary:first-of-type {
+    border-top: 0;
+}
+
 .short-summary h2 a {
     color: #2A5594;
     font-family: "Trebuchet MS", "segoe ui", arial, sans-serif;
@@ -1735,5 +1739,5 @@ div.dialog.prompt .dialog-content select, div.dialog.prompt .dialog-content text
 .feed-icon {
     width: 14px;
     height: 14px;
-    float: left;
+    display: inline-block;
 }

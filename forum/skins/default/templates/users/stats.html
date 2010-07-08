@@ -7,49 +7,41 @@
 {% load question_list_tags %}
 		{% block usercontent %}
 
-		{% declare %}
-		    question_count = questions.count()
-		    show_more_questions_link = question_count > 15
-		    questions = questions[:15]
-
-		    answer_count = answers.count()
-		    show_more_answers_link = answer_count > 30
-		    answers = answers[:30]
-		{% enddeclare %}
-	
         <a name="questions"></a>
         {% spaceless %}
             <h2>
-                {% blocktrans count question_count as counter %}
+                {% blocktrans count questions.paginator.count as counter %}
                 <span class="count">1</span> Question
                 {% plural %}
                 <span class="count">{{counter}}</span> Questions
                 {% endblocktrans %}
+                <a class="feed-icon" style="background-image:url('{% media "media/images/feed-icon-small.png" %}');"
+                    href="{{ view_user.get_asked_url }}?type=rss" title="{% trans "subscribe to question RSS feed" %}"></a>
             </h2>
         {% endspaceless %}
-		<div class="user-stats-table">
-		    {% for question in questions %}
+        <div>{{ questions.paginator.sort_tabs }}</div>
+		<div id="listA">
+		    {% for question in questions.paginator.page %}
 		        {% question_list_item question favorite_count=yes signature_type=badges %}
 		    {% endfor %}
-            {% if show_more_questions_link %}
-                <div class="short-summary"  style="text-align: right">
-                    <a href="{{ view_user.get_asked_url }}">{% blocktrans with view_user.username as username %}View all questions by {{ username }}{% endblocktrans %}</a>
-                </div>
-            {% endif %}
 		</div>
 		<br clear="all"/>
+		<div class="pager">{{ questions.paginator.page_numbers }}</div>
+		<br clear="all"/>
+
         <a name="answers"></a>
         {% spaceless %}
             <h2>
-                {% blocktrans count answer_count as counter %}
+                {% blocktrans count answers.paginator.count as counter %}
                 <span class="count">1</span> Answer
                 {% plural %}
                 <span class="count">{{counter}}</span> Answers
                 {% endblocktrans %}
             </h2>
         {% endspaceless %}
+        <div>{{ answers.paginator.sort_tabs }}</div>
         <div class="user-stats-table">
-            {% for answer in answers %}
+            {% for answer in answers.paginator.page %}
             <div class="answer-summary">
                 <a title="{{answer.question.title}}"
                     href="{{ answer.get_absolute_url }}">
@@ -65,12 +57,9 @@
                 </div>
             </div>
             {% endfor %}
-            {% if show_more_answers_link %}
-                <div class="short-summary"  style="text-align: right">
-                    <a href="{{ view_user.get_answered_url }}">{% blocktrans with view_user.username as username %}View all questions answered by {{ username }}{% endblocktrans %}</a>
-                </div>
-            {% endif %}
         </div>
+        <br clear="all"/>
+		<div class="pager">{{ answers.paginator.page_numbers }}</div>
         <br clear="all"/>
         <a name="votes"></a>
         {% spaceless %}
