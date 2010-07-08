@@ -15,7 +15,10 @@ class SimpleSort(object):
         self.order_by = order_by
 
     def apply(self, objects):
-        return objects.order_by(self.order_by)
+        if isinstance(self.order_by, (list, tuple)):
+            return objects.order_by(*self.order_by)
+        else:
+            return objects.order_by(self.order_by)
 
 class DummySort(object):
     def __init__(self, label, description=''):
