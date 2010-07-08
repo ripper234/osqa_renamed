@@ -105,6 +105,9 @@ class Command(NoArgsCommand):
 
         digest = DigestQuestionsIndex(from_date)
 
+        if (not new_member_count) and (not digest.count):
+            return
+
         send_template_email(users, "notifications/digest.html", locals())
 
 
