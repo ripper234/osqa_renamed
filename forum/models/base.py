@@ -151,10 +151,10 @@ class BaseModel(models.Model):
             (f.name, getattr(self, f.name)) for f in self._meta.fields if self._original_state[f.attname] != self.__dict__[f.attname]
         ])
 
-    def save(self, *args, **kwargs):
+    def save(self, full_save=False, *args, **kwargs):
         put_back = [k for k, v in self.__dict__.items() if isinstance(v, models.expressions.ExpressionNode)]
 
-        if self.id:
+        if self.id and not full_save:
             self.__class__.objects.filter(id=self.id).update(**self._get_update_kwargs())
         else:
             super(BaseModel, self).save()

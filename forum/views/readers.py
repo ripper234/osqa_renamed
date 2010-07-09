@@ -46,7 +46,7 @@ class AnswerPaginatorContext(pagination.PaginatorContext):
             (_('oldest'), pagination.SimpleSort(_('oldest answers'), ('-marked', 'added_at'), _("oldest answers will be shown first"))),
             (_('newest'), pagination.SimpleSort(_('newest answers'), ('-marked', '-added_at'), _("newest answers will be shown first"))),
             (_('votes'), pagination.SimpleSort(_('popular answers'), ('-marked', '-score', 'added_at'), _("most voted answers will be shown first"))),
-        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20), default_pagesize=default_pagesize, prefix=prefix)
+        ), default_sort=_('votes'), pagesizes=(5, 10, 20), default_pagesize=default_pagesize, prefix=prefix)
 
 class TagPaginatorContext(pagination.PaginatorContext):
     def __init__(self):
@@ -66,11 +66,14 @@ def feed(request):
 
 @decorators.render('index.html')
 def index(request):
+    paginator_context = QuestionListPaginatorContext()
+    paginator_context.base_path = reverse('questions')
     return question_list(request,
                          Question.objects.all(),
                          sort=request.utils.set_sort_method('active'),
                          base_path=reverse('questions'),
-                         feed_url=reverse('latest_questions_feed'))
+                         feed_url=reverse('latest_questions_feed'),
+                         paginator_context=paginator_context)
 
 @decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
 def unanswered(request):

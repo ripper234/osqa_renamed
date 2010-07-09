@@ -291,5 +291,8 @@ class SubscriptionSettingsForm(forms.ModelForm):
     class Meta:
         model = SubscriptionSettings
 
+class UserPreferencesForm(forms.Form):
+    sticky_sorts = forms.BooleanField(required=False, initial=False)
+
 
 

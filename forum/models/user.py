@@ -364,7 +364,7 @@ class User(BaseModel, DjangoUser):
     class Meta:
         app_label = 'forum'
 
-class UserProperty(models.Model):
+class UserProperty(BaseModel):
     user = models.ForeignKey(User, related_name='properties')
     key = models.CharField(max_length=16)
     value = PickledObjectField()
@@ -372,6 +372,16 @@ class UserProperty(models.Model):
     class Meta:
         app_label = 'forum'
         unique_together = ('user', 'key')
+
+    def cache_key(self):
+        return self._generate_cache_key("%s:%s" % (self.user.id, self.key))
+
+    @classmethod
+    def infer_cache_key(cls, querydict):
+        if 'user' in querydict and 'key' in querydict:
+            return cls._generate_cache_key("%s:%s" % (querydict['user'].id, querydict['key']))
+
+        return None
 
 class UserPropertyDict(object):
     def __init__(self, user):
@@ -408,7 +418,7 @@ class UserPropertyDict(object):
             if current:
                 current.value = value
                 self.__dict__[name] = value
-                current.save()
+                current.save(full_save=True)
             else:
                 user = self.__dict__['_user']
                 prop = UserProperty(user=user, value=value, key=name)

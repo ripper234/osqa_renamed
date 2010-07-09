@@ -46,7 +46,7 @@ class UserAnswersPaginatorContext(pagination.PaginatorContext):
             (_('oldest'), pagination.SimpleSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
             (_('newest'), pagination.SimpleSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
             (_('votes'), pagination.SimpleSort(_('popular answers'), '-score', _("most voted answers will be shown first"))),
-        ), default_sort=_('votes'), sticky_sort = True, pagesizes=(5, 10, 20), default_pagesize=20, prefix=_('answers'))
+        ), default_sort=_('votes'), pagesizes=(5, 10, 20), default_pagesize=20, prefix=_('answers'))
 
 USERS_PAGE_SIZE = 35# refactor - move to some constants file
 
@@ -55,7 +55,7 @@ def users(request):
     suser = request.REQUEST.get('q', "")
     users = User.objects.all()
 
-    if suser == "":
+    if suser != "":
         users = users.filter(username__icontains=suser)
 
     return pagination.paginated(request, ('users', UserListPaginatorContext()), {
@@ -320,6 +320,25 @@ def user_subscriptions(request, user):
         form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
     return {'view_user':user, 'notificatons_on': enabled, 'form':form}
+
+@user_view('users/preferences.html', 'preferences', _('preferences'), _('preferences'), True, tabbed=False)
+def user_preferences(request, user):
+    if request.POST:
+        form = UserPreferencesForm(request.POST)
+
+        if form.is_valid():
+            user.prop.preferences = form.cleaned_data
+            request.user.message_set.create(message=_('New preferences saved'))
+
+    else:
+        preferences = user.prop.preferences
+
+        if preferences:
+            form = UserPreferencesForm(initial=preferences)
+        else:
+            form = UserPreferencesForm()
+            
+    return {'view_user': user, 'form': form}
 
 @login_required
 def account_settings(request):

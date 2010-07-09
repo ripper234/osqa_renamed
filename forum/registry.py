@@ -73,6 +73,11 @@ ui.register(ui.USER_MENU,
                 span_attrs={'class': 'user-subscriptions'},
                 weight=200
             ),
+            ui.UserMenuItem(
+                label=_("other preferences"),
+                url=lambda u, c: reverse('user_preferences', kwargs={'id': c['user'].id, 'slug': slugify(c['user'].username)}),
+                weight=200
+            ),
             ModerationMenuGroup(_("Moderation tools"), items=(
                 ui.UserMenuItem(
                     label=lambda u, c: c['user'].is_suspended() and _("withdraw suspension") or _("suspend this user"),

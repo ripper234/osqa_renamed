@@ -35,7 +35,7 @@ class PaginatorContext(object):
 
     base_path = None
 
-    def __init__(self, id, sort_methods=None, default_sort=None, force_sort = None, sticky_sort=False,
+    def __init__(self, id, sort_methods=None, default_sort=None, force_sort = None,
                  pagesizes=None, default_pagesize=None, prefix=''):
         self.id = id
         if sort_methods:
@@ -62,15 +62,30 @@ class PaginatorContext(object):
             self.has_pagesize = False
 
         self.force_sort = force_sort
-        self.sticky_sort = sticky_sort
         self.prefix = prefix
 
-    def session_preferences(self, request):
-        return request.session.get('paginator_%s%s' % (self.prefix, self.id), {})
+    def preferences(self, request):
+        if request.user.is_authenticated():
+            if request.user.prop.pagination:
+                preferences = request.user.prop.pagination.get(self.id, {})
+            else:
+                preferences = {}
+        else:
+            preferences = request.session.get('paginator_%s%s' % (self.prefix, self.id), {})
+
+        return preferences
+
+    def set_preferences(self, request, preferences):
+        if request.user.is_authenticated():
+            all_preferences = request.user.prop.pagination or {}
+            all_preferences[self.id] = preferences
+            request.user.prop.pagination = all_preferences
+        else:
+            request.session['paginator_%s%s' % (self.prefix, self.id)] = preferences
 
     def pagesize(self, request, session_prefs=None):
         if not session_prefs:
-            session_prefs = self.session_preferences(request)
+            session_prefs = self.preferences(request)
 
 
         if self.has_pagesize:
@@ -105,16 +120,19 @@ class PaginatorContext(object):
 
     def sort(self, request, session_prefs=None):
         if not session_prefs:
-            session_prefs = self.session_preferences(request)
+            session_prefs = self.preferences(request)
 
         sort = None
+        sticky = request.user.is_authenticated() and request.user.prop.preferences and request.user.prop.preferences.get('sticky_sorts', False)
+
         if self.has_sort:
             if request.GET.get(self.SORT, None):
                 sort = request.GET[self.SORT]
-                if self.sticky_sort or session_prefs.get('sticky_sort', False):
+
+                if sticky:
                     session_prefs[self.SORT] = sort
             else:
-                sort = self.force_sort or session_prefs.get(self.SORT, self.default_sort)
+                sort = self.force_sort or (sticky and session_prefs.get(self.SORT, None)) or self.default_sort
 
             if not sort in self.sort_methods:
                 sort = self.default_sort
@@ -155,7 +173,7 @@ def paginated(request, paginators, tpl_context):
     return tpl_context
 
 def _paginated(request, objects, context):
-    session_prefs = context.session_preferences(request)
+    session_prefs = context.preferences(request)
 
     pagesize = context.pagesize(request, session_prefs)
     page = context.page(request)
@@ -278,6 +296,6 @@ def _paginated(request, objects, context):
     else:
         paginator.sort_tabs = ''
 
-    request.session['paginator_%s' % context.id] = session_prefs
+    context.set_preferences(request, session_prefs)
     objects.paginator = paginator
     return objects
