@@ -14,7 +14,7 @@
 {% block content %}
 
 <div class="tabBar">
-    {% question_list_title %}
+    {% include "question_list/title.html" %}
     <a class="feed-icon" style="background-image:url('{% media "media/images/feed-icon-small.png" %}');" href="{{ feed_url }}" title="{% trans "subscribe to question RSS feed" %}"></a>
     {{ questions.paginator.sort_tabs }}
 </div>
@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block sidebar %}
-    {% question_list_count %}
+    {% include "question_list/count.html" %}
     {% sidebar_upper %}
     {% tag_selector %}
     {% sidebar_lower %}

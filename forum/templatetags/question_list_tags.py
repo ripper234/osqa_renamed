@@ -56,18 +56,3 @@ def tag_selector(context):
         }
     else:
         return {'user_authenticated': False}
-
-@register.inclusion_tag('question_list/count.html', takes_context=True)
-def question_list_count(context):
-    context['sort_description'] = mark_safe({
-        'latest': _('<strong>Newest</strong> questions are shown first. '),
-        'active': _('Questions are sorted by the <strong>time of last update</strong>.'),
-        'hottest': _('Questions sorted by <strong>number of responses</strong>.'),
-        'mostvoted': _('Questions are sorted by the <strong>number of votes</strong>.')
-    }.get(context['request'].utils.sort_method('latest'), ''))
-
-    return context
-
-@register.inclusion_tag('question_list/title.html', takes_context=True)
-def question_list_title(context):
-    return context

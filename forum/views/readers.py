@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django import template
 from django.utils.html import *
 from django.utils import simplejson
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import slugify
 from django.core.urlresolvers import reverse
@@ -31,13 +31,19 @@ from forum.http_responses import HttpResponseUnauthorized
 from forum.feed import RssQuestionFeed, RssAnswerFeed
 import decorators
 
+class HottestQuestionsSort(pagination.SortBase):
+    def apply(self, questions):
+        return questions.annotate(new_child_count=Count('all_children')).filter(
+                all_children__added_at__gt=datetime.datetime.now() - datetime.timedelta(days=1)).order_by('-new_child_count')
+
+
 class QuestionListPaginatorContext(pagination.PaginatorContext):
     def __init__(self, id='QUESTIONS_LIST', prefix='', default_pagesize=30):
         super (QuestionListPaginatorContext, self).__init__(id, sort_methods=(
-            (_('active'), pagination.SimpleSort(_('active'), '-last_activity_at', _("most recently updated questions"))),
-            (_('newest'), pagination.SimpleSort(_('newest'), '-added_at', _("most recently asked questions"))),
-            (_('hottest'), pagination.SimpleSort(_('hottest'), '-extra_count', _("hottest questions"))),
-            (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most voted questions"))),
+            (_('active'), pagination.SimpleSort(_('active'), '-last_activity_at', _("Most <strong>recently updated</strong> questions"))),
+            (_('newest'), pagination.SimpleSort(_('newest'), '-added_at', _("most <strong>recently asked</strong> questions"))),
+            (_('hottest'), HottestQuestionsSort(_('hottest'), _("most <strong>active</strong> questions in the last 24 hours</strong>"))),
+            (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most <strong>voted</strong> questions"))),
         ), pagesizes=(15, 30, 50), default_pagesize=default_pagesize, prefix=prefix)
 
 class AnswerPaginatorContext(pagination.PaginatorContext):
@@ -70,7 +76,6 @@ def index(request):
     paginator_context.base_path = reverse('questions')
     return question_list(request,
                          Question.objects.all(),
-                         sort=request.utils.set_sort_method('active'),
                          base_path=reverse('questions'),
                          feed_url=reverse('latest_questions_feed'),
                          paginator_context=paginator_context)
@@ -80,20 +85,18 @@ def unanswered(request):
     return question_list(request,
                          Question.objects.filter(extra_ref=None),
                          _('open questions without an accepted answer'),
-                         request.utils.set_sort_method('active'),
                          None,
                          _("Unanswered Questions"))
 
 @decorators.render('questions.html', 'questions', _('questions'), weight=0)
 def questions(request):
-    return question_list(request, Question.objects.all(), _('questions'), request.utils.set_sort_method('active'))
+    return question_list(request, Question.objects.all(), _('questions'))
 
 @decorators.render('questions.html')
 def tag(request, tag):
     return question_list(request,
                          Question.objects.filter(tags__name=unquote(tag)),
                          mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
-                         request.utils.set_sort_method('active'),
                          None,
                          mark_safe(_('Questions Tagged With %(tag)s') % {'tag': tag}),
                          False)
@@ -123,12 +126,10 @@ def user_questions(request, mode, user, slug):
 
     return question_list(request, questions,
                          mark_safe(description % hyperlink(user.get_profile_url(), user.username)),
-                         request.utils.set_sort_method('active'),
                          page_title=description % user.username)
 
 def question_list(request, initial,
                   list_description=_('questions'),
-                  sort=None,
                   base_path=None,
                   page_title=_("All Questions"),
                   allowIgnoreTags=True,

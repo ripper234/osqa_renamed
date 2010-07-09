@@ -35,7 +35,7 @@ class LazyQueryList(object):
 
 class CachedQuerySet(models.query.QuerySet):
     def lazy(self):
-        if len(self.query.extra) == 0:
+        if (not len(self.query.extra)) and (not len(self.query.aggregates)):
             return LazyQueryList(self.model, list(self.values_list('id', flat=True)))
         else:
             return self

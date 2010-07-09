@@ -5,13 +5,18 @@ from django.core.paginator import Paginator, EmptyPage
 from django.utils.translation import ugettext as _
 from django.http import Http404
 from django.utils.safestring import mark_safe
-from django.utils.http import urlquote
+from django.utils.html import strip_tags
+
 import logging
 
-class SimpleSort(object):
-    def __init__(self, label, order_by, description=''):
+class SortBase(object):
+    def __init__(self, label, description=''):
         self.label = label
         self.description = description
+
+class SimpleSort(SortBase):
+    def __init__(self, label, order_by, description=''):
+        super(SimpleSort, self) .__init__(label, description)
         self.order_by = order_by
 
     def apply(self, objects):
@@ -19,15 +24,6 @@ class SimpleSort(object):
             return objects.order_by(*self.order_by)
         else:
             return objects.order_by(self.order_by)
-
-class DummySort(object):
-    def __init__(self, label, description=''):
-        self.label = label
-        self.description = description
-
-    def apply(self, objects):
-        return objects
-
 
 class PaginatorContext(object):
     visible_page_range = 5
@@ -285,7 +281,7 @@ def _paginated(request, objects, context):
     if sort:
         def sort_tabs():
             url_builder = lambda s: mark_safe("%s%s%s=%s" % (base_path, url_joiner, context.SORT, s))
-            sorts = [(n, s.label, url_builder(n), s.description) for n, s in context.sort_methods.items()]
+            sorts = [(n, s.label, url_builder(n), strip_tags(s.description)) for n, s in context.sort_methods.items()]
 
             return sort_tabs_template.render(template.Context({
                 'current': sort,
@@ -293,8 +289,9 @@ def _paginated(request, objects, context):
                 'sticky': session_prefs.get('sticky_sort', False)
             }))
         paginator.sort_tabs = sort_tabs()
+        paginator.sort_description = mark_safe(context.sort_methods[sort].description)
     else:
-        paginator.sort_tabs = ''
+        paginator.sort_tabs = paginator.sort_description = ''
 
     context.set_preferences(request, session_prefs)
     objects.paginator = paginator
