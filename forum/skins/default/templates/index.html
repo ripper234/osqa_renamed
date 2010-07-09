@@ -17,7 +17,7 @@
             </div>
         {% endif %}
     {% endif %}
-    {% question_list_count %}
+    {% include "question_list/count.html" %}
     {% sidebar_upper %}
     {% if request.user.is_authenticated %}
         {% tag_selector %}
