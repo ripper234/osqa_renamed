@@ -288,7 +288,7 @@ def validate_email(request, user, code):
     if (ValidationHash.objects.validate(code, user, 'email', [user.email])):
         user.email_isvalid = True
         user.save()
-        return login_and_forward(request, user, None, _("Thank you, your email is now validated."))
+        return login_and_forward(request, user, reverse('index'), _("Thank you, your email is now validated."))
     else:
         raise Http404()
 
