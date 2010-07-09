@@ -277,7 +277,7 @@ def answer_redirect(request, answer):
         answer.question.get_absolute_url(), _('page'), page, answer.id))
 
 @decorators.render("question.html", 'questions')
-def question(request, id, slug=None, answer=None):
+def question(request, id, slug='', answer=None):
     try:
         question = Question.objects.get(id=id)
     except:
@@ -305,7 +305,7 @@ def question(request, id, slug=None, answer=None):
 
         return answer_redirect(request, answer)
 
-    if settings.FORCE_SINGLE_URL and ((not slug) or (slug != slugify(question.title))):
+    if settings.FORCE_SINGLE_URL and (slug != slugify(question.title)):
         return HttpResponsePermanentRedirect(question.get_absolute_url())
 
     if request.POST:
