@@ -305,7 +305,7 @@ def question(request, id, slug=None, answer=None):
 
         return answer_redirect(request, answer)
 
-    if (not slug) or (slug != urlquote(slugify(question.title))):
+    if settings.FORCE_SINGLE_URL and ((not slug) or (slug != slugify(question.title))):
         return HttpResponsePermanentRedirect(question.get_absolute_url())
 
     if request.POST:

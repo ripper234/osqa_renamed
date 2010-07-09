@@ -1,3 +1,4 @@
+import forum.utils.djangofix
 from question import Question ,QuestionRevision, QuestionSubscription
 from answer import Answer, AnswerRevision
 from tag import Tag, MarkedTag
