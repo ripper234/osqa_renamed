@@ -1,15 +1,18 @@
-{% load i18n %}
-{% load humanize %}
+{% spaceless %}
+{% load i18n humanize extra_tags %}
+{% declare %}
+    answer_count = questions.children_count('answer')
+{% enddeclare %}
 
 <div class="boxC">
     <div class="questions-count">
-        {{ questions_count }}<span style="color:black;font-size:14px;margin-left:5px">{{ list_description }}</span>
+        {{ questions.paginator.count }}<span style="color:black;font-size:14px;margin-left:5px">{{ list_description }}</span>
     </div>
 
 
     {% if answer_count %}
     <div class="questions-count">
-        {{ answer_count }}<span style="color:black;font-size:14px;margin-left:5px">{{ answer_description }}</span>
+        {{ answer_count }}<span style="color:black;font-size:14px;margin-left:5px">{% trans "answers" %}</span>
     </div>
 
     {% endif %}
@@ -20,3 +23,4 @@
         </p>
     </div>
 </div>
+{% endspaceless %}

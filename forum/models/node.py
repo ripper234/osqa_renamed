@@ -106,6 +106,9 @@ class NodeQuerySet(CachedQuerySet):
         apply_bool = lambda q, b: b and q or ~q
         return self.filter(*[apply_bool(models.Q(state_string__contains="(%s)" % s), b) for s, b in kwargs.items()])
 
+    def children_count(self, child_type):
+        return NodeMetaClass.types[child_type].objects.filter_state(deleted=False).filter(parent__in=self).count()
+
 
 class NodeManager(CachedManager):
     use_for_related_fields = True
