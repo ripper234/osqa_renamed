@@ -13,7 +13,7 @@
 
     {% htmlcontent notifications/base.html %}
         <p style="{{ p_style }}}">
-            {% blocktrans %}Howdy and welcome to {{ app_name }}. We know you're busy, so we'll keep this real simple.{% endblocktrans %} %},
+            {% blocktrans %}Howdy and welcome to {{ app_name }}. We know you're busy, so we'll keep this real simple.{% endblocktrans %},
         </p>
 
         <p style="{{ p_style }}}">{% trans "Here's your login info (store it in a cool dry place):" %}</p>
@@ -31,7 +31,7 @@
     {% endhtmlcontent %}
 
 {% textcontent notifications/base_text.html %}
-{% blocktrans %}Howdy and welcome to {{ app_name }}. We know you're busy, so we'll keep this real simple.{% endblocktrans %} %},
+{% blocktrans %}Howdy and welcome to {{ app_name }}. We know you're busy, so we'll keep this real simple.{% endblocktrans %},
 {% trans "Here's your login info (store it in a cool dry place):" %}
 
 {% trans "Username: " %} {{ recipient.username }}
