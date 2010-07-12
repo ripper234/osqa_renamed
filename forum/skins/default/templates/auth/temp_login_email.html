@@ -14,9 +14,9 @@
         <p style="{{ p_style }}">
             {% blocktrans %}The following link grants you a one time access to your account at {{ app_name }}.{% endblocktrans %}
         </p>
-        <a  style="{{ a_style }}}" href="{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}">{% trans "Go to your account" %}</a>
+        <p style="{{ p_style }}"><a  style="{{ a_style }}" href="{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}">{% trans "Go to your account" %}</a></p>
 
-        <p style="{{ p_style }}}">{% trans "If the above link is not clickable, copy and paste this url into your web browser's address bar:" %}</p>
+        <p style="{{ p_style }}">{% trans "If the above link is not clickable, copy and paste this url into your web browser's address bar:" %}</p>
 
         <p style="{{ p_style }}">{% fullurl auth_tempsignin user=recipient.id,code=temp_login_code %}</p>
     {% endhtmlcontent %}

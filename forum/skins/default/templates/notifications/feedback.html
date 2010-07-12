@@ -12,7 +12,7 @@
     {% subject %}{% blocktrans %}{{ prefix }} Feedback message from {{ app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
-        <p style="{{ p_style }}}">
+        <p style="{{ p_style }}">
             {% trans "Sender" %}:{% if name %}{{ name }}{% else %}{% trans "anonymous" %}{% endif %}<br />
             {% trans "email" %}: {{ email }}
             <br/>
