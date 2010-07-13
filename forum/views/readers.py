@@ -203,8 +203,7 @@ def question_search(request, keywords):
 
     return question_list(request, initial,
                          _("questions matching '%(keywords)s'") % {'keywords': keywords},
-                         False,
-                         "%s?t=question&q=%s" % (reverse('search'),django_urlquote(keywords)),
+                         None,
                          _("questions matching '%(keywords)s'") % {'keywords': keywords},
                          paginator_context=paginator_context)
 
