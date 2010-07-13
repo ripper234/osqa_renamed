@@ -5,6 +5,7 @@ function changeSideBar(enabled_bar) {
     $(currentSideBar).fadeIn('slow');
 
 }
+
 $(function () {
     $('div#editor_side_bar').hide();
     $('div#tags_side_bar').hide();
@@ -22,15 +23,19 @@ $(function() {
     var results_cache = {};
 
     function reload_suggestions_box(e) {
+        var relatedQuestionsDiv = $('#ask-related-questions');
         var q = $input.val().replace(/^\s+|\s+$/g,"");
 
-        if (q.length == 0) {
-            $('#ask-related-questions').html('');
+        if(q.length == 0) {
+            close_suggestions_box();
+            relatedQuestionsDiv.html('');
             return false;
+        } else if(relatedQuestionsDiv[0].style.height == 0 || relatedQuestionsDiv[0].style.height == '0px') {
+            relatedQuestionsDiv.animate({'height':'150'}, 350);
         }
 
         if (results_cache[q] && results_cache[q] != '') {
-            $('#ask-related-questions').html(results_cache[q]);
+            relatedQuestionsDiv.html(results_cache[q]);
             return false;
         }
 
@@ -39,6 +44,11 @@ $(function() {
                 var c = $input.val().replace(/^\s+|\s+$/g,"");
 
                 if (c != q) {
+                    return;
+                }
+
+                if(data.length == 0) {
+                    relatedQuestionsDiv.html('<br /><br /><div align="center">No questions like this have been found.</div>');
                     return;
                 }
 
@@ -55,12 +65,30 @@ $(function() {
 
                 results_cache[q] = html;
 
-                $('#ask-related-questions').html(html);
+                relatedQuestionsDiv.html(html);
             }
         }, 'json');
 
         return false;
     }
 
+    function close_suggestions_box() {
+        $('#ask-related-questions').animate({'height':'0'},350, function() {
+            $('#ask-related-questions').html('');
+        });
+    }
+
     $input.keyup(reload_suggestions_box);
+    $input.focus(reload_suggestions_box);
+    $input.blur(close_suggestions_box);
+
+    // for chrome
+    $input.keydown(focus_on_question);
+    function focus_on_question(e) {
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
+        if(e.keyCode == 9 && is_chrome) {
+            $('#editor')[0].focus();
+        }
+    }
 });
