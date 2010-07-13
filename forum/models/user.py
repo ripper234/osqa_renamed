@@ -315,7 +315,7 @@ class User(BaseModel, DjangoUser):
             return self.can_delete_comment(post)
 
         return (self == post.author and (post.__class__.__name__ == "Answer" or
-        not post.answers.exclude(author=self).count()))
+        not post.answers.exclude(author__id=self.id).count()))
 
     @true_if_is_super_or_staff
     def can_upload_files(self):
