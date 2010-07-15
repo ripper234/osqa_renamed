@@ -1,8 +1,5 @@
 {% load extra_filters extra_tags i18n email_tags %}
 
-{% declare %}
-    postal_address = "DZone, Inc. 140 Preston Executive Drive, Cary NC 27513, USA"
-{% enddeclare %}
 {% if not exclude_greeting %}
 {% trans "Hello" %} {{ recipient.username }},
 {% endif %}
@@ -17,4 +14,4 @@
 {{ settings.APP_URL }}{% url user_subscriptions id=recipient.id,slug=recipient.username|slugify %}
 {% endif %}
 
-{{ postal_address }}
+{{ settings.EMAIL_FOOTER_TEXT }}
