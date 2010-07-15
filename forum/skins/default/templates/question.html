@@ -64,7 +64,7 @@
 </div>
 <div id="main-body" class="">
     <div id="askform">
-            <table style="width:100%;" id="question-table" {% if question.nis.deleted %}class="deleted"{%endif%}>
+            <table style="width:100%;" id="question-table" {% post_classes question %}>
                 <tr>
                     <td style="width:30px;vertical-align:top">
                         <div class="vote-buttons">
@@ -124,7 +124,7 @@
   
                 {% for answer in answers.paginator.page %}
                     <a name="{{ answer.id }}"></a>
-                    <div id="answer-container-{{ answer.id }}" class="answer {% if answer.nis.accepted %}accepted-answer{% endif %} {% ifequal answer.author_id question.author_id %} answered-by-owner{% endifequal %} {% if answer.nis.deleted %}deleted{% endif %}">
+                    <div id="answer-container-{{ answer.id }}" class="answer {% post_classes answer %}">
                         <table style="width:100%;">
                             <tr>
                                 <td style="width:30px;vertical-align:top">

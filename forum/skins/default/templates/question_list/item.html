@@ -9,7 +9,7 @@
             <div class="item-count">{{question.score|intcomma}}</div>
             <div>{% trans "votes" %}</div>
         </div >
-        <div {% if question.answer_accepted %}title="{% trans "this question has an accepted answer" %}"{% endif %} class="status {% if question.answer_accepted %}answered-accepted{% endif %} {% ifequal question.answer_count 0 %}unanswered{% endifequal %}{% ifnotequal question.answer_count 0 %}answered{% endifnotequal %}">
+        <div {% if question.accepted_count %}title="{% trans "this question has an accepted answer" %}"{% endif %} class="status {% if question.accepted_count %}answered-accepted{% endif %} {% ifequal question.answer_count 0 %}unanswered{% endifequal %}{% ifnotequal question.answer_count 0 %}answered{% endifnotequal %}">
             <div class="item-count">{{question.answer_count|intcomma}}</div>
             <div>{% trans "answers" %}</div>
         </div>

@@ -276,7 +276,7 @@ class User(BaseModel, DjangoUser):
 
     @true_if_is_super_or_staff
     def can_accept_answer(self, answer):
-        return self == answer.question.author
+        return self == answer.question.author and (settings.USERS_CAN_ACCEPT_OWN or answer.author != answer.question.author)
 
     @true_if_is_super_or_staff
     def can_create_tags(self):

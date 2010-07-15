@@ -46,12 +46,19 @@ class QuestionListPaginatorContext(pagination.PaginatorContext):
             (_('mostvoted'), pagination.SimpleSort(_('most voted'), '-score', _("most <strong>voted</strong> questions"))),
         ), pagesizes=(15, 30, 50), default_pagesize=default_pagesize, prefix=prefix)
 
+class AnswerSort(pagination.SimpleSort):
+    def apply(self, answers):
+        if not settings.DISABLE_ACCEPTING_FEATURE:
+            return answers.order_by(*(['-marked'] + list(self._get_order_by())))
+        else:
+            return super(AnswerSort, self).apply(answers)
+
 class AnswerPaginatorContext(pagination.PaginatorContext):
     def __init__(self, id='ANSWER_LIST', prefix='', default_pagesize=10):
         super (AnswerPaginatorContext, self).__init__(id, sort_methods=(
-            (_('oldest'), pagination.SimpleSort(_('oldest answers'), ('-marked', 'added_at'), _("oldest answers will be shown first"))),
-            (_('newest'), pagination.SimpleSort(_('newest answers'), ('-marked', '-added_at'), _("newest answers will be shown first"))),
-            (_('votes'), pagination.SimpleSort(_('popular answers'), ('-marked', '-score', 'added_at'), _("most voted answers will be shown first"))),
+            (_('oldest'), AnswerSort(_('oldest answers'), 'added_at', _("oldest answers will be shown first"))),
+            (_('newest'), AnswerSort(_('newest answers'), '-added_at', _("newest answers will be shown first"))),
+            (_('votes'), AnswerSort(_('popular answers'), ('-score', 'added_at'), _("most voted answers will be shown first"))),
         ), default_sort=_('votes'), pagesizes=(5, 10, 20), default_pagesize=default_pagesize, prefix=prefix)
 
 class TagPaginatorContext(pagination.PaginatorContext):

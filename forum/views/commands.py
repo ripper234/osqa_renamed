@@ -289,6 +289,9 @@ def node_markdown(request, id):
 
 @decorate.withfn(command)
 def accept_answer(request, id):
+    if settings.DISABLE_ACCEPTING_FEATURE:
+        raise Http404()
+
     user = request.user
 
     if not user.is_authenticated():
@@ -298,7 +301,7 @@ def accept_answer(request, id):
     question = answer.question
 
     if not user.can_accept_answer(answer):
-        raise CommandException(_("Sorry but only the question author can accept an answer"))
+        raise CommandException(_("Sorry but you cannot accept the answer"))
 
     commands = {}
 
@@ -306,11 +309,17 @@ def accept_answer(request, id):
         answer.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
         commands['unmark_accepted'] = [answer.id]
     else:
-        accepted = question.accepted_answer
+        if settings.MAXIMUM_ACCEPTED_ANSWERS and (question.accepted_count >= settings.MAXIMUM_ACCEPTED_ANSWERS):
+            raise CommandException(ungettext("This question already has an accepted answer.",
+                "Sorry but this question has reached the limit of accepted answers.", int(settings.MAXIMUM_ACCEPTED_ANSWERS)))
 
-        if accepted:
-            accepted.nstate.accepted.cancel(user, ip=request.META['REMOTE_ADDR'])
-            commands['unmark_accepted'] = [accepted.id]
+        if settings.MAXIMUM_ACCEPTED_PER_USER and question.accepted_count:
+            accepted_from_author = question.accepted_answers.filter(author=answer.author).count()
+
+            if accepted_from_author >= settings.MAXIMUM_ACCEPTED_PER_USER:
+                raise CommandException(ungettext("The author of this answer already has an accepted answer in this question.",
+                "Sorry but the author of this answer has reached the limit of accepted answers per question.", int(settings.MAXIMUM_ACCEPTED_PER_USER)))             
+
 
         AcceptAnswerAction(node=answer, user=user, ip=request.META['REMOTE_ADDR']).save()
         commands['mark_accepted'] = [answer.id]

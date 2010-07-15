@@ -133,18 +133,16 @@ class AcceptAnswerAction(ActionProxy):
             self.repute(self.node.author, int(settings.REP_GAIN_BY_ACCEPTED))
 
     def process_action(self):
-        self.node.parent.extra_ref = self.node
-        self.node.parent.save()
         self.node.marked = True
         self.node.nstate.accepted = self
         self.node.save()
+        self.node.question.reset_accepted_count_cache()
 
     def cancel_action(self):
-        self.node.parent.extra_ref = None
-        self.node.parent.save()
         self.node.marked = False
         self.node.nstate.accepted = None
         self.node.save()
+        self.node.question.reset_accepted_count_cache()
 
     def describe(self, viewer=None):
         answer = self.node

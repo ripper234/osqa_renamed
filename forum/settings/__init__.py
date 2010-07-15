@@ -37,6 +37,7 @@ from moderation import *
 from users import *
 from static import *
 from urls import *
+from accept import *
 
 BADGES_SET = SettingSet('badges', _('Badges config'), _("Configure badges on your OSQA site."), 500)
 

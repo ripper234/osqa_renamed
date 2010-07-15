@@ -20,11 +20,14 @@ def vote_buttons(post, user):
 
 @register.inclusion_tag('node/accept_button.html')
 def accept_button(answer, user):
-    return {
-        'can_accept': user.is_authenticated() and user.can_accept_answer(answer),
-        'answer': answer,
-        'user': user
-    }
+    if not settings.DISABLE_ACCEPTING_FEATURE:
+        return {
+            'can_accept': user.is_authenticated() and user.can_accept_answer(answer),
+            'answer': answer,
+            'user': user
+        }
+    else:
+        return ''
 
 @register.inclusion_tag('node/wiki_symbol.html')
 def wiki_symbol(user, post):
@@ -51,6 +54,22 @@ def favorite_mark(question, user):
         favorited = False
 
     return {'favorited': favorited, 'favorite_count': question.favorite_count, 'question': question}
+
+@register.simple_tag
+def post_classes(post):
+    classes = []
+
+    if post.nis.deleted:
+        classes.append('deleted')
+
+    if post.node_type == "answer":
+        if (not settings.DISABLE_ACCEPTING_FEATURE) and post.nis.accepted:
+            classes.append('accepted-answer')
+
+        if post.author == post.question.author:
+            classes.append('answered-by-owner')
+
+    return " ".join(classes)
 
 def post_control(text, url, command=False, withprompt=False, confirm=False, title=""):
     classes = (command and "ajax-command" or " ") + (withprompt and " withprompt" or " ") + (confirm and " confirm" or " ")

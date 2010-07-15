@@ -13,6 +13,7 @@ class Question(Node):
         proxy = True
 
     answer_count = DenormalizedField("children", ~models.Q(state_string__contains="(deleted)"), node_type="answer")
+    accepted_count = DenormalizedField("children", ~models.Q(state_string__contains="(deleted)"), node_type="answer", marked=True)
     favorite_count = DenormalizedField("actions", action_type="favorite", canceled=False)
 
     friendly_name = _("question")
@@ -37,12 +38,8 @@ class Question(Node):
         return self.title
 
     @property
-    def answer_accepted(self):
-        return self.extra_ref is not None
-
-    @property
-    def accepted_answer(self):
-        return self.extra_ref
+    def accepted_answers(self):
+        return self.answers.filter(~models.Q(state_string__contains="(deleted)"), marked=True)
 
     @models.permalink    
     def get_absolute_url(self):

@@ -49,10 +49,7 @@ var response_commands = {
         }
     },
 
-    mark_accepted: function(id) {
-        $('.accepted-answer').removeClass('accepted-answer');
-        $('.accept-answer.on').removeClass('on');
-        
+    mark_accepted: function(id) {        
         var $answer = $('#answer-container-' + id);
         $answer.addClass('accepted-answer');
         $answer.find('.accept-answer').addClass('on');
