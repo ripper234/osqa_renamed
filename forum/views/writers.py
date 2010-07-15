@@ -37,13 +37,16 @@ def upload(request):#ajax upload file to a question or answer
             raise UploadPermissionNotAuthorized()
 
         # check file type
-        file_name_suffix = os.path.splitext(f.name)[1].lower()
+        try:
+            file_name_suffix = os.path.splitext(f.name)[1].lower()
+        except KeyError:
+            raise FileTypeNotAllow()
 
         if not file_name_suffix in ('.jpg', '.jpeg', '.gif', '.png', '.bmp', '.tiff', '.ico'):
             raise FileTypeNotAllow()
 
         storage = FileSystemStorage(str(settings.UPFILES_FOLDER), str(settings.UPFILES_ALIAS))
-        new_file_name = storage.save(f.name, f)
+        new_file_name = storage.save("_".join(f.name.split()), f)
         # check file size
         # byte
         size = storage.size(new_file_name)
