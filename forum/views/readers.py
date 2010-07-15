@@ -259,7 +259,7 @@ def answer_redirect(request, answer):
         filter = Q(score__gt=answer.score) | Q(score=answer.score, added_at__lt=answer.added_at)
     else:
         raise Http404()
-        
+
     count = answer.question.answers.filter(Q(marked=True) | filter).count()
     pagesize = pc.pagesize(request)
 

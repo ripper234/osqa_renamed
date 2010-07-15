@@ -78,6 +78,12 @@ def edit_user(request, id):
                 user.email = new_email
                 user.email_isvalid = False
 
+                try:
+                    hash = ValidationHash.objects.get(user=request.user, type='email')
+                    hash.delete()
+                except:
+                    pass
+
             if settings.EDITABLE_SCREEN_NAME:
                 user.username = sanitize_html(form.cleaned_data['username'])
             user.real_name = sanitize_html(form.cleaned_data['realname'])

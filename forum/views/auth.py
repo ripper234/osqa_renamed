@@ -270,9 +270,7 @@ def send_validation_email(request):
     else:
         try:
             hash = ValidationHash.objects.get(user=request.user, type='email')
-            if hash.expiration < datetime.datetime.now():
-                hash.delete()
-                return send_validation_email(request)
+            hash.delete()
         except:
             hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
 
