@@ -22,7 +22,7 @@ register = template.Library()
 
 GRAVATAR_TEMPLATE = ('<img class="gravatar" width="%(size)s" height="%(size)s" '
 'src="http://www.gravatar.com/avatar/%(gravatar_hash)s'
-'?s=%(size)s&amp;d=identicon&amp;r=PG" '
+'?s=%(size)s&amp;d=%(default)s&amp;r=%(rating)s" '
 'alt="%(username)s\'s gravatar image" />')
 
 @register.simple_tag
@@ -36,6 +36,8 @@ def gravatar(user, size):
     return mark_safe(GRAVATAR_TEMPLATE % {
     'size': size,
     'gravatar_hash': gravatar,
+    'default': settings.GRAVATAR_DEFAULT_IMAGE,
+    'rating': settings.GRAVATAR_ALLOWED_RATING,
     'username': template.defaultfilters.urlencode(username),
     })
 

@@ -1,5 +1,6 @@
 from forms import CommaStringListWidget
 from django.forms import CheckboxSelectMultiple
+from django.forms.widgets import RadioSelect
 from base import Setting, SettingSet
 from django.utils.translation import ugettext as _
 
@@ -53,4 +54,32 @@ WARN_PENDING_POSTS_MINUTES = Setting('WARN_PENDING_POSTS_MINUTES', 15, USERS_SET
 label=_("Warn about pending posts afer X minutes"),
 help_text=_("How much time in minutes a user that just logged in or validated his email should be warned about a pending post instead of publishing it automatically.")
 ))
+
+GRAVATAR_RATING_CHOICES = (
+    ('g', _('suitable for display on all websites with any audience type.')),
+    ('pg', _('may contain rude gestures, provocatively dressed individuals, the lesser swear words, or mild violence.')),
+    ('r', _('may contain such things as harsh profanity, intense violence, nudity, or hard drug use.')),
+    ('x', _('may contain hardcore sexual imagery or extremely disturbing violence.')),
+)
+
+GRAVATAR_ALLOWED_RATING = Setting('GRAVATAR_ALLOWED_RATING', 'g', USERS_SET, dict(
+label = _("Gravatar rating"),
+help_text = _("Gravatar allows users to self-rate their images so that they can indicate if an image is appropriate for a certain audience."),
+widget=RadioSelect,
+choices=GRAVATAR_RATING_CHOICES,
+required=False))
+
+GRAVATAR_DEFAULT_CHOICES = (
+    ('mm', _('(mystery-man) a simple, cartoon-style silhouetted outline of a person (does not vary by email hash)')),
+    ('identicon', _('a geometric pattern based on an email hash')),
+    ('monsterid', _('a generated "monster" with different colors, faces, etc')),
+    ('wavatar', _('generated faces with differing features and backgrounds')),
+)
+
+GRAVATAR_DEFAULT_IMAGE = Setting('GRAVATAR_DEFAULT_IMAGE', 'identicon', USERS_SET, dict(
+label = _("Gravatar default"),
+help_text = _("Gravatar has a number of built in options which you can also use as defaults."),
+widget=RadioSelect,
+choices=GRAVATAR_DEFAULT_CHOICES,
+required=False))
 
