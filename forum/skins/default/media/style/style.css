@@ -1758,8 +1758,8 @@ div.dialog.prompt .dialog-content select, div.dialog.prompt .dialog-content text
 }
 
 div#subscription_list {
-    width: 500px;
-    float:left;
+    width: 100%;
+    /*float:left;*/
 }
 
 div.subscription_summary {
@@ -1768,28 +1768,24 @@ div.subscription_summary {
     padding: 3px 0px 5px 0;
     position: relative;
     width:100%;
-    margin-bottom:30px;
+    margin-top: 5px;
 }
 
 div.subscription_title {
-    float:left;
-
-    width:350px;
-
-    line-height:30px;
-
-    font-size: 25px;
+    /*float:left;
+    line-height:30px;*/
+    margin-top: 5px;
+    font-size: 16px;
     font-weight:bold;
-    font-family: Arial;
 }
 
 a.subscription_unsubscribe_button {
     float:left;
-    font-size: 15px;
+    font-size: 11px;
     font-weight:bold;
 
     margin-right:15px;
-    margin-top:5px;
+    margin-top: 5px;
 }
 
 div.subscription_userinfo {

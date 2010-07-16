@@ -10,8 +10,8 @@
             $("div#subscriptions_settings").show();
             $("div#subscriptions_management").hide();
 
-            $("div#subscriptions_settings_button").context.activeElement.className = 'on';
-            $("div#subscriptions_management_button").context.activeElement.className = '';
+            $("a#subscriptions_settings_button").addClass('on');
+            $("a#subscriptions_management_button").removeClass("on");
 
             //location.reload(true);
         }
@@ -20,8 +20,8 @@
             $("div#subscriptions_settings").hide();
             $("div#subscriptions_management").show();
 
-            $("div#subscriptions_settings_button").context.activeElement.className = '';
-            $("div#subscriptions_management_button").context.activeElement.className = 'on';
+            $("a#subscriptions_settings_button").removeClass('on');
+            $("a#subscriptions_management_button").addClass('on');
 
             //location.reload(true);
         }
@@ -32,8 +32,8 @@
     <br/>
 
     <div id="navBar"><div class="tabsA">
-        <a HREF="javascript:enableSettings()" id="subscriptions_settings_button">Settings</a>
-        <a HREF="javascript:enableManagement()" id="subscriptions_management_button">Remove</a>
+        <a HREF="javascript:enableSettings()" {%  if not manage_open %}class="on"{% endif %} id="subscriptions_settings_button">Settings</a>
+        <a HREF="javascript:enableManagement()" {%  if manage_open %}class="on"{% endif %}  id="subscriptions_management_button">Manage</a>
     </div></div>
 
     <br/>

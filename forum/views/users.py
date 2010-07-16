@@ -329,10 +329,12 @@ def user_subscriptions(request, user):
         
     if auto == 'True':
         show_auto = True
-        subscriptions = user.subscriptions.all().order_by('-questionsubscription__last_view')
+        subscriptions = QuestionSubscription.objects.filter(user=user).order_by('-last_view')        
+        #subscriptions = user.subscriptions.all().order_by('-questionsubscription__last_view')
     else:
         show_auto = False
-        subscriptions = user.subscriptions.filter(questionsubscription__auto_subscription=False).order_by('-questionsubscription__last_view')
+        subscriptions = QuestionSubscription.objects.filter(user=user, auto_subscription=False).order_by('-last_view')
+        #subscriptions = user.subscriptions.filter(questionsubscription__auto_subscription=False).order_by('-questionsubscription__last_view')
 
     if request.method == 'POST':
         manage_open = False

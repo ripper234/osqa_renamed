@@ -24,13 +24,15 @@ class QuestionItemNode(template.Node):
 class SubscriptionItemNode(template.Node):
     template = template.loader.get_template('question_list/subscription_item.html')
 
-    def __init__(self, question, options):
+    def __init__(self, subscription, question, options):
         self.question = template.Variable(question)
+        self.subscription = template.Variable(subscription)
         self.options = options
 
     def render(self, context):
         return self.template.render(template.Context({
             'question': self.question.resolve(context),
+            'subscription': self.subscription.resolve(context),
             'signature_type': self.options.get('signature_type', 'lite'),
         }))
 
@@ -42,7 +44,7 @@ def question_list_item(parser, token):
 @register.tag
 def subscription_list_item(parser, token):
     tokens = token.split_contents()[1:]
-    return SubscriptionItemNode(tokens[0], argument_parser(tokens[1:]))
+    return SubscriptionItemNode(tokens[0], tokens[1], argument_parser(tokens[2:]))
 
 @register.inclusion_tag('question_list/sort_tabs.html')
 def question_sort_tabs(sort_context):
