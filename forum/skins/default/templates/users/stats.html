@@ -20,7 +20,7 @@
             </h2>
         {% endspaceless %}
         <div>{{ questions.paginator.sort_tabs }}</div>
-		<div id="listA">
+		<div id="listA" class="user-stats-table">
 		    {% for question in questions.paginator.page %}
 		        {% question_list_item question favorite_count=yes signature_type=badges %}
 		    {% endfor %}

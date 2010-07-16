@@ -331,6 +331,10 @@ blockquote {
     border-top: 0;
 }
 
+.user-stats-table .short-summary {
+    width: 764px;
+}
+
 .short-summary h2 a {
     color: #2A5594;
     font-family: "Trebuchet MS", "segoe ui", arial, sans-serif;
