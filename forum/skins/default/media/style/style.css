@@ -1,6 +1,8 @@
 @import "jquery.autocomplete.css";
 
 body {
+    overflow-y: scroll;
+    height: 100%;
     background: none repeat scroll 0 0 #FFFFFF;
     color: #000000;
     font-family: sans-serif;
@@ -355,6 +357,11 @@ blockquote {
 .short-summary .counts .item-count {
     font-size: 17px;
     font-weight: bold;
+}
+
+.short-summary .question-summary-wrapper {
+  float: right;
+  width: 565px;
 }
 
 .short-summary .votes, .short-summary .status, .short-summary .views {
