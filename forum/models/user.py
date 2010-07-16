@@ -321,6 +321,10 @@ class User(BaseModel, DjangoUser):
     def can_upload_files(self):
         return self.reputation >= int(settings.REP_TO_UPLOAD)
 
+    @true_if_is_super_or_staff
+    def is_a_super_user_or_staff(self):
+        return False
+
     def email_valid_and_can_ask(self):
         return 'ask' not in settings.REQUIRE_EMAIL_VALIDATION_TO or self.email_isvalid
 

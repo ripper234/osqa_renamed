@@ -436,23 +436,31 @@ def convert_to_comment(request, id):
     return RefreshPageCommand()
 
 @decorate.withfn(command)
-def subscribe(request, id):
+def subscribe(request, id, user=0):    
+    if user:
+        user = User.objects.filter(id=user)[0]
+        if user.is_a_super_user_or_staff():
+            raise CommandException(_("You do not have the correct credentials to preform this action."))
+
+    else:
+        user = request.user
+
     question = get_object_or_404(Question, id=id)
 
     try:
-        subscription = QuestionSubscription.objects.get(question=question, user=request.user)
+        subscription = QuestionSubscription.objects.get(question=question, user=user)
         subscription.delete()
         subscribed = False
     except:
-        subscription = QuestionSubscription(question=question, user=request.user, auto_subscription=False)
+        subscription = QuestionSubscription(question=question, user=user, auto_subscription=False)
         subscription.save()
         subscribed = True
 
     return {
-    'commands': {
-    'set_subscription_button': [subscribed and _('unsubscribe me') or _('subscribe me')],
-    'set_subscription_status': ['']
-    }
+        'commands': {
+            'set_subscription_button': [subscribed and _('unsubscribe me') or _('subscribe me')],
+            'set_subscription_status': ['']
+        }
     }
 
 #internally grouped views - used by the tagging system
