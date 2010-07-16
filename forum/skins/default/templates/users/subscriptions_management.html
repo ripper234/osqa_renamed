@@ -6,9 +6,9 @@
         {% trans "Manage your current subscriptions" %}
         <span style="font-size:11px">
             {% if auto %}
-                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=False'>{% trans "don't show auto-subscribe" %}</a>
+                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=False&tab=manage'>{% trans "don't show auto-subscribe" %}</a>
             {% else %}
-                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=True'>{% trans "show auto-subscribe" %}</a>
+                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=True&tab=manage'>{% trans "show auto-subscribe" %}</a>
             {% endif %}
         </span>
     </h2>

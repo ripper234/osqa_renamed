@@ -26,6 +26,7 @@ from forum.views.readers import QuestionListPaginatorContext, AnswerPaginatorCon
 import time
 import datetime
 import decorators
+import unicodedata
 
 class UserReputationSort(pagination.SimpleSort):
     def apply(self, objects):
@@ -320,52 +321,68 @@ def user_favorites(request, user):
 @user_view('users/subscriptions.html', 'subscriptions', _('subscription'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
     enabled = user.subscription_settings.enable_notifications
-    auto = request.GET.get('auto', 'True')
-    show_auto = True
-    manage_open = False
-    
-    if auto == 'True':
-        manage_open = True
-        show_auto = True
-        subscriptions = QuestionSubscription.objects.filter(user=user).order_by('-last_view')        
-        # subscriptions = user.subscriptions.all().order_by('-questionsubscription__last_view')
-    else:
-        manage_open = True
-        show_auto = False
-        subscriptions = QuestionSubscription.objects.filter(user=user, auto_subscription=False).order_by('-last_view')
-        # subscriptions = user.subscriptions.filter(questionsubscription__auto_subscription=False).order_by('-questionsubscription__last_view')
 
-    if request.method == 'POST':
+    tab = request.GET.get('tab', "settings")
+
+    if tab == 'settings':
         manage_open = False
-        form = SubscriptionSettingsForm(data=request.POST, instance=user.subscription_settings)
+        if request.method == 'POST':
+            manage_open = False
+            form = SubscriptionSettingsForm(data=request.POST, instance=user.subscription_settings)
 
-        if form.is_valid():
-            form.save()
-            message = _('New subscription settings are now saved')
+            if form.is_valid():
+                form.save()
+                message = _('New subscription settings are now saved')
 
-            if 'notswitch' in request.POST:
-                enabled = not enabled
+                if 'notswitch' in request.POST:
+                    enabled = not enabled
 
-                if enabled:
-                    message = _('Notifications are now enabled')
-                else:
-                    message = _('Notifications are now disabled')
+                    if enabled:
+                        message = _('Notifications are now enabled')
+                    else:
+                        message = _('Notifications are now disabled')
 
-            user.subscription_settings.enable_notifications = enabled
-            user.subscription_settings.save()
+                user.subscription_settings.enable_notifications = enabled
+                user.subscription_settings.save()
 
-            request.user.message_set.create(message=message)
-    else:
-        form = SubscriptionSettingsForm(instance=user.subscription_settings)
+                request.user.message_set.create(message=message)
+        else:
+            form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
-    return pagination.paginated(request, ('subscriptions', SubscriptionListPaginatorContext()), {
-        'subscriptions':subscriptions,
-        'view_user':user,
-        'notificatons_on': enabled,
-        'form':form,
-        "auto":show_auto,
-        "manage_open":manage_open
-    })
+        return {
+            'view_user':user,
+            'notificatons_on': enabled,
+            'form':form,
+            'manage_open':manage_open,
+        }
+
+    elif tab == 'manage':
+        manage_open = True
+
+        auto = request.GET.get('auto')
+        if auto == 'True':
+            show_auto = True
+            subscriptions = QuestionSubscription.objects.filter(user=user).order_by('-last_view')
+        else:
+            show_auto = False
+            subscriptions = QuestionSubscription.objects.filter(user=user, auto_subscription=False).order_by('-last_view')
+
+        return pagination.paginated(request, ('subscriptions', SubscriptionListPaginatorContext()), {
+            'subscriptions':subscriptions,
+            'view_user':user,
+            "auto":show_auto,
+            'manage_open':manage_open,
+        })
+
+    # else:
+        # todo: probably want to throw an error
+        # error = "error to throw"
+
+
+
+
+
+
 
 @user_view('users/preferences.html', 'preferences', _('preferences'), _('preferences'), True, tabbed=False)
 def user_preferences(request, user):

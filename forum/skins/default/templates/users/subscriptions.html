@@ -32,16 +32,22 @@
     <br/>
 
     <div id="navBar"><div class="tabsA">
-        <a HREF="javascript:enableSettings()" {%  if not manage_open %}class="on"{% endif %} id="subscriptions_settings_button">Settings</a>
-        <a HREF="javascript:enableManagement()" {%  if manage_open %}class="on"{% endif %}  id="subscriptions_management_button">Manage</a>
+        <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?tab=settings' id="subscriptions_settings_button"  {%  if not manage_open %}class="on"{% endif %}>Settings</a>
+        <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?tab=manage' id="subscriptions_management_button"  {%  if manage_open %}class="on"{% endif %}>Manage</a>
     </div></div>
 
     <br/>
-    <div id="subscriptions_settings" {% if manage_open %} style="display:none" {% endif %}>
-        {% include "users/subscriptions_settings.html" %}
-    </div>
-    <div id="subscriptions_management" {% if not manage_open %} style="display:none" {% endif %}>
-        {% include "users/subscriptions_management.html" %}
-    </div>
+
+    {% if not manage_open %}
+        <div id="subscriptions_settings" >
+            {% include "users/subscriptions_settings.html" %}
+        </div>
+    {% endif %}
+
+    {% if manage_open %}
+        <div id="subscriptions_management" >
+            {% include "users/subscriptions_management.html" %}
+        </div>
+    {% endif %}
 {% endblock %}
 <!-- end user_subscriptions.html -->
