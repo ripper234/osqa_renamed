@@ -359,7 +359,7 @@ def user_subscriptions(request, user):
     elif tab == 'manage':
         manage_open = True
 
-        auto = request.GET.get('auto')
+        auto = request.GET.get('auto', 'True')
         if auto == 'True':
             show_auto = True
             subscriptions = QuestionSubscription.objects.filter(user=user).order_by('-last_view')
