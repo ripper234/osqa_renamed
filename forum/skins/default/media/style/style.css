@@ -1,8 +1,8 @@
 @import "jquery.autocomplete.css";
 
 body {
-    overflow-y: scroll;
-    height: 100%;
+    /*overflow-y: scroll;
+    height: 100%; */
     background: none repeat scroll 0 0 #FFFFFF;
     color: #000000;
     font-family: sans-serif;
