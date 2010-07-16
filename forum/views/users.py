@@ -18,13 +18,13 @@ from forum.forms import *
 from forum.utils.html import sanitize_html
 from forum.modules import decorate
 from datetime import datetime, date
-import decorators
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
 from forum.modules import ui
 from forum.utils import pagination
 from forum.views.readers import QuestionListPaginatorContext, AnswerPaginatorContext
 
 import time
+import datetime
 import decorators
 
 class UserReputationSort(pagination.SimpleSort):
@@ -39,6 +39,10 @@ class UserListPaginatorContext(pagination.PaginatorContext):
             (_('last'), pagination.SimpleSort(_('oldest'), 'date_joined', _("oldest members"))),
             (_('name'), pagination.SimpleSort(_('by username'), 'username', _("sorted by username"))),
         ), pagesizes=(20, 35, 60))
+
+class SubscriptionListPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (SubscriptionListPaginatorContext, self).__init__('SUBSCRIPTION_LIST', pagesizes=(5, 10, 20), default_pagesize=20)
 
 class UserAnswersPaginatorContext(pagination.PaginatorContext):
     def __init__(self):
@@ -57,6 +61,20 @@ def users(request):
 
     if suser != "":
         users = users.filter(username__icontains=suser)
+
+    return pagination.paginated(request, ('users', UserListPaginatorContext()), {
+        "users" : users,
+        "suser" : suser,
+    })
+
+
+@decorators.render('users/online_users.html', 'online_users', _('Online Users'), weight=200)
+def online_users(request):
+    suser = request.REQUEST.get('q', "")
+
+    one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
+    sql_datetime = datetime.datetime.strftime(one_hour_ago, '%Y-%m-%d %H:%M:%S')
+    users = User.objects.order_by('-last_seen')
 
     return pagination.paginated(request, ('users', UserListPaginatorContext()), {
         "users" : users,
@@ -299,11 +317,25 @@ def user_favorites(request, user):
 
     return {"favorites" : favorites, "view_user" : user}
 
-@user_view('users/subscriptions.html', 'subscriptions', _('subscription settings'), _('subscriptions'), True, tabbed=False)
+@user_view('users/subscriptions.html', 'subscriptions', _('subscription'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
     enabled = user.subscription_settings.enable_notifications
+    auto = request.GET.get('auto', 'True')
+    show_auto = True
+    manage_open = False
+    
+    if len(request.GET) > 0:
+        manage_open = True
+        
+    if auto == 'True':
+        show_auto = True
+        subscriptions = user.subscriptions.all().order_by('-questionsubscription__last_view')
+    else:
+        show_auto = False
+        subscriptions = user.subscriptions.filter(questionsubscription__auto_subscription=False).order_by('-questionsubscription__last_view')
 
-    if request.method == 'POST':        
+    if request.method == 'POST':
+        manage_open = False
         form = SubscriptionSettingsForm(data=request.POST, instance=user.subscription_settings)
 
         if form.is_valid():
@@ -325,7 +357,14 @@ def user_subscriptions(request, user):
     else:
         form = SubscriptionSettingsForm(instance=user.subscription_settings)
 
-    return {'view_user':user, 'notificatons_on': enabled, 'form':form}
+    return pagination.paginated(request, ('subscriptions', SubscriptionListPaginatorContext()), {
+        'subscriptions':subscriptions,
+        'view_user':user,
+        'notificatons_on': enabled,
+        'form':form,
+        "auto":show_auto,
+        "manage_open":manage_open
+    })
 
 @user_view('users/preferences.html', 'preferences', _('preferences'), _('preferences'), True, tabbed=False)
 def user_preferences(request, user):
@@ -356,4 +395,3 @@ def account_settings(request):
     'msg': msg,
     'is_openid': is_openid
     }, context_instance=RequestContext(request))
-

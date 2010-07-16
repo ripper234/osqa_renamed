@@ -1521,6 +1521,10 @@ a.comment-edit:hover {
     background: url("../images/comment-edit-hover.png") no-repeat scroll center center transparent;
 }
 
+img.subscription-remove {
+    float:right;
+}
+
 .comment-form-container {
     display: none;
     padding-top: 12px;
@@ -1748,3 +1752,63 @@ div.dialog.prompt .dialog-content select, div.dialog.prompt .dialog-content text
     height: 14px;
     display: inline-block;
 }
+
+div#subscription_list {
+    width: 500px;
+    float:left;
+}
+
+div.subscription_summary {
+    border-top: 2px dotted #CCCCCE;
+    overflow: hidden;
+    padding: 3px 0px 5px 0;
+    position: relative;
+    width:100%;
+    margin-bottom:30px;
+}
+
+div.subscription_title {
+    float:left;
+
+    width:350px;
+
+    line-height:30px;
+
+    font-size: 25px;
+    font-weight:bold;
+    font-family: Arial;
+}
+
+a.subscription_unsubscribe_button {
+    float:left;
+    font-size: 15px;
+    font-weight:bold;
+
+    margin-right:15px;
+    margin-top:5px;
+}
+
+div.subscription_userinfo {
+    float:right;
+}
+
+div.subscription_tags {
+    font-family: sans-serif;
+    float:left;
+}
+div.subscription_tags a, span.tag {
+    background-color: #EEEEEE;
+    border-bottom: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    color: #777777;
+    font-size: 11px;
+    font-weight: normal;
+    padding: 1px 8px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+div.subscription_tags a:hover {
+    background-color: #356FCB;
+    color: #FFFFFF;
+}
+

@@ -1,0 +1,11 @@
+
+
+
+{% load i18n humanize extra_filters extra_tags user_tags %}
+<div class="subscription_summary">
+    <div style="height:100%"><a class="sidebar_button subscription_unsubscribe_button" href="{% url subscribe id=question.id %}">
+        {% trans "Unsubscribe" %}
+    </a></div>
+
+    <div class="subscription_title"><a title="{{ question.summary }}" href="{{ question.get_absolute_url }}">{{question.headline}}</a></div>
+</div>

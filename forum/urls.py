@@ -69,7 +69,7 @@ urlpatterns += patterns('',
                             kwargs=dict(close=True), name='close'),
                         url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('reopen/')), app.commands.close,
                             kwargs=dict(close=False), name='reopen'),
-                        url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('answer/')), app.writers.answer, name='answer'),                        
+                        url(r'^%s(?P<id>\d+)/%s$' % (_('questions/'), _('answer/')), app.writers.answer, name='answer'),
                         url(r'^%s(?P<action>\w+)/$' % _('pending-data/'), app.writers.manage_pending_data, name='manage_pending_data'),
 
                         url(r'^%s(?P<id>\d+)/(?P<vote_type>[a-z]+)/' % _('vote/'), app.commands.vote_post,
@@ -115,6 +115,9 @@ urlpatterns += patterns('',
 
 
                         url(r'^%s$' % _('users/'), app.users.users, name='users'),
+                        url(r'^%s$' % _('online_users/'), app.users.online_users, name='online_users'),
+
+
                         url(r'^%s(?P<id>\d+)/%s$' % (_('users/'), _('edit/')), app.users.edit_user, name='edit_user'),
                         url(r'^%s(?P<id>\d+)/%s$' % (_('users/'), _('award/')), app.users.award_points,
                             name='user_award_points'),
@@ -135,7 +138,6 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)/%s$' % (_('users/'), _('recent/')), app.users.user_recent,
                             name='user_recent'),
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)/$' % _('users/'), app.users.user_profile, name='user_profile'),
-
                         url(r'^%s$' % _('badges/'), app.meta.badges, name='badges'),
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)$' % _('badges/'), app.meta.badge, name='badge'),
                         # (r'^admin/doc/' % _('admin/doc'), include('django.contrib.admindocs.urls')),
@@ -199,5 +201,5 @@ urlpatterns += patterns('',
 
                         url(r'^feeds/rss[/]?$', app.readers.feed, name="latest_questions_feed"),
 
-                        url(r'^(?P<path>.+)$', app.meta.page, name="static_page")
+                        url(r'^(?P<path>.+)$', app.meta.page, name="static_page"),
                         )

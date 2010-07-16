@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load question_list_tags %}
+
+<br />
+<br />
+
+<div id="subscription_list" align="left">
+    <h2>
+        {% trans "Notifications and subscription settings" %}
+        <span style="font-size:11px">
+            {% if auto %}
+                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=False'>{% trans "don't show auto-subscribe" %}</a>
+            {% else %}
+                <a href='{% url user_subscriptions id=view_user.id slug=view_user.username|slugify %}?auto=True'>{% trans "show auto-subscribe" %}</a>
+            {% endif %}
+        </span>
+    </h2>
+
+    {% for subscription in subscriptions.paginator.page %}
+        {% subscription_list_item subscription %}
+    {% endfor %}
+
+    <div class="pager">{{ subscriptions.paginator.page_numbers }}</div>
+</div>
+
+<br />
+<br />
+
+<!-- end user_subscriptions.html -->
