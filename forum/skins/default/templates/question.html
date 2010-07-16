@@ -99,9 +99,7 @@
             {% if question.nis.closed %}
             <div class="question-status" style="margin-bottom:15px">
             <h3>
-                {% blocktrans with question.nstate.closed.extra as close_reason %}
-                    The question has been closed for the following reason "{{ close_reason }}" by
-                {% endblocktrans %}
+                {% blocktrans with question.nstate.closed.extra as close_reason %}The question has been closed for the following reason "{{ close_reason }}" by{% endblocktrans %}
                 <a href="{{ question.nstate.closed.by.get_profile_url }}">{{ question.nstate.closed.by.username }}</a>
                  {% diff_date question.nstate.closed.at %}
             </h3>
@@ -112,11 +110,7 @@
                 <div class="tabBar">
                     <a name="sort-top"></a>
                     <div class="headQuestions">
-                    {% blocktrans count answers.paginator.count as counter %}
-                    One Answer:
-                    {% plural %}
-                    {{counter}} Answers:
-                    {% endblocktrans %}
+                    {% blocktrans count answers.paginator.count as counter %}One Answer:{% plural %}{{counter}} Answers:{% endblocktrans %}
                     </div>
                     {{ answers.paginator.sort_tabs }}
                 </div>
