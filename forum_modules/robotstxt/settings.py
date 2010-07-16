@@ -9,6 +9,9 @@ User-Agent: *
 Disallow: /accounts/
 Disallow: /users/
 Disallow: /revisions/
+Disallow: /search
+Disallow: /matching_tags
+Disallow: /*sort=
 """, ROBOTS_SET, dict(
 label = "Robots.txt file",
 help_text = """
