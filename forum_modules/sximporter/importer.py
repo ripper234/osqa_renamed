@@ -169,7 +169,7 @@ openidre = re.compile('^https?\:\/\/')
 def userimport(path, options):
 #users = readTable(dump, "Users")
 
-    user_by_name = {}
+    usernames = []
     uidmapper = IdMapper()
     #merged_users = []
 
@@ -190,20 +190,24 @@ def userimport(path, options):
             uidmapper[-1] = 1
             create = False
         else:
-            username = sxu.get('displayname',
-                               sxu.get('displaynamecleaned', sxu.get('realname', final_username_attempt(sxu))))
+            username = unicode(sxu.get('displayname',
+                               sxu.get('displaynamecleaned', sxu.get('realname', final_username_attempt(sxu)))))[:30]
 
-            if not isinstance(username, UnknownUser) and username in user_by_name:
+            if username in usernames:
             #if options.get('mergesimilar', False) and sxu.get('email', 'INVALID') == user_by_name[username].email:
             #    osqau = user_by_name[username]
             #    create = False
             #    uidmapper[sxu.get('id')] = osqau.id
             #else:
-                inc = 1
-                while ("%s %d" % (username, inc)) in user_by_name:
-                    inc += 1
+                inc = 0
 
-                username = "%s %d" % (username, inc)
+                while True:
+                    inc += 1
+                    totest = "%s %d" % (username[:29 - len(str(inc))], inc)
+
+                    if not totest in usernames:
+                        username = totest
+                        break          
 
         sxbadges = sxu.get('badgesummary', None)
         badges = {'1':'0', '2':'0', '3':'0'}
@@ -214,7 +218,7 @@ def userimport(path, options):
         if create:
             osqau = orm.User(
                     id           = sxu.get('id'),
-                    username     = unicode(username),
+                    username     = username,
                     password     = '!',
                     email        = sxu.get('email', ''),
                     is_superuser = sxu.get('usertypeid') == '5',
@@ -230,7 +234,7 @@ def userimport(path, options):
                     gold          = int(badges['1']),
                     silver        = int(badges['2']),
                     bronze        = int(badges['3']),
-                    real_name     = sxu.get('realname', ''),
+                    real_name     = sxu.get('realname', '')[:30],
                     location      = sxu.get('location', ''),
                     )
 
@@ -283,7 +287,7 @@ def userimport(path, options):
             #merged_users.append(osqau.id)
             osqau.save()
 
-        user_by_name[osqau.username] = osqau
+        usernames.append(osqau.username)
 
         openid = sxu.get('openid', None)
         if openid and openidre.match(openid):
@@ -819,10 +823,14 @@ def static_import(dump):
 
     def callback(set):
         if unicode(set['name']) in sx2osqa_set_map:
-            kv = orm.KeyValue(
-                    key = sx2osqa_set_map[set['name']],
-                    value = dbsafe_encode(html_decode(set['value']))
-                    )
+            try:
+                kv = orm.KeyValue.objects.get(key=sx2osqa_set_map[set['name']])
+                kv.value = dbsafe_encode(html_decode(set['value']))
+            except:
+                kv = orm.KeyValue(
+                        key = sx2osqa_set_map[set['name']],
+                        value = dbsafe_encode(html_decode(set['value']))
+                        )
 
             kv.save()
         else:
@@ -858,7 +866,7 @@ def reindex_fts():
     from south.db import db
     if db.backend_name == "postgres":
         db.start_transaction()
-        db.execute_many("UPDATE forum_node_revision set id = id WHERE TRUE;")
+        db.execute_many("UPDATE forum_noderevision set id = id WHERE TRUE;")
         db.commit_transaction()
 
 
@@ -868,6 +876,7 @@ def sximport(dump, options):
         triggers_disabled = True
     except:
         triggers_disabled = False
+
     uidmap = userimport(dump, options)
     tagmap = tagsimport(dump, uidmap)
     gc.collect()
