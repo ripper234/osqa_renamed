@@ -14,7 +14,7 @@
             <p>{% trans "You are not subscribed to this question." %}</p>
         {% endif %}
     </div>
-    <p><a class="ajax-command sidebar_button subscription_switch" href="{% url subscribe id=question.id %}">
+    <p><a class="ajax-command sidebar_button subscription_switch" href="{% url subscribe_simple id=question.id %}">
         {% if subscription %}
             {% trans "unsubscribe me" %}
         {% else %}

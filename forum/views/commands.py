@@ -436,12 +436,15 @@ def convert_to_comment(request, id):
     return RefreshPageCommand()
 
 @decorate.withfn(command)
-def subscribe(request, id, user=0):    
+def subscribe(request, id, user=None):
     if user:
-        user = User.objects.filter(id=user)[0]
-        if not (user.is_a_super_user_or_staff() or user.is_authenticated()):
-            raise CommandException(_("You do not have the correct credentials to preform this action."))
+        try:
+            user = User.objects.get(id=user)
+        except User.DoesNotExist:
+            raise Http404()
 
+        if not (request.user.is_a_super_user_or_staff() or user.is_authenticated()):
+            raise CommandException(_("You do not have the correct credentials to preform this action."))
     else:
         user = request.user
 

@@ -85,6 +85,9 @@ class AnonymousUser(DjangoAnonymousUser):
     def can_upload_files(self):
         return False
 
+    def is_a_super_user_or_staff(self):
+        return False
+
 def true_if_is_super_or_staff(fn):
     def decorated(self, *args, **kwargs):
         return self.is_superuser or self.is_staff or fn(self, *args, **kwargs)
