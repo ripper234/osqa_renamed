@@ -439,7 +439,7 @@ def convert_to_comment(request, id):
 def subscribe(request, id, user=0):    
     if user:
         user = User.objects.filter(id=user)[0]
-        if user.is_a_super_user_or_staff():
+        if not (user.is_a_super_user_or_staff() or user.is_authenticated()):
             raise CommandException(_("You do not have the correct credentials to preform this action."))
 
     else:
