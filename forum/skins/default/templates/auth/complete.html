@@ -58,6 +58,15 @@
                     {{ form1.password2 }}
                 </div>
             {% endif %}
+            {% if form1.recaptcha %}
+                <div class="form-row-vertical margin-bottom">
+                <label for="recaptcha_id">{{ form1.recaptcha.label }}</label>
+                {% if form1.recaptcha.errors %} 
+                    <p class="error">{{ form1.recaptcha.errors|join:", " }}</p>
+                {% endif %}
+                {{ form1.recaptcha }}
+                </div>
+            {% endif %}
             <p>{% trans "receive updates motivational blurb" %}</p>
             <div class='simple-subscribe-options'>
             {{email_feeds_form.subscribe}}

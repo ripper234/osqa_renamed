@@ -58,6 +58,12 @@ a {
     text-decoration: none;
 }
 
+.clear {
+  clear: both;
+  width: 0px;
+  height: 0px;
+}
+
 .badges a {
     color: #763333;
     text-decoration: underline;
@@ -150,9 +156,6 @@ blockquote {
 }
 
 #roof {
-    background: none repeat scroll 0 0 #FFFFFF;
-    margin-top: 0;
-    position: relative;
     width: 990px;
 }
 
@@ -189,13 +192,10 @@ blockquote {
 }
 
 #top {
+    float: right;
     background-color: #FFFFFF;
-    height: 20px;
     padding: 3px;
-    position: absolute;
-    right: 0;
     text-align: right;
-    top: 0;
     width: 500px;
 }
 
@@ -209,20 +209,17 @@ blockquote {
 }
 
 #logo {
+    float: left;
     padding: 5px 0 0;
 }
 
-#navBar {
-    display: block;
-    position: relative;
-    width: 990px;
+#nav {
+    float: right;
+    margin: 35px 0px 0px 0px;
+    width: 750px;
 }
 
-#navBar .nav {
-    margin: 20px 0 0 16px;
-}
-
-#navBar .nav a {
+#nav a {
     background-color: #E5EBF8;
     border-color: #888888 #888888 -moz-use-text-color;
     border-style: solid solid none;
@@ -239,11 +236,11 @@ blockquote {
     text-decoration: none;
 }
 
-#navBar .nav a:hover {
+#nav a:hover {
     text-decoration: underline;
 }
 
-#navBar .nav a.on {
+#nav a.on {
     background: none repeat scroll 0 0 #356FCB;
     border: 1px solid #356FCB;
     color: #FFFFFF;
@@ -253,23 +250,24 @@ blockquote {
     text-decoration: none;
 }
 
-#navBar .nav a.special {
+#nav a#nav_ask {
+    float: right;
     color: #B02B2C;
     font-size: 14px;
     font-weight: bold;
     text-decoration: none;
 }
 
-#navBar .nav a.special:hover {
+#nav a#nav_ask:hover {
     text-decoration: underline;
 }
 
-#navBar .nav div.focus {
-    float: right;
-    padding-right: 0;
+#nav a#nav_ask.on {
+   color: #FFFFFF;
 }
 
 #searchBar {
+    text-align: center;
     background-color: #B6C4E2;
     border-color: #EEEEEC #A9ACA5 #BABDB6 #EEEEEC;
     border-style: solid;
@@ -282,6 +280,8 @@ blockquote {
 }
 
 #searchBar .searchInput {
+    border: 0px;
+    padding: 3px;
     font-size: 13px;
     height: 18px;
     width: 400px;

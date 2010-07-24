@@ -549,7 +549,8 @@ function pickedTags(){
 
         var call_settings = {
             type:'POST',
-            url:url
+            url:url,
+            data: ''
         };
         if (callback !== false){
             call_settings.success = callback;

@@ -11,7 +11,7 @@
         {% spaceless %}
             <h2>
                 {% blocktrans count questions.paginator.count as counter %}
-                <span class="count">1</span> Question
+                <span class="count">{{counter}}</span> Question
                 {% plural %}
                 <span class="count">{{counter}}</span> Questions
                 {% endblocktrans %}
@@ -33,7 +33,7 @@
         {% spaceless %}
             <h2>
                 {% blocktrans count answers.paginator.count as counter %}
-                <span class="count">1</span> Answer
+                <span class="count">{{counter}}</span> Answer
                 {% plural %}
                 <span class="count">{{counter}}</span> Answers
                 {% endblocktrans %}
@@ -65,7 +65,7 @@
         {% spaceless %}
             <h2>
                 {% blocktrans count total_votes as cnt %}
-                    <span class="count">1</span> Vote
+                    <span class="count">{{cnt}}</span> Vote
                 {% plural %}
                     <span class="count">{{cnt}}</span> Votes
                 {% endblocktrans %}
@@ -91,7 +91,7 @@
         {% spaceless %}
             <h2>
                 {% blocktrans count user_tags|length as counter %}
-                    <span class="count">1</span> Tag
+                    <span class="count">{{counter}}</span> Tag
                 {% plural %}
                     <span class="count">{{counter}}</span> Tags
                 {% endblocktrans %}
@@ -119,7 +119,7 @@
         {% spaceless %}
         <h2>
             {% blocktrans count total_awards as counter %}
-            <span class="count">1</span> Badge
+            <span class="count">{{counter}}</span> Badge
             {% plural %}
             <span class="count">{{counter}}</span> Badges
             {% endblocktrans %}
