@@ -1,7 +1,7 @@
 {% load i18n extra_tags email_tags %}
 
 {% declare %}
-    prefix = settings.EMAIL_SUBJECT_PREFIX
+    prefix = html.mark_safe(settings.EMAIL_SUBJECT_PREFIX)
     app_name = settings.APP_SHORT_NAME
     app_url = settings.APP_URL
 

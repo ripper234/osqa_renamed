@@ -1,12 +1,13 @@
 {% load i18n extra_tags email_tags %}
 
 {% declare %}
-    prefix = settings.EMAIL_SUBJECT_PREFIX
+    prefix = html.mark_safe(settings.EMAIL_SUBJECT_PREFIX)
     app_name = settings.APP_SHORT_NAME
-    question_author = question.author.username
+    safe_app_name = html.mark_safe(settings.APP_SHORT_NAME)
+    question_author = html.mark_safe(question.author.username)
     question_url = settings.APP_URL + question.get_absolute_url()
-    question_title = question.title
-    question_tags = question.tagnames
+    question_title = html.mark_safe(question.title)
+    question_tags = html.mark_safe(question.tagnames)
     safe_body = html.html2text(question.html)
     author_link = html.objlink(question.author, style=settings.EMAIL_ANCHOR_STYLE)
     question_link = html.objlink(question, style=settings.EMAIL_ANCHOR_STYLE)
@@ -14,7 +15,7 @@
 {% enddeclare %}
 
 {% email %}
-    {% subject %}{% blocktrans %}{{ prefix }} New question on {{ app_name }}{% endblocktrans %}{% endsubject %}
+    {% subject %}{% blocktrans %}{{ prefix }} New question: {{ question_title }} on {{ safe_app_name }}{% endblocktrans %}{% endsubject %}
 
     {% htmlcontent notifications/base.html %}
         <p style="{{ p_style }}">
@@ -34,7 +35,7 @@
 
 {% textcontent notifications/base_text.html %}
 {% blocktrans %}
-{{ question_author }} has just posted a new question on {{ app_name }}, entitled
+{{ question_author }} has just posted a new question on {{ safe_app_name }}, entitled
 "{{ question_title }}" and tagged {{ question_tags }}:
 {% endblocktrans %}
 {{ safe_body }}

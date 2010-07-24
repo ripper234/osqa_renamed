@@ -1,8 +1,8 @@
 {% load i18n extra_tags email_tags %}
 
 {% declare %}
-    prefix = settings.EMAIL_SUBJECT_PREFIX
-    app_name = settings.APP_SHORT_NAME
+    prefix = html.mark_safe(settings.EMAIL_SUBJECT_PREFIX)
+    app_name = html.mark_safe(settings.APP_SHORT_NAME)
 
     exclude_greeting = True
     exclude_finetune = True
@@ -26,11 +26,11 @@
     {% endhtmlcontent %}
 
 {% textcontent notifications/base_text.html %}
-{% trans "Sender" %}: {% if name %}{{ name }}{% else %}{% trans "anonymous" %}{% endif %}
-{% trans "email" %}: {{ email }}
+{% trans "Sender" %}: {% if name %}{{ name|safe }}{% else %}{% trans "anonymous" %}{% endif %}
+{% trans "email" %}: {{ email|safe }}
 ip: {{ ip }}
 
-{% trans "Message body:" %} {{ message }}
+{% trans "Message body:" %} {{ message|safe }}
 {% endtextcontent %}
 
 {% endemail %}
