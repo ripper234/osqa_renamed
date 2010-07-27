@@ -90,7 +90,7 @@ def index(request):
 @decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
 def unanswered(request):
     return question_list(request,
-                         Question.objects.filter(extra_ref=None),
+                         Question.objects.exclude(id__in=Question.objects.filter(children__marked=True).distinct()),
                          _('open questions without an accepted answer'),
                          None,
                          _("Unanswered Questions"))
@@ -170,7 +170,7 @@ def question_list(request, initial,
         feed_url = mark_safe(request.path + "?type=rss" + req_params)
 
     return pagination.paginated(request, ('questions', paginator_context or QuestionListPaginatorContext()), {
-    "questions" : questions,
+    "questions" : questions.distinct(),
     "questions_count" : questions.count(),
     "keywords" : keywords,
     "list_description": list_description,
