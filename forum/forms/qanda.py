@@ -168,8 +168,8 @@ class AnswerForm(forms.Form):
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
 
-            if question.nis.wiki:
-                self.fields['wiki'].initial = True
+            #if question.nis.wiki:
+            #    self.fields['wiki'].initial = True
 
 
 class RetagQuestionForm(forms.Form):
