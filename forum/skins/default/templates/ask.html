@@ -39,12 +39,16 @@
                 max: 20,
                 multiple: true,
                 multipleSeparator: " ",
-        		/*formatItem: function(row, i, max) {
+
+        		/*
+        		formatItem: function(row, i, max) {
         			return row.n + " ("+ row.c +")";
         		},
                 formatResult: function(row, i, max){
                     return row.n;
-                }*/
+                }
+                */
+
                 formatItem: function(row, i, max, value) {
                     return row[1].split(".")[0] + " (" + row[1].split(".")[1] + ")";
                 },
@@ -55,6 +59,14 @@
 
             });
         });
+
+        function beforeUnload(e) {
+            if($("input#id_title")[0].value != "" || $("textarea#editor")[0].value != "" || $("input#id_tags")[0].value != "") {
+                yourWorkWillBeLost(e);
+            }
+            return false;
+        }
+        window.addEventListener('beforeunload', beforeUnload, true);
 
         var related_questions_url = "{% url related_questions %}";
         </script>
@@ -124,7 +136,7 @@
             {% if not request.user.is_authenticated %}
             <input name="ask" type="submit" value="{% trans "Login/signup to post your question" %}" class="submit" />
 			{% else %}
-            <input name="ask" type="submit" value="{% trans "Ask your question" %}" class="submit" />
+            <input name="ask" type="submit" value="{% trans "Ask your question" %}" class="submit" onclick="window.removeEventListener('beforeunload', beforeUnload, true)" />
             {% endif %}
         </form>
     </div>

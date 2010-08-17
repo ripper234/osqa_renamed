@@ -510,11 +510,14 @@ $(function() {
                 return false;
             });
 
-            $cancel.click(function() {
-                if (comment_in_form) {
-                    $comment = $('#comment-' + comment_in_form).slideDown('slow');
+            $cancel.click(function(event) {
+                if (confirm("You will lose all of your changes in this comment.  Do you still wish to proceed?")){
+                    if (comment_in_form) {
+                        $comment = $('#comment-' + comment_in_form).slideDown('slow');
+                    }
+                    hide_comment_form();
+                    cleanup_form();
                 }
-                hide_comment_form();
                 return false;
             });
         }
@@ -1053,3 +1056,14 @@ $(document).ready( function(){
     });
 });
 
+function yourWorkWillBeLost(e) {
+	if(!e) e = window.event;
+	e.cancelBubble = true;
+	e.returnValue = 'You sure you want to leave?  Your work will be lost.';
+
+	if (e.stopPropagation) {
+		e.stopPropagation();
+		e.preventDefault();
+	}
+    return e;
+}

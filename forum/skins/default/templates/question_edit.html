@@ -54,7 +54,18 @@
                 $("#select_revision").click();
             });
 
+            init = $("textarea#editor")[0].value;
         });
+
+         function beforeUnload(e) {
+             if($("input#id_title")[0].value != "" || $("textarea#editor")[0].value != "" || $("input#id_tags")[0].value != "") {
+                 yourWorkWillBeLost(e);
+             }
+             return false;
+         }
+         window.addEventListener('beforeunload', beforeUnload, true);
+
+        var init = "";
         </script>
 {% endblock %}
         
@@ -112,8 +123,8 @@
                 {{ form.summary.help_text }}
             </div>
             <div class="error" ></div>
-            <input type="submit" value="{% trans "Save edit" %}" class="submit" />
-            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="history.back(-1);" />
+            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="window.removeEventListener('beforeunload', beforeUnload, true)" />
+
         </form>
     </div>
 </div>

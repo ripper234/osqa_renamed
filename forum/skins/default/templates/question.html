@@ -30,7 +30,7 @@
             }
 
             $('#editor').TextAreaResizer();
-            
+
             //toggle preview of editor
             var display = true;
             var txt = "[{% trans "hide preview" %}]";
@@ -41,7 +41,24 @@
                 $('#previewer').toggle();
                 $('#pre-collapse').text(txt);
             });
+
         });
+
+        function beforeUnload(e) {
+            if($("textarea#editor")[0].value != "") {
+               yourWorkWillBeLost(e);
+            }
+
+            $("textarea.commentBox").each(function() {
+               if(this.value != "") {
+                   yourWorkWillBeLost(e);
+               }
+            });
+
+            return false;
+        }
+        window.addEventListener('beforeunload', beforeUnload, true);
+
         </script>
         <noscript>
             <style>
@@ -223,7 +240,7 @@
                         value="{% trans "Answer the question" %}" 
                         {% endif %}
                     {% endif %}
-                    class="submit" style="float:left"/>
+                    class="submit" style="float:left" onclick="window.removeEventListener('beforeunload', beforeUnload, true)" />
             {% endif %}
         </form>
     </div>

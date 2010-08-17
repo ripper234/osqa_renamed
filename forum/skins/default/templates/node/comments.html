@@ -43,14 +43,14 @@
     {% if can_comment %}
     <form id="comment-{{ post.id }}-form" method="post" action="{% url comment id=post.id %}" accept-charset="utf-8">
         <div class="comment-form-widgets-container">
-            <textarea name="comment"></textarea>
+            <textarea name="comment" class="commentBox"></textarea>
             <div class="comment-form-buttons">
                 <span id="comment-{{ post.id }}-chars-left" class="comment-chars-left">
                     <span class="comments-char-left-count">{{ min_length }}|{{ max_length }}</span>
                     <span class="comments-chars-togo-msg">{% trans "characters needed" %}</span>
                     <span class="comments-chars-left-msg">{% trans "characters left" %}</span>
                 </span>
-                <input type="submit" class="comment-submit" value="{% trans " comment" %}" />
+                <input type="submit" class="comment-submit" value="{% trans " comment" %}" onclick="window.removeEventListener('beforeunload', beforeUnload, true)" />
                 <input type="submit" class="comment-cancel" value="{% trans " cancel" %}" />
             </div>
         </div>
