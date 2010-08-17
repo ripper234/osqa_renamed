@@ -7,7 +7,8 @@ from forum.http_responses import HttpResponseUnauthorized
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
-from django.contrib.auth.decorators import login_required
+from forum.views.decorators import login_required
+from forum.modules import decorate
 from django.contrib.auth import login, logout
 from django.http import get_host
 from forum.actions import SuspendAction
@@ -290,7 +291,6 @@ def validate_email(request, user, code):
     else:
         raise Http404()
 
-@login_required
 def auth_settings(request, id):
     user_ = get_object_or_404(User, id=id)
 
@@ -402,7 +402,7 @@ def forward_suspended_user(request, user, show_private_msg=True):
     request.user.message_set.create(message)
     return HttpResponseRedirect(reverse('index'))
 
-@login_required
+@decorate.withfn(login_required)
 def signout(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))

@@ -10,7 +10,6 @@ from forum.models import *
 from forum.models.node import NodeMetaClass
 from forum.actions import *
 from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
 from forum.utils.decorators import ajax_method, ajax_login_required
 from decorators import command, CommandException, RefreshPageCommand
 from forum.modules import decorate

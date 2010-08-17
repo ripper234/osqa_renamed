@@ -6,6 +6,8 @@ from django.template import RequestContext, loader
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.views.static import serve
 from forum import settings
+from forum.modules import decorate
+from forum.views.decorators import login_required
 from forum.forms import FeedbackForm
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
@@ -70,6 +72,7 @@ feedback.CANCEL_MESSAGE=_('We look forward to hearing your feedback! Please, giv
 def privacy(request):
     return render_to_response('privacy.html', context_instance=RequestContext(request))
 
+@decorate.withfn(login_required)
 def logout(request):
     return render_to_response('logout.html', {
     'next' : get_next_url(request),

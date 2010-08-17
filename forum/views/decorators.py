@@ -8,6 +8,12 @@ from django.utils.translation import ungettext, ugettext as _
 from forum.modules import ui, decorate
 import logging
 
+def login_required(func, request, *args, **kwargs):
+    if not request.user.is_authenticated():
+        return HttpResponseRedirect(reverse('auth_signin'))
+    else:
+        return func(request, *args, **kwargs)
+
 def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
     def decorator(func):        
         def decorated(context, request, *args, **kwargs):

@@ -1,4 +1,3 @@
-from django.contrib.auth.decorators import login_required
 from forum.models import User
 from django.db.models import Q, Count
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
@@ -83,7 +82,6 @@ def online_users(request):
     })
 
 
-@login_required
 def edit_user(request, id):
     user = get_object_or_404(User, id=id)
     if not (request.user.is_superuser or request.user == user):
@@ -403,13 +401,4 @@ def user_preferences(request, user):
             
     return {'view_user': user, 'form': form}
 
-@login_required
-def account_settings(request):
-    logging.debug('')
-    msg = request.GET.get('msg', '')
-    is_openid = False
 
-    return render_to_response('account_settings.html', {
-    'msg': msg,
-    'is_openid': is_openid
-    }, context_instance=RequestContext(request))

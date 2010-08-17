@@ -4,7 +4,6 @@ import time, datetime, random
 import logging
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render_to_response, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.template import RequestContext
 from django.utils.html import *
@@ -110,7 +109,6 @@ def ask(request):
         'form' : form,
         }, context_instance=RequestContext(request))
 
-@login_required
 def edit_question(request, id):
     question = get_object_or_404(Question, id=id)
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
@@ -174,7 +172,6 @@ def _edit_question(request, question):
         #'tags' : _get_tags_cache_json()
     }, context_instance=RequestContext(request))
 
-@login_required
 def edit_answer(request, id):
     answer = get_object_or_404(Answer, id=id)
     if answer.deleted and not request.user.can_view_deleted_post(answer):
