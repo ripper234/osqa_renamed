@@ -6,9 +6,6 @@
 // Original Markdown Copyright (c) 2004-2005 John Gruber
 //   <http://daringfireball.net/projects/markdown/>
 //
-// Redistributable under a BSD-style open source license.
-// See license.txt for more information.
-//
 // The full source distribution is at:
 //
 //				A A L
@@ -184,7 +181,7 @@ var _StripLinkDefinitions = function(text) {
 			  /gm,
 			  function(){...});
 	*/
-	var text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|\Z)/gm,
+	var text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+)/gm,
 		function (wholeMatch,m1,m2,m3,m4) {
 			m1 = m1.toLowerCase();
 			g_urls[m1] = _EncodeAmpsAndAngles(m2);  // Link IDs are case-insensitive
