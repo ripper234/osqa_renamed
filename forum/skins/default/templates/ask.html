@@ -58,23 +58,27 @@
                 }
 
             });
+
         });
+
+        function submitClicked(e) {
+            if(!is_chrome)$("input.submit")[0].disabled=true;
+            window.removeEventListener('beforeunload', beforeUnload, true);
+        }
 
         function beforeUnload(e) {
             if($("input#id_title")[0].value != "" || $("textarea#editor")[0].value != "" || $("input#id_tags")[0].value != "") {
-                yourWorkWillBeLost(e);
+                if(is_chrome) {
+                    return "You sure you want to leave?  Your work will be lost.";
+                } else {
+                    yourWorkWillBeLost(e);
+                }
             }
             return false;
         }
         window.addEventListener('beforeunload', beforeUnload, true);
 
-        function submitClicked() {
-            window.removeEventListener('beforeunload', beforeUnload, true);
-            $("input.submit").each(function() {
-                this.disabled=true;
-            });
-        }
-
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
         var related_questions_url = "{% url related_questions %}";
         </script>
         <script src="{% media "/media/js/osqa.ask.js" %}" type="text/javascript"></script>
@@ -140,10 +144,10 @@
 			<p class="title-desc">
 				{{ form.tags.help_text }}
 			</p>
-            {% if not request.user.is_authenticated %}
-            <input name="ask" type="submit" value="{% trans "Login/signup to post your question" %}" class="submit" />
+            {% if not request.user.is_authenticated %}                                                                        
+            <input name="ask" type="submit" value="{% trans "Login/signup to post your question" %}" class="submit" onclick="submitClicked(event)"/>
 			{% else %}
-            <input name="ask" type="submit" value="{% trans "Ask your question" %}" class="submit" onclick="submitClicked()" />
+            <input name="ask" type="submit" value="{% trans "Ask your question" %}" class="submit" onclick="submitClicked(event)"/>
             {% endif %}
         </form>
     </div>

@@ -41,32 +41,41 @@
                 $('#previewer').toggle();
                 $('#pre-collapse').text(txt);
             });
-
         });
 
+        function submitClicked(e) {
+            if(!is_chrome)$("input.submit")[0].disabled=true;
+            window.removeEventListener('beforeunload', beforeUnload, true);
+        }
+
         function beforeUnload(e) {
+            var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+
             if($("textarea#editor")[0].value != "") {
-               yourWorkWillBeLost(e);
+                if(is_chrome) {
+                    return "You sure you want to leave?  Your work will be lost.";
+                } else {
+                    yourWorkWillBeLost(e);
+                }
+                return false;
             }
 
-            $("textarea.commentBox").each(function() {
-               if(this.value != "") {
-                   yourWorkWillBeLost(e);
-               }
-            });
-
-            return false;
+            var commentBoxes = $("textarea.commentBox");
+            for(var index = 0; index < commentBoxes.length; index++) {
+                if(commentBoxes[index].value != "") {
+                    if(is_chrome) {
+                        return "You sure you want to leave?  Your work will be lost.";
+                    } else {
+                        yourWorkWillBeLost(e);
+                    }
+                    return false;
+                }
+            }
         }
         window.addEventListener('beforeunload', beforeUnload, true);
 
-        function submitClicked() {
-             window.removeEventListener('beforeunload', beforeUnload, true);
-             $("input.submit").each(function() {
-                 this.disabled=true;
-             });
-         }
-
-         </script>
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+        </script>
         <noscript>
             <style>
                 .comment.not_top_scorer {
@@ -247,7 +256,7 @@
                         value="{% trans "Answer the question" %}" 
                         {% endif %}
                     {% endif %}
-                    class="submit" style="float:left" onclick="submitClicked()" />
+                    class="submit" style="float:left" onclick="submitClicked(event)"/>
             {% endif %}
         </form>
     </div>

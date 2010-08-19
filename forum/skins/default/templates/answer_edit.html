@@ -12,7 +12,8 @@
         $().ready(function(){
             $("#nav_questions").attr('className',"on");
             $('#editor').TextAreaResizer();
-                             
+
+
             //toggle preview of editor
             var display = true;
             var txt = "{% trans "hide preview" %}";
@@ -24,20 +25,40 @@
                 $('#pre-collapse').text(txt);
             });
 
-            
+
             $('#id_revision').unbind().change(function(){
                 $("#select_revision").click();
             });
+
+
+            answer = $("textarea#editor")[0].value;
         });
 
-        function beforeUnload(e) {
-            if($("textarea#editor")[0].value != "") {
-               yourWorkWillBeLost(e);
-            }
 
-            return false;
+        function submitClicked(e) {
+            if(!is_chrome) {
+                $("input.submit")[0].disabled=true;
+                $("input.submit")[1].disabled=true;
+            }
+            window.removeEventListener('beforeunload', beforeUnload, true);
+        }
+
+        function beforeUnload(e) {
+            var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+            if($("textarea#editor")[0].value != answer) {
+                 if(is_chrome) {
+                     return "You sure you want to leave?  Your work will be lost.";
+                 } else {
+                     yourWorkWillBeLost(e);
+                 }
+                 return false;
+            }
         }
         window.addEventListener('beforeunload', beforeUnload, true);
+
+
+        var answer = "";
+        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
         </script>
 {% endblock %}
         
@@ -73,8 +94,8 @@
             <div class="title-desc">
                 {{ form.summary.help_text }}
             </div>
-            <input type="submit" value="{% trans "Save edit" %}" class="submit" onclick="window.removeEventListener('beforeunload', beforeUnload, true)" />
-            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="history.back(-1);" />
+            <input type="submit" value="{% trans "Save edit" %}" class="submit" onclick="submitClicked(event)" />
+            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="history.back(-1);submitClicked(event)" />
         </form>
     </div>
 </div>

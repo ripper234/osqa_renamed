@@ -1812,3 +1812,9 @@ div.subscription_tags a:hover {
     color: #FFFFFF;
 }
 
+div.wmd-button {
+    color:white;
+}
+div.wmd-button-bar {
+    float:left;
+}

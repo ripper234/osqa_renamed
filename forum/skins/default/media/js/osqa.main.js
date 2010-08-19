@@ -1059,7 +1059,7 @@ $(document).ready( function(){
 function yourWorkWillBeLost(e) {
 	if(!e) e = window.event;
 	e.cancelBubble = true;
-	e.returnValue = 'You sure you want to leave?  Your work will be lost.';
+	e.returnValue = 'If you leave your work will be lost.';
 
 	if (e.stopPropagation) {
 		e.stopPropagation();
