@@ -1057,13 +1057,24 @@ $(document).ready( function(){
 });
 
 function yourWorkWillBeLost(e) {
-	if(!e) e = window.event;
-	e.cancelBubble = true;
-	e.returnValue = 'If you leave your work will be lost.';
+    if(browserTester('chrome')) {
+        return "You sure you want to leave?  Your work will be lost.";
+    } else if(browserTester('safari')) {
+        return "You sure you want to leave?  Your work will be lost.";
+    } else {
+        if(!e) e = window.event;
+        e.cancelBubble = true;
+        e.returnValue = 'If you leave your work will be lost.';
 
-	if (e.stopPropagation) {
-		e.stopPropagation();
-		e.preventDefault();
-	}
-    return e;
+        if (e.stopPropagation) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        return e;
+    }
+}
+
+function browserTester(browserString) {
+    var test = navigator.userAgent;
+    return navigator.userAgent.toLowerCase().indexOf(browserString) > -1;
 }
