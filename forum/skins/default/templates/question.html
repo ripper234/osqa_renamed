@@ -44,29 +44,22 @@
         });
 
         function submitClicked(e) {
-            if(!is_chrome)$("input.submit")[0].disabled=true;
+            if(!(browserTester('chrome') || browserTester('safari'))) {
+                $("input.submit")[0].disabled=true;
+            }
             window.removeEventListener('beforeunload', beforeUnload, true);
         }
 
         function beforeUnload(e) {
-            var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 
             if($("textarea#editor")[0].value != "") {
-                if(is_chrome) {
-                    return "Are you sure you want to leave?  Your work will be lost.";
-                } else {
-                    yourWorkWillBeLost(e);
-                }
+                return yourWorkWillBeLost(e);
             }
 
             var commentBoxes = $("textarea.commentBox");
             for(var index = 0; index < commentBoxes.length; index++) {
                 if(commentBoxes[index].value != "") {
-                    if(is_chrome) {
-                        return "You sure you want to leave?  Your work will be lost.";
-                    } else {
-                        yourWorkWillBeLost(e);
-                    }
+                    return yourWorkWillBeLost(e);
                 }
             }
         }

@@ -62,7 +62,7 @@
         });
 
         function submitClicked(e) {
-            if(!is_chrome) {
+            if(!(browserTester('chrome') || browserTester('safari'))) {
                 $("input.submit")[0].disabled=true;
                 $("input.submit")[1].disabled=true;
             }
@@ -70,14 +70,8 @@
         }
 
         function beforeUnload(e) {
-            var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-
             if($("input#id_title")[0].value != title || $("textarea#editor")[0].value != body || $("input#id_tags")[0].value != tag) {
-                 if(is_chrome) {
-                     return "You sure you want to leave?  Your work will be lost.";
-                 } else {
-                     yourWorkWillBeLost(e);
-                 }
+                 return yourWorkWillBeLost(e);
             }
         }
         window.addEventListener('beforeunload', beforeUnload, true);
