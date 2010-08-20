@@ -1097,6 +1097,14 @@ Attacklab.wmdBase = function(){
 					var keyCode = key.charCode || key.keyCode;
 					var keyCodeStr = String.fromCharCode(keyCode).toLowerCase();
 					
+					// Bugfix for messed up DEL and .
+					if (keyCode === 46) {
+						keyCodeStr = "";
+					}
+					if (keyCode === 190) {
+						keyCodeStr = ".";
+					}
+
 					switch(keyCodeStr) {
 						case "b":
 							doClick(document.getElementById("wmd-bold-button"));
@@ -1266,7 +1274,7 @@ Attacklab.wmdBase = function(){
 				this.text = inputArea.value;
 			}
 			
-		}
+		};
 		
 		// Sets the selected text in the input box after we've performed an
 		// operation.
@@ -2323,7 +2331,7 @@ Attacklab.wmdBase = function(){
 
 Attacklab.wmd_env = {};
 Attacklab.account_options = {};
-Attacklab.wmd_defaults = {version:1, output:"HTML", lineLength:40, delayLoad:false};
+Attacklab.wmd_defaults = {version:1, output:"Markdown", lineLength:40, delayLoad:false};
 
 if(!Attacklab.wmd)
 {

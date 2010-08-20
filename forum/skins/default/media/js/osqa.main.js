@@ -1058,13 +1058,13 @@ $(document).ready( function(){
 
 function yourWorkWillBeLost(e) {
     if(browserTester('chrome')) {
-        return "You sure you want to leave?  Your work will be lost.";
+        return "Are you sure you want to leave?  Your work will be lost.";
     } else if(browserTester('safari')) {
-        return "You sure you want to leave?  Your work will be lost.";
+        return "Are you sure you want to leave?  Your work will be lost.";
     } else {
         if(!e) e = window.event;
         e.cancelBubble = true;
-        e.returnValue = 'If you leave your work will be lost.';
+        e.returnValue = 'If you leave, your work will be lost.';
 
         if (e.stopPropagation) {
             e.stopPropagation();
@@ -1075,6 +1075,5 @@ function yourWorkWillBeLost(e) {
 }
 
 function browserTester(browserString) {
-    var test = navigator.userAgent;
     return navigator.userAgent.toLowerCase().indexOf(browserString) > -1;
 }
