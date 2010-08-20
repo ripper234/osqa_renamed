@@ -69,12 +69,11 @@
         function beforeUnload(e) {
             if($("input#id_title")[0].value != "" || $("textarea#editor")[0].value != "" || $("input#id_tags")[0].value != "") {
                 if(is_chrome) {
-                    return "You sure you want to leave?  Your work will be lost.";
+                    return "Are you sure you want to leave?  Your work will be lost.";
                 } else {
                     yourWorkWillBeLost(e);
                 }
             }
-            return false;
         }
         window.addEventListener('beforeunload', beforeUnload, true);
 

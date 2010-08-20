@@ -47,18 +47,15 @@
             var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
             if($("textarea#editor")[0].value != answer) {
                  if(is_chrome) {
-                     return "You sure you want to leave?  Your work will be lost.";
+                     return "Are you sure you want to leave?  Your work will be lost.";
                  } else {
                      yourWorkWillBeLost(e);
                  }
-                 return false;
             }
         }
         window.addEventListener('beforeunload', beforeUnload, true);
 
-
         var answer = "";
-        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
         </script>
 {% endblock %}
         

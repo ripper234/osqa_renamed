@@ -78,7 +78,6 @@
                  } else {
                      yourWorkWillBeLost(e);
                  }
-                 return false;
             }
         }
         window.addEventListener('beforeunload', beforeUnload, true);
@@ -87,7 +86,6 @@
         var title = "";
         var body = "";
         var tag = "";
-        var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
         </script>
 {% endblock %}
         
