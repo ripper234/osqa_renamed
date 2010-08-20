@@ -116,7 +116,7 @@ urlpatterns += patterns('',
 
 
                         url(r'^%s$' % _('users/'), app.users.users, name='users'),
-                        url(r'^%s$' % _('online_users/'), app.users.online_users, name='online_users'),
+                        # url(r'^%s$' % _('online_users/'), app.users.online_users, name='online_users'),
 
 
                         url(r'^%s(?P<id>\d+)/%s$' % (_('users/'), _('edit/')), app.users.edit_user, name='edit_user'),

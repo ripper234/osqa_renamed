@@ -110,7 +110,17 @@ def ask(request):
         }, context_instance=RequestContext(request))
 
 def edit_question(request, id):
-    question = get_object_or_404(Question, id=id)
+    #question = get_object_or_404(Question, id=id)
+    try:
+        question = Question.objects.get(id=id)
+    except:
+        if slug:
+            question = match_question_slug(slug)
+            if question is not None:
+                return HttpResponseRedirect(question.get_absolute_url())
+
+        raise Http404()
+
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
         raise Http404
     if request.user.can_edit_post(question):

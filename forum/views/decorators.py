@@ -6,6 +6,8 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.utils.translation import ungettext, ugettext as _
 from forum.modules import ui, decorate
+from datetime import datetime, date
+from forum.settings import ONLINE_USERS
 import logging
 
 def login_required(func, request, *args, **kwargs):
@@ -17,6 +19,9 @@ def login_required(func, request, *args, **kwargs):
 def render(template=None, tab=None, tab_title='', weight=500, tabbed=True):
     def decorator(func):        
         def decorated(context, request, *args, **kwargs):
+            if request.user.is_authenticated():
+                ONLINE_USERS[request.user] = datetime.now()
+
             if isinstance(context, HttpResponse):
                 return context
 

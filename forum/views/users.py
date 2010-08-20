@@ -21,7 +21,9 @@ from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, Sus
 from forum.modules import ui
 from forum.utils import pagination
 from forum.views.readers import QuestionListPaginatorContext, AnswerPaginatorContext
-
+from forum.settings import ONLINE_USERS
+ 
+import bisect
 import time
 import datetime
 import decorators
@@ -68,17 +70,65 @@ def users(request):
     })
 
 
-#@decorators.render('users/online_users.html', 'online_users', _('Online Users'), weight=200)
+@decorators.render('users/online_users.html', 'online_users', _('Online Users'), weight=200)
 def online_users(request):
     suser = request.REQUEST.get('q', "")
 
-    one_hour_ago = datetime.datetime.now() - datetime.timedelta(hours=1)
-    sql_datetime = datetime.datetime.strftime(one_hour_ago, '%Y-%m-%d %H:%M:%S')
-    users = User.objects.order_by('-last_seen')
+    sort = ""
+    if request.GET.get("sort", None):
+        try:
+            sort = int(request.GET["sort"])
+        except ValueError:
+            logging.error('Found invalid sort "%s", loading %s, refered by %s' % (
+                request.GET.get("sort", ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
+            ))
+            raise Http404()
 
-    return pagination.paginated(request, ('users', UserListPaginatorContext()), {
+    page = 0
+    if request.GET.get("page", None):
+        try:
+            page = int(request.GET["page"])
+        except ValueError:
+            logging.error('Found invalid page "%s", loading %s, refered by %s' % (
+                request.GET.get("page", ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
+            ))
+            raise Http404()
+
+    pagesize = 10
+    if request.GET.get("pagesize", None):
+        try:
+            pagesize = int(request.GET["pagesize"])
+        except ValueError:
+            logging.error('Found invalid pagesize "%s", loading %s, refered by %s' % (
+                request.GET.get("pagesize", ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')
+            ))
+            raise Http404()
+
+
+    users = None
+    if sort == "reputation":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.reputation)
+    elif sort == "newest" :
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.newest)
+    elif sort == "last":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.last)
+    elif sort == "name":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.name)
+    elif sort == "oldest":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.oldest)
+    elif sort == "newest":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.newest)
+    elif sort == "votes":
+        users = sorted(ONLINE_USERS.sets.keys(), key=lambda user: user.votes)
+    else:
+        users = sorted(ONLINE_USERS.iteritems(), key=lambda x: x[1])
+
+    return render_to_response('users/online_users.html', {
         "users" : users,
         "suser" : suser,
+        "sort" : sort,
+        "page" : page,
+        "pageSize" : pagesize,
     })
 
 
@@ -187,10 +237,10 @@ def suspend(request, id):
             return render_to_response('users/suspend_user.html')
 
     data = {
-    'bantype': request.POST.get('bantype', 'indefinetly').strip(),
-    'publicmsg': request.POST.get('publicmsg', _('Bad behaviour')),
-    'privatemsg': request.POST.get('privatemsg', None) or request.POST.get('publicmsg', ''),
-    'suspended': user
+        'bantype': request.POST.get('bantype', 'indefinetly').strip(),
+        'publicmsg': request.POST.get('publicmsg', _('Bad behaviour')),
+        'privatemsg': request.POST.get('privatemsg', None) or request.POST.get('publicmsg', ''),
+        'suspended': user
     }
 
     if data['bantype'] == 'forxdays':
