@@ -310,7 +310,7 @@ class User(BaseModel, DjangoUser):
 
     @true_if_is_super_or_staff
     def can_reopen_question(self, question):
-        return self == question.author and self.reputation >= settings.REP_TO_REOPEN_OWN
+        return self == question.author and self.reputation >= int(settings.REP_TO_REOPEN_OWN)
 
     @true_if_is_super_or_staff
     def can_delete_post(self, post):
