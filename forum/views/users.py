@@ -70,7 +70,7 @@ def users(request):
     })
 
 
-@decorators.render('users/online_users.html', 'online_users', _('Online Users'), weight=200)
+@decorators.render('users/online_users.html', 'online_users', _('Online Users'), weight=200, tabbed=False)
 def online_users(request):
     suser = request.REQUEST.get('q', "")
 
