@@ -33,14 +33,14 @@ class AolAuthConsumer(OpenIdAbstractAuthConsumer):
         return 'http://openid.aol.com/' + uname
 
 class AolAuthContext(ConsumerTemplateContext):
-    mode = 'BIGICON'
+    mode = 'SMALLICON'
     type = 'SIMPLE_FORM'
     simple_form_context = {
         'your_what': 'AOL screen name'
     }
-    weight = 400
+    weight = 200
     human_name = 'AOL'
-    icon = '/media/images/openid/aol.gif'
+    icon = '/media/images/openid/aol.png'
 
 
 class MyOpenIdAuthConsumer(OpenIdAbstractAuthConsumer):
@@ -56,14 +56,14 @@ class MyOpenIdAuthConsumer(OpenIdAbstractAuthConsumer):
         return "http://%s.myopenid.com/" % blog_name
 
 class MyOpenIdAuthContext(ConsumerTemplateContext):
-    mode = 'SMALLICON'
+    mode = 'BIGICON'
     type = 'SIMPLE_FORM'
     simple_form_context = {
         'your_what': 'MyOpenID user name'
     }
-    weight = 200
+    weight = 400
     human_name = 'MyOpenID'
-    icon = '/media/images/openid/myopenid.png'
+    icon = '/media/images/openid/myopenid_big.png'
 
 
 class FlickrAuthConsumer(OpenIdAbstractAuthConsumer):

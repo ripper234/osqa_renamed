@@ -19,7 +19,11 @@ class AskAction(NodeEditAction):
     verb = _("asked")
 
     def process_data(self, **data):
-        question = Question(author=self.user, **self.create_revision_data(True, **data))
+        processed_data = self.create_revision_data(True, **data)
+        if 'added_at' in data:
+            processed_data['added_at'] = data['added_at']
+
+        question = Question(author=self.user, **processed_data)
         question.save()
         self.node = question
 

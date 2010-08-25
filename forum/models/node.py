@@ -278,12 +278,15 @@ class Node(BaseModel, NodeContent):
     def get_revisions_url(self):
         return ('revisions', (), {'id': self.id})
 
-    def update_last_activity(self, user, save=False):
+    def update_last_activity(self, user, save=False, time=None):
+        if not time:
+            time = datetime.datetime.now()
+
         self.last_activity_by = user
-        self.last_activity_at = datetime.datetime.now()
+        self.last_activity_at = time
 
         if self.parent:
-            self.parent.update_last_activity(user, save=True)
+            self.parent.update_last_activity(user, save=True, time=time)
 
         if save:
             self.save()
@@ -378,7 +381,7 @@ class Node(BaseModel, NodeContent):
             super(BaseModel, self).save(*args, **kwargs)
             self.active_revision = self._create_revision(self.author, 1, title=self.title, tagnames=self.tagnames,
                                                          body=self.body)
-            self.update_last_activity(self.author)
+            self.update_last_activity(self.author, time=self.added_at)
 
         if self.parent_id and not self.abs_parent_id:
             self.abs_parent = self.parent.absolute_parent

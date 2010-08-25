@@ -11,7 +11,7 @@ class LocalAuthConsumer(AuthenticationConsumer):
             raise InvalidAuthentication(" ".join(form_auth.errors.values()[0]))
 
 class LocalAuthContext(ConsumerTemplateContext):
-    mode = 'STACK_ITEM'
+    mode = 'STACK_ITEM'                      
     weight = 1000
     human_name = 'Local authentication'
     stack_item_template = 'modules/localauth/loginform.html'
