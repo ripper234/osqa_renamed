@@ -22,7 +22,7 @@
     <title>{% trans "OSQA administration area" %} - {% block subtitle %}{% endblock %}</title>
 </head>
 <body>
-<div id="container">
+<div id="container" class="change-list">
         <div id="header">
             {% block header %}
             <div id="branding">
@@ -43,7 +43,7 @@
             {% block pagename %}{% endblock %} - 
             {% block description %}{% endblock %}
         </div>
-        <div id="content" class="colMS">
+        <div id="content" class="{% if hide_menu %}flex{% else %}colMS{% endif %}">
             <div id="content-main">
             {% autoescape off %}
                 {% for message in user_messages %}
@@ -52,6 +52,7 @@
             {% endautoescape %}
                 {% block admincontent %}{% endblock %}
             </div>
+            {% if not hide_menu %}
             <div id="content-related">
                 {% if unsaved %}
                 <div id="changes-box" class="module">
@@ -128,10 +129,13 @@
                     <ul>
                         <li><a href="{% url admin_maintenance %}">{% trans "Maintenance mode" %}</a></li>
                         <li><a href="{% url admin_flagged_posts %}">{% trans "Flagged Posts" %}</a></li>
-                        {% comment %}<li><a href="{% url admin_moderation %}">{% trans "Moderation" %}</a></li>{% endcomment %}
+                        {% for name,tool in tools.items %}
+                            <li><a href="{% url admin_tools name %}">{{ tool.label }}</a></li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
+            {% endif %}
         </div>
         <div id="footer" class="breadcumbs">
             <a href="http://www.osqa.net">OSQA</a> <span class="version">{{ settings.OSQA_VERSION }} ({{ settings.SVN_REVISION }})</span>

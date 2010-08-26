@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import time
+import os, time, csv, random
 
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.urlresolvers import reverse
@@ -10,12 +10,16 @@ from django.utils.translation import ugettext as _
 from django.utils import simplejson
 from django.db import models
 from forum.settings.base import Setting
-from forum.forms import MaintenanceModeForm, PageForm
+from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm
 from forum.settings.forms import SettingsSetForm
+from forum.utils import pagination
 
-from forum.models import Question, Answer, User, Node, Action, Page
+from forum.models import Question, Answer, User, Node, Action, Page, NodeState
+from forum.models.node import NodeMetaClass
 from forum.actions import NewPageAction, EditPageAction, PublishAction
 from forum import settings
+
+TOOLS = {}
 
 def super_user_required(fn):
     def wrapper(request, *args, **kwargs):
@@ -40,6 +44,8 @@ def admin_page(fn):
                     'form', 'moderation', 'css', 'headandfoot', 'head', 'view', 'urls')]
                     , lambda s1, s2: s1.weight - s2.weight)
 
+            context['tools'] = TOOLS
+
             unsaved = request.session.get('previewing_settings', {})
             context['unsaved'] = set([getattr(settings, s).set.name for s in unsaved.keys() if hasattr(settings, s)])
 
@@ -49,14 +55,26 @@ def admin_page(fn):
 
     return wrapper
 
+def admin_tools_page(name, label):    
+    def decorator(fn):
+        fn.label = label
+        TOOLS[name] = fn
+
+        return fn
+    return decorator
+
+class ActivityPaginatorContext(pagination.PaginatorContext):
+    def __init__(self):
+        super (ActivityPaginatorContext, self).__init__('ADMIN_RECENT_ACTIVITY', pagesizes=(20, 40, 80), default_pagesize=40)
+
 @admin_page
 def dashboard(request):
-    return ('osqaadmin/dashboard.html', {
+    return ('osqaadmin/dashboard.html', pagination.paginated(request, ("recent_activity", ActivityPaginatorContext()), {
     'settings_pack': unicode(settings.SETTINGS_PACK),
     'statistics': get_statistics(),
     'recent_activity': get_recent_activity(),
     'flagged_posts': get_flagged_posts(),
-    })
+    }))
 
 @super_user_required
 def interface_switch(request):
@@ -103,6 +121,13 @@ def statistics(request):
             }
             ]
     }
+
+@admin_page
+def tools_page(request, name):
+    if not name in TOOLS:
+        raise Http404
+
+    return TOOLS[name](request)
 
 
 @admin_page
@@ -161,7 +186,7 @@ def get_default(request, set_name, var_name):
 
 
 def get_recent_activity():
-    return Action.objects.order_by('-action_date')[0:30]
+    return Action.objects.order_by('-action_date')
 
 def get_flagged_posts():
     return Action.objects.filter(canceled=False, action_type="flag").order_by('-action_date')[0:30]
@@ -355,78 +380,57 @@ def edit_page(request, id=None):
     'published': published
     })
 
-@admin_page
-def moderation(request):
-    if request.POST:
-        if not 'ids' in request.POST:
-            verify = None
-        else:
-            sort = {
-            'high-rep': '-reputation',
-            'newer': '-date_joined',
-            'older': 'date_joined',
-            }.get(request.POST.get('sort'), None)
 
-            if sort:
-                try:
-                    limit = int(request.POST['limit'])
-                except:
-                    limit = 5
 
-                verify = User.objects.order_by(sort)[:limit]
-            else:
-                verify = None
+@admin_tools_page(_("nodeman"), _("Node management"))
+def node_management(request):
+    nodes = Node.objects.all()
 
-        if verify:
-            possible_cheaters = []
-            verify = User.objects.order_by(sort)[:5]
+    if (request.GET):
+        filter_form = NodeManFilterForm(request.GET)
+    else:
+        filter_form = NodeManFilterForm({'node_type': 'all', 'state_type': 'any'})
 
-            cheat_score_sort = lambda c1, c2: cmp(c2.fdata['fake_score'], c1.fdata['fake_score'])
+    if filter_form.is_valid():
+        data = filter_form.cleaned_data
 
-            for user in verify:
-                possible_fakes = []
-                affecters = User.objects.filter(actions__node__author=user, actions__canceled=False).annotate(
-                        affect_count=models.Count('actions')).order_by('-affect_count')
-                user_ips = set(Action.objects.filter(user=user).values_list('ip', flat=True).distinct('ip'))
+        if data['node_type'] != 'all':
+            nodes = nodes.filter(node_type=data['node_type'])
 
-                for affecter in affecters:
-                    if affecter == user:
-                        continue
+        if (data['state_type'] != 'any'):
+            nodes = nodes.filter_state(**{str(data['state_type']): True})
 
-                    data = {'affect_count': affecter.affect_count}
+        if data['text']:
+            filter = None
 
-                    total_actions = affecter.actions.filter(canceled=False).exclude(node=None).count()
-                    ratio = (float(affecter.affect_count) / float(total_actions)) * 100
+            if data['text_in'] == 'title' or data['text_in'] == 'both':
+                filter = models.Q(title__icontains=data['text'])
 
-                    if total_actions > 10 and ratio > 50:
-                        data['total_actions'] = total_actions
-                        data['action_ratio'] = ratio
+            if data['text_in'] == 'body' or data['text_in'] == 'both':
+                sec_filter = models.Q(body__icontains=data['text'])
+                if filter:
+                    filter = filter | sec_filter
+                else:
+                    filter = sec_filter
 
-                        affecter_ips = set(
-                                Action.objects.filter(user=affecter).values_list('ip', flat=True).distinct('ip'))
-                        cross_ips = len(user_ips & affecter_ips)
+            if filter:
+                nodes = nodes.filter(filter)
 
-                        data['cross_ip_count'] = cross_ips
-                        data['total_ip_count'] = len(affecter_ips)
-                        data['cross_ip_ratio'] = (float(data['cross_ip_count']) / float(data['total_ip_count'])) * 100
 
-                        if affecter.email_isvalid:
-                            email_score = 0
-                        else:
-                            email_score = 50.0
+    node_types = [('all', _("all"))] + [(k, n.friendly_name) for k, n in NodeMetaClass.types.items()]
+    state_types = NodeState.objects.filter(node__in=nodes).values_list('state_type', flat=True).distinct('state_type')
 
-                        data['fake_score'] = ((data['cross_ip_ratio'] + data['action_ratio'] + email_score) / 100) * 4
+    return ('osqaadmin/nodeman.html', pagination.paginated(request, ("nodes", ActivityPaginatorContext()), {
+    'nodes': nodes,
+    'node_types': node_types,
+    'state_types': state_types,
+    'filter_form': filter_form,
+    'hide_menu': True
+    }))
 
-                        affecter.fdata = data
-                        possible_fakes.append(affecter)
 
-                if len(possible_fakes) > 0:
-                    possible_fakes = sorted(possible_fakes, cheat_score_sort)
-                    possible_cheaters.append((user, possible_fakes))
 
-            return ('osqaadmin/moderation.html', {'cheaters': possible_cheaters})
 
-    return ('osqaadmin/moderation.html', {})
 
 
 

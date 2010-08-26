@@ -1,0 +1,104 @@
+{% extends basetemplate %}
+
+{% load i18n %}
+{% load user_tags %}
+
+{% block adminjs %}
+    <script type="text/javascript">
+        $(function() {
+            var $form = $('#changelist-search');
+
+            $('.node-type-link').click(function() {
+                $form.find('#id_state_type').val('any');
+                $form.find('#id_node_type').val($(this).attr('href').substring(1));
+                $form.submit();
+            });
+
+            $('.state-type-link').click(function() {
+                $form.find('#id_state_type').val($(this).attr('href').substring(1));
+                $form.submit();
+            });
+        });
+    </script>
+    <style>
+        #toolbar ul li {
+            list-style-type: none;
+            display: inline;
+            margin-right: 12px;
+        }
+    </style>
+{% endblock %}
+
+{% block subtitle %}
+    {% trans "Node manager" %}
+{% endblock %}
+{% block description %}
+    {% trans "Nodes bulk management" %}
+{% endblock %}
+
+{% block admincontent %}
+    <div id="changelist" class="module filtered">
+        <div id="toolbar">
+            <form method="get" action="" id="changelist-search">
+            <div>
+                <label for="searchbar"><img alt="Search" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_searchbox.png"></label>
+                {{ filter_form.text }}
+                {{ filter_form.node_type }}
+                {{ filter_form.state_type }}
+                <input type="submit" value="Search"><br />
+                {{ filter_form.text_in }}
+            </div>
+            </form>
+        </div>
+        <div id="changelist-filter">
+            <h2>{% trans "Filter" %}</h2>
+            <h3>{% trans "By type" %}</h3>
+            <ul>
+                {% for type, name in node_types %}
+                <li{% ifequal filter_form.node_type.data type %} class="selected"{% endifequal %}>
+                    <a class="node-type-link" href="#{{ type }}">{{ name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <h3>{% trans "By state" %}</h3>
+            <ul>
+                <li{% ifequal filter_form.state_type.data "any" %} class="selected"{% endifequal %}><a class="state-type-link" href="#any">{% trans "any" %}</a></li>
+                {% for state_type in state_types %}
+                    <li{% ifequal filter_form.state_type.data state_type %} class="selected"{% endifequal %}>
+                        <a class="state-type-link" href="#{{ state_type }}">{{ state_type }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <form id="changelist-form" method="POST" action="">
+            <div class="action"></div>
+            <table id="result_list" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th class="action-checkbox-column">
+                            <input type="checkbox" id="action-toggle" style="display: inline;" />
+                        </th>
+                        {% ifequal filter_form.node_type.data "all" %}
+                            <th>{% trans "Type" %}</th>
+                        {% endifequal %}
+                        <th>{% trans "Title" %}</th>
+                        <th>{% trans "Author" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for node in nodes.paginator.page %}
+                    <tr class="{% cycle 'row1' 'row2' %}">
+                        <td><input type="checkbox" name="_selected_action" value="{{ node.id }}" class="action-select"></td>
+                        {% ifequal filter_form.node_type.data "all" %}
+                            <th>{{ node.friendly_name }}</th>
+                        {% endifequal %}
+                        <td><a href="{{ node.get_absolute_url }}" target="_blank">{{ node.headline }}</a></td>
+                        <td><a href="{{ node.author.get_absolute_url  }}">{{ node.author.username }}</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {{ nodes.paginator.page_numbers }}
+        </form>
+    </div>
+{% endblock %}

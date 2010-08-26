@@ -487,7 +487,7 @@ blockquote {
     margin-left: 0.5em;
 }
 
-.paginator .page a, .paginator .page a:visited, .paginator .curr {
+.paginator .page, .paginator .page a:visited, .paginator .curr {
     background-color: #FFFFFF;
     border: 1px solid #CCCCCC;
     color: #777777;
@@ -503,7 +503,7 @@ blockquote {
     font-weight: bold;
 }
 
-.paginator .page a:hover, .paginator .prev a:hover, .paginator .next a:hover {
+.paginator .page:hover, .paginator .prev a:hover, .paginator .next a:hover {
     background-color: #777777;
     border: 1px solid #777777;
     color: #FFFFFF;

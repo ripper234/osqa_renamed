@@ -66,13 +66,16 @@
         <caption>{% trans "Recent activity" %}</caption>
             <tr>
                 <td colspan="2">
-                    <table width="100%">
-                    {% for activity in recent_activity %}
-                        <tr><td>{% activity_item activity request.user %}</td></tr>
+                    <table id="result_list" width="100%">
+                    {% for activity in recent_activity.paginator.page %}
+                        <tr class="{% cycle 'row1' 'row2' %}"><td>{% activity_item activity request.user %}</td></tr>
                     {% endfor %}
                     </table>
                 </td>
             </tr>
         </table>
+        <p class="paginator">
+            {{ recent_activity.paginator.page_numbers }}
+        </p>
     </div>
 {% endblock %}

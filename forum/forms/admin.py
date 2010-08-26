@@ -3,6 +3,7 @@ from django import forms
 from django.utils.translation import ugettext as _
 from qanda import TitleField, EditorField
 from forum import settings
+from forum.models.node import NodeMetaClass
 
 class IPListField(forms.CharField):
     def clean(self, value):
@@ -88,5 +89,17 @@ class PageForm(forms.Form):
                                        label=_('Sidebar Render Mode'))
 
     comments = forms.BooleanField(label=_("Allow comments"), initial=False, required=False)
+
+TEXT_IN_CHOICES = (
+('title', _('Title')),
+('body', _('Body')),
+('both', _('Title and Body'))
+)
+
+class NodeManFilterForm(forms.Form):
+    node_type = forms.CharField(widget=forms.HiddenInput, initial='all')
+    state_type = forms.CharField(widget=forms.HiddenInput, initial='any')
+    text = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': 40}))
+    text_in = forms.ChoiceField(widget=forms.RadioSelect, choices=TEXT_IN_CHOICES, initial='title')
 
     

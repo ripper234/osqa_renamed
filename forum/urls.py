@@ -49,6 +49,7 @@ urlpatterns += patterns('',
                             {'content': settings.ABOUT_PAGE_TEXT, 'title': _('About')}, name='about'),
                         url(r'^%s$' % _('markdown_help/'), app.meta.markdown_help, name='markdown_help'),
                         url(r'^opensearch\.xml$', app.meta.opensearch, name='opensearch'),
+                        url(r'^opensearch\.xml$', app.meta.opensearch, name='opensearch'),
                         url(r'^%s$' % _('privacy/'), app.meta.privacy, name='privacy'),
                         url(r'^%s$' % _('logout/'), app.meta.logout, name='logout'),
                         url(r'^%s(?P<id>\d+)/%s$' % (_('answers/'), _('edit/')), app.writers.edit_answer,
@@ -190,12 +191,14 @@ urlpatterns += patterns('',
                             name="admin_flagged_posts"),
                         url(r'^%s%s$' % (_('admin/'), _('static_pages/')), app.admin.static_pages,
                             name="admin_static_pages"),
-                        url(r'^%s%s$' % (_('admin/'), _('moderation/')), app.admin.moderation, name="admin_moderation"),
 
                         url(r'^%s%s%s$' % (_('admin/'), _('static_pages/'), _('new/')), app.admin.edit_page,
                             name="admin_new_page"),
                         url(r'^%s%s%s(?P<id>\d+)/$' % (_('admin/'), _('static_pages/'), _('edit/')), app.admin.edit_page
                             , name="admin_edit_page"),
+
+                        url(r'^%s%s(?P<name>\w+)/$' % (_('admin/'), _('tools/')), app.admin.tools_page,
+                            name="admin_tools"),
 
                         url(r'^%s%s(?P<set_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.settings_set,
                             name="admin_set"),
