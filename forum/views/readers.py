@@ -159,8 +159,8 @@ def question_list(request, initial,
     if request.GET.get("q"):
         keywords = request.GET.get("q").strip()
 
-    answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()
-    answer_description = _("answers")
+    #answer_count = Answer.objects.filter_state(deleted=False).filter(parent__in=questions).count()
+    #answer_description = _("answers")
 
     if not feed_url:
         req_params = "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (_('page'), _('pagesize'), _('sort'))])
