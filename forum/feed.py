@@ -23,7 +23,7 @@ class BaseNodeFeed(Feed):
 
     def __init__(self, request, title, description, url):
         self._title = title
-        self._description = mark_safe(description)
+        self._description = mark_safe(unicode(description))
         self._url = url
 
         if old_version:
