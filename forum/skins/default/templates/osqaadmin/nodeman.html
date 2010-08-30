@@ -1,7 +1,6 @@
 {% extends basetemplate %}
 
-{% load i18n %}
-{% load user_tags %}
+{% load i18n user_tags extra_tags %}
 
 {% block adminjs %}
     <script type="text/javascript">
@@ -17,6 +16,29 @@
             $('.state-type-link').click(function() {
                 $form.find('#id_state_type').val($(this).attr('href').substring(1));
                 $form.submit();
+            });
+
+            $('.action-select').change(function() {
+                $('#action-toggle').removeAttr('checked');
+                var $tr = $(this).parents('tr');
+                if ($(this).attr('checked')) {
+                    $tr.addClass('selected');
+                } else {
+                    $tr.removeClass('selected');
+                }
+            }).change();
+
+            $('#action-toggle').change(function() {
+                var $rows = $('#result_list').find('tbody').find('tr');
+                var $boxes = $('#result_list').find('tbody').find('input');
+
+                if ($(this).attr('checked')) {
+                    $rows.addClass('selected');
+                    $boxes.attr('checked', 'checked')
+                } else {
+                    $rows.removeClass('selected');
+                    $boxes.removeAttr('checked');
+                }
             });
         });
     </script>
@@ -45,7 +67,7 @@
                 {{ filter_form.text }}
                 {{ filter_form.node_type }}
                 {{ filter_form.state_type }}
-                <input type="submit" value="Search"><br />
+                <input type="submit" value="{% trans "Search" %}"><br />
                 {{ filter_form.text_in }}
             </div>
             </form>
@@ -69,31 +91,63 @@
                     </li>
                 {% endfor %}
             </ul>
+            {% comment %}<h3>{% trans "Show" %}</h3>
+            <form action="" method="get">
+                <div>{{ show_form.show }}</div>
+                <input type="submit" value="{% trans "Refresh" %}" />
+            </form>{% endcomment %}
         </div>
         <form id="changelist-form" method="POST" action="">
-            <div class="action"></div>
+            <div class="actions">
+                <label>
+                    {% trans "Action" %}:
+                    <select name="action">
+                        <option selected="selected" value="">---------</option>
+                        <option value="delete_selected">{% trans "Mark deleted" %}</option>
+                    </select>
+                </label>
+                <button value="0" name="index" title="{% trans "Run the selected action" %}" class="button" type="submit">{% trans "Go" %}</button>
+            </div>
             <table id="result_list" cellspacing="0">
                 <thead>
                     <tr>
+                        {% spaceless %}
                         <th class="action-checkbox-column">
                             <input type="checkbox" id="action-toggle" style="display: inline;" />
                         </th>
                         {% ifequal filter_form.node_type.data "all" %}
                             <th>{% trans "Type" %}</th>
                         {% endifequal %}
-                        <th>{% trans "Title" %}</th>
+                        <th class="sorted{% ifequal nodes.paginator.current_sort "title" %} ascending{% endifequal %}">
+                            <a href="{{ nodes.paginator.title_sort_link }}">{% trans "Title" %}</a>
+                        </th>
                         <th>{% trans "Author" %}</th>
+                        <th class="sorted{% ifequal nodes.paginator.current_sort "added_at" %} ascending{% endifequal %}">
+                            <a href="{{ nodes.paginator.added_at_sort_link }}">{% trans "Added at" %}</a>
+                        </th>
+                        <th class="sorted{% ifequal nodes.paginator.current_sort "score" %} ascending{% endifequal %}">
+                            <a href="{{ nodes.paginator.score_sort_link }}">{% trans "Score" %}</a>
+                        </th>
+                        <th>{% trans "Last acivity by" %}</th>
+                        <th class="sorted{% ifequal nodes.paginator.current_sort "act_at" %} ascending{% endifequal %}">
+                            <a href="{{ nodes.paginator.act_at_sort_link }}">{% trans "Last activity at" %}</a>
+                        </th>
+                        {% endspaceless %}
                     </tr>
                 </thead>
                 <tbody>
                 {% for node in nodes.paginator.page %}
                     <tr class="{% cycle 'row1' 'row2' %}">
-                        <td><input type="checkbox" name="_selected_action" value="{{ node.id }}" class="action-select"></td>
+                        <td><input type="checkbox" name="_selected_node" value="{{ node.id }}" class="action-select"></td>
                         {% ifequal filter_form.node_type.data "all" %}
                             <th>{{ node.friendly_name }}</th>
                         {% endifequal %}
                         <td><a href="{{ node.get_absolute_url }}" target="_blank">{{ node.headline }}</a></td>
                         <td><a href="{{ node.author.get_absolute_url  }}">{{ node.author.username }}</a></td>
+                        <td>{% diff_date node.added_at %}</td>
+                        <td>{{ node.score }}</td>
+                        <td><a href="{{ node.last_activity_by.get_absolute_url  }}">{{ node.last_activity_by.username }}</a></td>
+                        <td>{% diff_date node.last_activity_at %}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

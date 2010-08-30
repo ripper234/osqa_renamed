@@ -100,6 +100,17 @@ class NodeManFilterForm(forms.Form):
     node_type = forms.CharField(widget=forms.HiddenInput, initial='all')
     state_type = forms.CharField(widget=forms.HiddenInput, initial='any')
     text = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': 40}))
-    text_in = forms.ChoiceField(widget=forms.RadioSelect, choices=TEXT_IN_CHOICES, initial='title')
+    text_in = forms.ChoiceField(required=False, widget=forms.RadioSelect, choices=TEXT_IN_CHOICES, initial='title')
+
+
+NODE_SHOW_CHOICES = (
+('score', _('Score')),
+('added_at', 'Added at'),
+('last_activity_at', 'Last activity at'),
+('last_activity_by', 'Last activity by')
+)
+
+class NodeManShowForm(forms.Form):
+    show = forms.MultipleChoiceField(choices=NODE_SHOW_CHOICES, widget=forms.CheckboxSelectMultiple)
 
     

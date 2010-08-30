@@ -10,13 +10,13 @@ from django.utils.translation import ugettext as _
 from django.utils import simplejson
 from django.db import models
 from forum.settings.base import Setting
-from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm
+from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm, NodeManShowForm
 from forum.settings.forms import SettingsSetForm
 from forum.utils import pagination
 
 from forum.models import Question, Answer, User, Node, Action, Page, NodeState
 from forum.models.node import NodeMetaClass
-from forum.actions import NewPageAction, EditPageAction, PublishAction
+from forum.actions import NewPageAction, EditPageAction, PublishAction, DeleteAction
 from forum import settings
 
 TOOLS = {}
@@ -382,9 +382,37 @@ def edit_page(request, id=None):
     })
 
 
+class NodeManagementPaginatorContext(pagination.PaginatorContext):
+    def __init__(self, id='QUESTIONS_LIST', prefix='', default_pagesize=100):
+        super (NodeManagementPaginatorContext, self).__init__(id, sort_methods=(
+            (_('title'), pagination.SimpleSort(_('title'), '-title', "")),
+            (_('added_at'), pagination.SimpleSort(_('added_at'), '-added_at', "")),
+            (_('score'), pagination.SimpleSort(_('score'), '-score', "")),
+            (_('act_at'), pagination.SimpleSort(_('act_at'), '-last_activity_at', "")),
+        ), pagesizes=(default_pagesize,), default_pagesize=default_pagesize, prefix=prefix)
 
 @admin_tools_page(_("nodeman"), _("Node management"))
 def node_management(request):
+    if request.POST:
+        selected_nodes = request.POST.getlist('_selected_node')
+
+        if selected_nodes and request.POST.get('action', None):
+            action = request.POST['action']
+            selected_nodes = Node.objects.filter(id__in=selected_nodes)
+
+            message = _("No action performed")
+
+            if action == 'delete_selected':
+                for node in selected_nodes:
+                    if node.node_type in ('question', 'answer', 'comment') and (not node.nis.deleted):
+                        DeleteAction(user=request.user, node=node, ip=request.META['REMOTE_ADDR']).save()
+                        
+                message = _("All selected nodes marked as deleted")
+
+            request.user.message_set.create(message=message)
+            return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'nodeman'}))
+
+
     nodes = Node.objects.all()
 
     if (request.GET):
@@ -416,12 +444,14 @@ def node_management(request):
 
             if filter:
                 nodes = nodes.filter(filter)
+    else:
+        print filter_form.errors
 
 
     node_types = [('all', _("all"))] + [(k, n.friendly_name) for k, n in NodeMetaClass.types.items()]
     state_types = NodeState.objects.filter(node__in=nodes).values_list('state_type', flat=True).distinct('state_type')
 
-    return ('osqaadmin/nodeman.html', pagination.paginated(request, ("nodes", ActivityPaginatorContext()), {
+    return ('osqaadmin/nodeman.html', pagination.paginated(request, ("nodes", NodeManagementPaginatorContext()), {
     'nodes': nodes,
     'node_types': node_types,
     'state_types': state_types,

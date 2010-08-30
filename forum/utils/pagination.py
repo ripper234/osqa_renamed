@@ -283,6 +283,9 @@ def _paginated(request, objects, context):
             url_builder = lambda s: mark_safe("%s%s%s=%s" % (base_path, url_joiner, context.SORT, s))
             sorts = [(n, s.label, url_builder(n), strip_tags(s.description)) for n, s in context.sort_methods.items()]
 
+            for name, label, url, descr in sorts:
+                paginator.__dict__['%s_sort_link' % name] = url
+
             return sort_tabs_template.render(template.Context({
                 'current': sort,
                 'sorts': sorts,
@@ -290,8 +293,10 @@ def _paginated(request, objects, context):
             }))
         paginator.sort_tabs = sort_tabs()
         paginator.sort_description = mark_safe(context.sort_methods[sort].description)
+        paginator.current_sort = sort
     else:
         paginator.sort_tabs = paginator.sort_description = ''
+        paginator.current_sort = ''
 
     context.set_preferences(request, session_prefs)
     objects.paginator = paginator
