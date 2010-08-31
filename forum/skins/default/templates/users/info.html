@@ -51,7 +51,7 @@
                 {% if view_user.last_seen %}
                 <tr>
                     <td>{% trans "last seen" %}</td>
-                    <td><strong title="{{ view_user.last_activity }}">{% if view_user.last_activity %}{% diff_date view_user.last_activity %}{% else %}{% trans "Never" %}{% endif %}</strong></td>
+                    <td><strong title="{{ view_user.last_activity }}">{% diff_date view_user.last_activity %}</strong></td>
                 </tr>
                 {% endif %}
                 {% if view_user.website %}

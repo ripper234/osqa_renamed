@@ -159,7 +159,7 @@ class User(BaseModel, DjangoUser):
         try:
             return self.actions.order_by('-action_date')[0].action_date
         except:
-            return None
+            return self.last_seen
 
     @property
     def gravatar(self):
