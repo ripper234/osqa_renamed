@@ -108,4 +108,4 @@ def module_templates_loader(name, dirs=None):
 
 module_templates_loader.is_usable = True
 
-from decorators import decorate
+from decorators import decorate, ReturnImediatelyException

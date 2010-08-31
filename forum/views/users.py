@@ -15,7 +15,7 @@ from django.utils import simplejson
 from django.core.urlresolvers import reverse, NoReverseMatch
 from forum.forms import *
 from forum.utils.html import sanitize_html
-from forum.modules import decorate
+from forum.modules import decorate, ReturnImediatelyException
 from datetime import datetime, date
 from forum.actions import EditProfileAction, FavoriteAction, BonusRepAction, SuspendAction
 from forum.modules import ui
@@ -259,10 +259,10 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
         def params(request, id, slug=None):
             user = get_object_or_404(User, id=id)
             if private and not (user == request.user or request.user.is_superuser):
-                return HttpResponseUnauthorized(request)
+                raise ReturnImediatelyException(HttpResponseUnauthorized(request))
 
             if render_to and (not render_to(user)):
-                return HttpResponseRedirect(user.get_profile_url())
+                raise ReturnImediatelyException(HttpResponseRedirect(user.get_profile_url()))
 
             return [request, user], {}
 

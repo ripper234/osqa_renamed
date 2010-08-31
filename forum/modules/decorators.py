@@ -47,7 +47,10 @@ class DecoratableObject(object):
     def __call__(self, *args, **kwargs):
         if self._params_decoration:
             for dec in self._params_decoration:
-                args, kwargs = dec(*args, **kwargs)
+                try:
+                    args, kwargs = dec(*args, **kwargs)
+                except ReturnImediatelyException, e:
+                    return e.ret
 
         res = self._callable(*args, **kwargs)
 
@@ -59,6 +62,11 @@ class DecoratableObject(object):
                     res = dec(res)
 
         return res
+
+class ReturnImediatelyException(Exception):
+    def __init__(self, ret):
+        super(Exception, self).__init__()
+        self.ret = ret
 
 def _check_decoratable(origin, install=True):
     if not isinstance(origin, DecoratableObject):
