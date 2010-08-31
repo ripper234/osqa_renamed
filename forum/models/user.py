@@ -156,7 +156,10 @@ class User(BaseModel, DjangoUser):
 
     @property
     def last_activity(self):
-        return self.actions.order_by('-action_date')[0].action_date
+        try:
+            return self.actions.order_by('-action_date')[0].action_date
+        except:
+            return None
 
     @property
     def gravatar(self):
