@@ -36,7 +36,7 @@ def or_preview(setting, request):
 
 @register.filter
 def getval(map, key):
-    return map.get(key, None)
+    return map and map.get(key, None) or None
 
 
 @register.filter
