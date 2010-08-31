@@ -34,6 +34,10 @@ def or_preview(setting, request):
 
     return setting.value
 
+@register.filter
+def getval(map, key):
+    return map.get(key, None)
+
 
 @register.filter
 def contained_in(item, container):
