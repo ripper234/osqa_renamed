@@ -31,6 +31,8 @@ for pattern_file in module_patterns:
 
 urlpatterns += patterns('',
                         url(r'^$', app.readers.index, name='index'),
+                        url(r'^%s(.*)' % _('nimda/'), admin.site.root),
+                        
                         url(r'^sitemap.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps},
                             name='sitemap'),
 
@@ -143,7 +145,7 @@ urlpatterns += patterns('',
                         url(r'^%s$' % _('badges/'), app.meta.badges, name='badges'),
                         url(r'^%s(?P<id>\d+)/(?P<slug>.+)$' % _('badges/'), app.meta.badge, name='badge'),
                         # (r'^admin/doc/' % _('admin/doc'), include('django.contrib.admindocs.urls')),
-                        url(r'^%s(.*)' % _('nimda/'), admin.site.root, name='osqa_admin'),
+
                         url(r'^%s$' % _('upload/'), app.writers.upload, name='upload'),
                         url(r'^%s$' % _('search/'), app.readers.search, name='search'),
                         url(r'^%s$' % _('contact/'), app.meta.feedback, name='feedback'),

@@ -10,13 +10,13 @@ from django.utils.translation import ugettext as _
 from django.utils import simplejson
 from django.db import models
 from forum.settings.base import Setting
-from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm, NodeManShowForm
+from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm, CreateUserForm
 from forum.settings.forms import SettingsSetForm
-from forum.utils import pagination
+from forum.utils import pagination, html
 
 from forum.models import Question, Answer, User, Node, Action, Page, NodeState
 from forum.models.node import NodeMetaClass
-from forum.actions import NewPageAction, EditPageAction, PublishAction, DeleteAction
+from forum.actions import NewPageAction, EditPageAction, PublishAction, DeleteAction, UserJoinsAction
 from forum import settings
 
 TOOLS = {}
@@ -381,6 +381,31 @@ def edit_page(request, id=None):
     'published': published
     })
 
+@admin_tools_page(_('createuser'), _("Create new user"))
+def create_user(request):
+    if request.POST:
+        form = CreateUserForm(request.POST)
+
+        if form.is_valid():
+            user_ = User(username=form.cleaned_data['username'], email=form.cleaned_data['email'])
+            user_.set_password(form.cleaned_data['password1'])
+
+            if not form.cleaned_data.get('validate_email', False):
+                user_.email_isvalid = True
+
+            user_.save()
+            UserJoinsAction(user=user_).save()
+
+            request.user.message_set.create(message=_("New user created sucessfully. %s.") % html.hyperlink(
+                    user_.get_profile_url(), _("See %s profile") % user_.username, target="_blank"))
+
+            return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'createuser'}))
+    else:
+        form = CreateUserForm()
+
+    return ('osqaadmin/createuser.html', {
+        'form': form,
+    })
 
 class NodeManagementPaginatorContext(pagination.PaginatorContext):
     def __init__(self, id='QUESTIONS_LIST', prefix='', default_pagesize=100):

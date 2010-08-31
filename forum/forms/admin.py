@@ -103,14 +103,17 @@ class NodeManFilterForm(forms.Form):
     text_in = forms.ChoiceField(required=False, widget=forms.RadioSelect, choices=TEXT_IN_CHOICES, initial='title')
 
 
-NODE_SHOW_CHOICES = (
-('score', _('Score')),
-('added_at', 'Added at'),
-('last_activity_at', 'Last activity at'),
-('last_activity_by', 'Last activity by')
-)
+from forum.forms.auth import SimpleRegistrationForm
+from forum.forms.general import SetPasswordForm
 
-class NodeManShowForm(forms.Form):
-    show = forms.MultipleChoiceField(choices=NODE_SHOW_CHOICES, widget=forms.CheckboxSelectMultiple)
+
+class CreateUserForm(SimpleRegistrationForm, SetPasswordForm):
+    validate_email = forms.BooleanField(required=False, label=_('send validation email'))
+
+    def __init__(self, *args, **kwargs):
+        super(CreateUserForm, self).__init__(*args, **kwargs)
+        self.fields.keyOrder = ['username', 'email', 'validate_email', 'password1', 'password2']
+        self.fields['email'].label = _('email address')
+
 
     
