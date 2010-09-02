@@ -15,16 +15,16 @@ class LoadRegistryNode(template.Node):
         result = ''
 
         for ui_object in self.registry:
-            if ui_object.can_render(context):
-                try:
-                    if result:
-                        result += separator
-                    result += ui_object.render(context)
-                except Exception, e:
-                    import traceback
-                    logging.error("Exception %s rendering ui objects %s: \n%s" % (
-                        e, ui_object, traceback.format_exc()
-                    ))
+            try:
+                if ui_object.can_render(context):
+                        if result:
+                            result += separator
+                        result += ui_object.render(context)
+            except Exception, e:
+                import traceback
+                logging.error("Exception %s rendering ui objects %s: \n%s" % (
+                    e, ui_object, traceback.format_exc()
+                ))
 
         return result
 
