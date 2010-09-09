@@ -493,9 +493,21 @@ def matching_tags(request):
     possible_tags = Tag.active.filter(name__istartswith = request.GET['q'])
     tag_output = ''
     for tag in possible_tags:
-        tag_output += (tag.name + "|" + tag.name + "." + tag.used_count.__str__() + "\n")
+        tag_output += "%s|%s|%s\n" % (tag.id, tag.name, tag.used_count)
 
     return HttpResponse(tag_output, mimetype="text/plain")
+
+def matching_users(request):
+    if len(request.GET['q']) == 0:
+        raise CommandException(_("Invalid request"))
+
+    possible_users = User.objects.filter(username__istartswith = request.GET['q'])
+    output = ''
+
+    for user in possible_users:
+        output += ("%s|%s|%s\n" % (user.id, user.decorated_name, user.reputation))
+
+    return HttpResponse(output, mimetype="text/plain")
 
 def related_questions(request):
     if request.POST and request.POST.get('title', None):

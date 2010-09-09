@@ -688,11 +688,11 @@ function pickedTags(){
                 multipleSeparator: " "*/
 
                 formatItem: function(row, i, max, value) {
-                    return row[1].split(".")[0] + " (" + row[1].split(".")[1] + ")";
+                    return row[1] + " (" + row[2] + ")";
                 },
 
                 formatResult: function(row, i, max, value){
-                    return row[0];
+                    return row[1];
                 }
 
             });

@@ -260,6 +260,10 @@ class Node(BaseModel, NodeContent):
         return nis
 
     @property
+    def state_list(self):
+        return [s.state_type for s in self.states.all()]
+
+    @property
     def deleted(self):
         return self.nis.deleted
 
@@ -372,6 +376,18 @@ class Node(BaseModel, NodeContent):
             for tag in Tag.objects.filter(name__in=self.tagname_list()):
                 tag.add_to_usage_count(1)
                 tag.save()
+
+    def delete(self, *args, **kwargs):
+        self.active_revision = None
+        self.save()
+
+        for n in self.children.all():
+            n.delete()
+
+        for a in self.actions.all():
+            a.cancel()
+
+        super(Node, self).delete(*args, **kwargs)
 
     def save(self, *args, **kwargs):
         tags_changed = self._process_changes_in_tags()

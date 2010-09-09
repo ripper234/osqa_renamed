@@ -107,7 +107,7 @@ class PaginatorContext(object):
 
     def page(self, request):
         try:
-            return int(request.GET.get(self.PAGE, 1))
+            return int(request.GET.get(self.PAGE, "1").strip())
         except ValueError:
             logging.error('Found invalid page number "%s", loading %s, refered by %s' % (
                 request.GET.get(self.PAGE, ''), request.path, request.META.get('HTTP_REFERER', 'UNKNOWN')

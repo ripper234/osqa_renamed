@@ -14,9 +14,9 @@ from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm, Create
 from forum.settings.forms import SettingsSetForm
 from forum.utils import pagination, html
 
-from forum.models import Question, Answer, User, Node, Action, Page, NodeState
+from forum.models import Question, Answer, User, Node, Action, Page, NodeState, Tag
 from forum.models.node import NodeMetaClass
-from forum.actions import NewPageAction, EditPageAction, PublishAction, DeleteAction, UserJoinsAction
+from forum.actions import NewPageAction, EditPageAction, PublishAction, DeleteAction, UserJoinsAction, CloseAction
 from forum import settings
 
 TOOLS = {}
@@ -434,6 +434,25 @@ def node_management(request):
                         
                 message = _("All selected nodes marked as deleted")
 
+            if action == "close_selected":
+                for node in selected_nodes:
+                    if node.node_type == "question" and (not node.nis.closed):
+                        CloseAction(node=node.leaf, user=request.user, extra=_("bulk close"), ip=request.META['REMOTE_ADDR']).save()
+
+                message = _("Selected questions were closed")
+
+            if action == "hard_delete_selected":
+                ids = [n.id for n in selected_nodes]
+
+                for id in ids:
+                    try:
+                        node = Node.objects.get(id=id)
+                        node.delete()
+                    except:
+                        pass                        
+
+                message = _("All selected nodes deleted")
+
             request.user.message_set.create(message=message)
             return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'nodeman'}))
 
@@ -445,6 +464,9 @@ def node_management(request):
     else:
         filter_form = NodeManFilterForm({'node_type': 'all', 'state_type': 'any'})
 
+    authors = request.GET.getlist('authors')
+    tags = request.GET.getlist('tags')
+
     if filter_form.is_valid():
         data = filter_form.cleaned_data
 
@@ -453,6 +475,14 @@ def node_management(request):
 
         if (data['state_type'] != 'any'):
             nodes = nodes.filter_state(**{str(data['state_type']): True})
+
+        if (authors):
+            nodes = nodes.filter(author__id__in=authors)
+            authors = User.objects.filter(id__in=authors)
+
+        if (tags):
+            nodes = nodes.filter(tags__id__in=tags)
+            tags = Tag.objects.filter(id__in=tags)
 
         if data['text']:
             filter = None
@@ -469,9 +499,6 @@ def node_management(request):
 
             if filter:
                 nodes = nodes.filter(filter)
-    else:
-        print filter_form.errors
-
 
     node_types = [('all', _("all"))] + [(k, n.friendly_name) for k, n in NodeMetaClass.types.items()]
     state_types = NodeState.objects.filter(node__in=nodes).values_list('state_type', flat=True).distinct('state_type')
@@ -481,6 +508,8 @@ def node_management(request):
     'node_types': node_types,
     'state_types': state_types,
     'filter_form': filter_form,
+    'authors': authors,
+    'tags': tags,
     'hide_menu': True
     }))
 

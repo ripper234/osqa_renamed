@@ -116,4 +116,5 @@ begin
 end
 $$ LANGUAGE plpgsql;
 
+ALTER table forum_rootnode_doc DISABLE TRIGGER ALL;
 UPDATE forum_noderevision SET id = id WHERE TRUE;

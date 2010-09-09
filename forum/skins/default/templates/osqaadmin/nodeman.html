@@ -40,6 +40,65 @@
                     $boxes.removeAttr('checked');
                 }
             });
+
+            $('#author-selector').autocomplete('{% url matching_users %}', {
+                minChars: 1,
+                matchContains: true,
+                max: 10,
+
+                formatItem: function(row, i, max, value) {
+                    return row[1] + ' (' + row[2] + ' {% trans "rep" %})';
+                },
+
+                formatResult: function(row, i, max, value){
+                    return row[1];
+                }
+            });
+
+            $('#author-selector').result(function(event, data, formatted) {
+                if ($('#author-filter-container').find('input[value=' + data[0] + ']').length == 0) {
+                    $('#author-filter-container').append($("<input name=\"authors\" type=\"hidden\" value=\"" + data[0] + "\" />"));
+                    $form.submit();
+                }
+            });
+
+            $('.author-filter-remover').click(function() {
+                var id = $(this).attr('rel');
+                if ($('#author-filter-container').find('input[value=' + id + ']').length > 0) {
+                    $('#author-filter-container').find('input[value=' + id + ']').remove();
+                    $form.submit();
+                }
+            });
+
+            $('#tag-selector').autocomplete('{% url matching_tags %}', {
+                minChars: 1,
+                matchContains: true,
+                max: 10,
+
+                formatItem: function(row, i, max, value) {
+                    return row[1] + ' (' + row[2] + ' {% trans "uses" %})';
+                },
+
+                formatResult: function(row, i, max, value){
+                    return row[1];
+                }
+            });
+
+            $('#tag-selector').result(function(event, data, formatted) {
+                if ($('#tag-filter-container').find('input[value=' + data[0] + ']').length == 0) {
+                    $('#tag-filter-container').append($("<input name=\"tags\" type=\"hidden\" value=\"" + data[0] + "\" />"));
+                    $form.submit();
+                }
+            });
+
+            $('.tag-filter-remover').click(function() {
+                var id = $(this).attr('rel');
+                if ($('#tag-filter-container').find('input[value=' + id + ']').length > 0) {
+                    $('#tag-filter-container').find('input[value=' + id + ']').remove();
+                    $form.submit();
+                }
+            });
+            
         });
     </script>
     <style>
@@ -49,6 +108,53 @@
             margin-right: 12px;
         }
     </style>
+    <script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX }}";</script>
+    <link href="{{ settings.ADMIN_MEDIA_PREFIX }}css/base.css" rel="stylesheet" type="text/css" media="screen" />
+    <script type="text/javascript">
+    /* gettext identity library */
+
+    function gettext(msgid) { return msgid; }
+    function ngettext(singular, plural, count) { return (count == 1) ? singular : plural; }
+    function gettext_noop(msgid) { return msgid; }
+
+    function interpolate(fmt, obj, named) {
+      if (named) {
+        return fmt.replace(/%\(\w+\)s/g, function(match){return String(obj[match.slice(2,-2)])});
+      } else {
+        return fmt.replace(/%s/g, function(match){return String(obj.shift())});
+      }
+    }
+
+    /* formatting library */
+
+    var formats = new Array();
+
+    formats['DATETIME_FORMAT'] = 'N j, Y, P';
+    formats['DATE_FORMAT'] = 'N j, Y';
+    formats['DECIMAL_SEPARATOR'] = '.';
+    formats['MONTH_DAY_FORMAT'] = 'F j';
+    formats['NUMBER_GROUPING'] = '0';
+    formats['TIME_FORMAT'] = 'P';
+    formats['FIRST_DAY_OF_WEEK'] = '0';
+    formats['TIME_INPUT_FORMATS'] = ['%H:%M:%S', '%H:%M'];
+    formats['THOUSAND_SEPARATOR'] = ',';
+    formats['DATE_INPUT_FORMATS'] = ['%Y-%m-%d', '%m/%d/%Y', '%m/%d/%y', '%b %d %Y', '%b %d, %Y', '%d %b %Y', '%d %b, %Y', '%B %d %Y', '%B %d, %Y', '%d %B %Y', '%d %B, %Y'];
+    formats['YEAR_MONTH_FORMAT'] = 'F Y';
+    formats['SHORT_DATE_FORMAT'] = 'm/d/Y';
+    formats['SHORT_DATETIME_FORMAT'] = 'm/d/Y P';
+    formats['DATETIME_INPUT_FORMATS'] = ['%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%d', '%m/%d/%Y %H:%M:%S', '%m/%d/%Y %H:%M', '%m/%d/%Y', '%m/%d/%y %H:%M:%S', '%m/%d/%y %H:%M', '%m/%d/%y'];
+
+    function get_format(format_type) {
+        var value = formats[format_type];
+        if (typeof(value) == 'undefined') {
+          return msgid;
+        } else {
+          return value;
+        }
+    }
+    
+    </script>
+    <script type="text/javascript" src="{{ settings.ADMIN_MEDIA_PREFIX }}js/core.js"></script>
 {% endblock %}
 
 {% block subtitle %}
@@ -63,12 +169,24 @@
         <div id="toolbar">
             <form method="get" action="" id="changelist-search">
             <div>
-                <label for="searchbar"><img alt="Search" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_searchbox.png"></label>
-                {{ filter_form.text }}
-                {{ filter_form.node_type }}
-                {{ filter_form.state_type }}
-                <input type="submit" value="{% trans "Search" %}"><br />
-                {{ filter_form.text_in }}
+                <div>
+                    <label for="searchbar"><img alt="Search" src="{{ settings.ADMIN_MEDIA_PREFIX }}img/admin/icon_searchbox.png"></label>
+                    {{ filter_form.text }}
+                    {{ filter_form.node_type }}
+                    {{ filter_form.state_type }}
+                    <input type="submit" value="{% trans "Search" %}"><br />
+                    {{ filter_form.text_in }}
+                </div>
+            </div>
+            <div style="display: none;" id="author-filter-container">
+                {% for u in authors %}
+                <input name="authors" type="hidden" value="{{ u.id }}" />
+                {% endfor %}
+            </div>
+            <div style="display: none;" id="tag-filter-container">
+                {% for t in tags %}
+                <input name="tags" type="hidden" value="{{ t.id }}" />
+                {% endfor %}
             </div>
             </form>
         </div>
@@ -91,6 +209,37 @@
                     </li>
                 {% endfor %}
             </ul>
+            <h3>{% trans "By author(s)" %}</h3>
+            {% if not authors.count %}
+                <small>{% trans "No users selected, use the box bellow to add users to the filter." %}</small>
+            {% else %}
+                <ul>
+                    {% for u in authors %}
+                        <li class="selected">
+                            <img class="author-filter-remover" rel="{{ u.id }}" src="{% media "/media/images/close-small-dark.png" %}">
+                            {{ u.decorated_name }} ({{ u.reputation }})
+                        </li>
+                    {% endfor %}
+                </ul>
+                <small>{% trans "Click on the cross next to a user name to remove it from the filter." %}</small>
+            {% endif %}
+            <input type="text" size="20" autocomplete="off" id="author-selector" />
+
+            <h3>{% trans "By tag(s)" %}</h3>
+            {% if not tags.count %}
+                <small>{% trans "No tags selected, use the box bellow to add tags to the filter." %}</small>
+            {% else %}
+                <ul>
+                    {% for t in tags %}
+                        <li class="selected">
+                            <img class="tag-filter-remover" rel="{{ t.id }}" src="{% media "/media/images/close-small-dark.png" %}">
+                            {{ t.name }} ({{ t.used_count }})
+                        </li>
+                    {% endfor %}
+                </ul>
+                <small>{% trans "Click on the cross next to a tag name to remove it from the filter." %}</small>
+            {% endif %}
+            <input type="text" size="20" autocomplete="off" id="tag-selector" />
             {% comment %}<h3>{% trans "Show" %}</h3>
             <form action="" method="get">
                 <div>{{ show_form.show }}</div>
@@ -104,6 +253,8 @@
                     <select name="action">
                         <option selected="selected" value="">---------</option>
                         <option value="delete_selected">{% trans "Mark deleted" %}</option>
+                        <!--<option value="hard_delete_selected">{% trans "Delete completelly" %}</option>-->
+                        <option value="close_selected">{% trans "Close (questions only)" %}</option>
                     </select>
                 </label>
                 <button value="0" name="index" title="{% trans "Run the selected action" %}" class="button" type="submit">{% trans "Go" %}</button>
@@ -132,6 +283,8 @@
                         <th class="sorted{% ifequal nodes.paginator.current_sort "act_at" %} ascending{% endifequal %}">
                             <a href="{{ nodes.paginator.act_at_sort_link }}">{% trans "Last activity at" %}</a>
                         </th>
+                        <th>{% trans "Tags" %}</th>
+                        <th>{% trans "State" %}</th>
                         {% endspaceless %}
                     </tr>
                 </thead>
@@ -148,6 +301,13 @@
                         <td>{{ node.score }}</td>
                         <td><a href="{{ node.last_activity_by.get_absolute_url  }}">{{ node.last_activity_by.username }}</a></td>
                         <td>{% diff_date node.last_activity_at %}</td>
+                        <td>
+                            {% for t in node.tags.all %}
+                                {% if t in tags %}<b>{{ t.name }}</b>
+                                {% else %}{{ t.name }}{% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ node.state_list|join:", " }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

@@ -1,6 +1,8 @@
 import re
+from django.db import connection, transaction
 from django.db.models import Q
 from forum.models.question import Question, QuestionManager
+from forum.models.node import Node
 from forum.modules import decorate
 
 word_re = re.compile(r'\w+', re.UNICODE)
@@ -26,5 +28,18 @@ def question_search(self, keywords):
             )
 
 
+def delete_docs(node):
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM forum_rootnode_doc WHERE node_id = %s" % (node.id))
+
+    for n in node.children.all():
+        delete_docs(n)
+
+
+#@decorate(Node.delete)
+def delete(origin, self, *args, **kwargs):
+    delete_docs(self)
+    transaction.commit_unless_managed()
+    origin(self, *args, **kwargs)
 
 
