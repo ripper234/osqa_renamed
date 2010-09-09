@@ -295,7 +295,7 @@
                         {% ifequal filter_form.node_type.data "all" %}
                             <th>{{ node.friendly_name }}</th>
                         {% endifequal %}
-                        <td><a href="{{ node.get_absolute_url }}" target="_blank">{{ node.headline }}</a></td>
+                        <td><a href="{{ node.get_absolute_url }}" title="{{ node.summary }}" target="_blank">{{ node.headline }}</a></td>
                         <td><a href="{{ node.author.get_absolute_url  }}">{{ node.author.username }}</a></td>
                         <td>{% diff_date node.added_at %}</td>
                         <td>{{ node.score }}</td>
