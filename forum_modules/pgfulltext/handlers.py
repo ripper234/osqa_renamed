@@ -28,18 +28,11 @@ def question_search(self, keywords):
             )
 
 
-def delete_docs(node):
-    cursor = connection.cursor()
-    cursor.execute("DELETE FROM forum_rootnode_doc WHERE node_id = %s" % (node.id))
-
-    for n in node.children.all():
-        delete_docs(n)
-
-
-#@decorate(Node.delete)
+@decorate(Node.delete)
 def delete(origin, self, *args, **kwargs):
-    delete_docs(self)
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM forum_rootnode_doc WHERE node_id = %s" % (self.id))
     transaction.commit_unless_managed()
-    origin(self, *args, **kwargs)
+    return origin(self, *args, **kwargs)
 
 

@@ -418,7 +418,7 @@ class NodeManagementPaginatorContext(pagination.PaginatorContext):
             (_('act_at_asc'), pagination.SimpleSort(_('act_at_asc'), 'last_activity_at', "")),
         ), pagesizes=(default_pagesize,), force_sort='added_at', default_pagesize=default_pagesize, prefix=prefix)
 
-@admin_tools_page(_("nodeman"), _("Node management"))
+@admin_tools_page(_("nodeman"), _("Bulk management"))
 def node_management(request):
     if request.POST and "save_filter" in request.POST:
         filter_name = request.POST.get('filter_name', _('filter'))
