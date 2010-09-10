@@ -98,7 +98,20 @@
                     $form.submit();
                 }
             });
-            
+
+            $('#filter-name-box').one('focus', function() {
+                $(this).val('');
+                $(this).css('color', 'black');
+            });
+
+
+            $('#save-filter-button').click(function() {
+                var name =  $('#filter-name-box').val();
+                $.ajax({type:'POST', url: window.location, data: {filtername: name}, success: function() {
+                    $('#pre-filter-container').append('<li><a href="#">' + name  +'</a></li>');
+                }});
+                return false;
+            });
         });
     </script>
     <style>
@@ -178,6 +191,7 @@
                     {{ filter_form.text_in }}
                 </div>
             </div>
+            <input type="hidden" name="sort" value="{{ nodes.paginator.current_sort }}" />
             <div style="display: none;" id="author-filter-container">
                 {% for u in authors %}
                 <input name="authors" type="hidden" value="{{ u.id }}" />
@@ -240,6 +254,19 @@
                 <small>{% trans "Click on the cross next to a tag name to remove it from the filter." %}</small>
             {% endif %}
             <input type="text" size="20" autocomplete="off" id="tag-selector" />
+
+            {% comment %}<h3>{% trans "Pre defined" %}</h3>
+            {% if not settings.NODE_MAN_FILTERS %}
+                <small>{% trans "There are no saved filters. Click bellow to add." %}</small>
+            {% endif %}
+            <ul id="pre-filter-container">
+                {% for uri, name in settings.NODE_MAN_FILTERS %}
+                <li><a href="{% url admin_tools "nodeman" %}{{ uri }}">{{ name }}</a></li>
+                {% endfor %}
+            </ul>
+            <input type="text" size="20" id="filter-name-box" style="color: #AAA;" value="{% trans "Filter name..." %}" />
+            <button name="add-filter" value="0" title="{% trans "Click to save the current filter" %}" id="save-filter-button" class="button">{% trans "Save" %}</button>
+            {% endcomment %}
             {% comment %}<h3>{% trans "Show" %}</h3>
             <form action="" method="get">
                 <div>{{ show_form.show }}</div>
@@ -262,6 +289,16 @@
             <table id="result_list" cellspacing="0">
                 <thead>
                     <tr>
+                        {% declare %}
+                            current_sort = nodes.paginator.current_sort
+                            added_at = current_sort == "added_at" and "descending" or (current_sort == "added_at_asc" and "ascending" or "")
+                            score = current_sort == "score" and "descending" or (current_sort == "score_asc" and "ascending" or "")
+                            act_at = current_sort == "act_at" and "descending" or (current_sort == "act_at_asc" and "ascending" or "")
+
+                            added_at_link = current_sort == "added_at" and nodes.paginator.added_at_asc_sort_link or nodes.paginator.added_at_sort_link
+                            score_link = current_sort == "score" and nodes.paginator.score_asc_sort_link or nodes.paginator.score_sort_link
+                            act_at_link = current_sort == "act_at" and nodes.paginator.act_at_asc_sort_link or nodes.paginator.act_at_sort_link
+                        {% enddeclare %}
                         {% spaceless %}
                         <th class="action-checkbox-column">
                             <input type="checkbox" id="action-toggle" style="display: inline;" />
@@ -269,22 +306,20 @@
                         {% ifequal filter_form.node_type.data "all" %}
                             <th>{% trans "Type" %}</th>
                         {% endifequal %}
-                        <th class="sorted{% ifequal nodes.paginator.current_sort "title" %} ascending{% endifequal %}">
-                            <a href="{{ nodes.paginator.title_sort_link }}">{% trans "Title" %}</a>
-                        </th>
+                        <th>{% trans "Summary" %}</th>
+                        <th>{% trans "State" %}</th>
                         <th>{% trans "Author" %}</th>
-                        <th class="sorted{% ifequal nodes.paginator.current_sort "added_at" %} ascending{% endifequal %}">
-                            <a href="{{ nodes.paginator.added_at_sort_link }}">{% trans "Added at" %}</a>
+                        <th class="sorted {{ added_at }}">
+                            <a href="{{ added_at_link }}">{% trans "Added at" %}</a>
                         </th>
-                        <th class="sorted{% ifequal nodes.paginator.current_sort "score" %} ascending{% endifequal %}">
-                            <a href="{{ nodes.paginator.score_sort_link }}">{% trans "Score" %}</a>
+                        <th class="sorted {{ score }}">
+                            <a href="{{ score_link }}">{% trans "Score" %}</a>
                         </th>
                         <th>{% trans "Last acivity by" %}</th>
-                        <th class="sorted{% ifequal nodes.paginator.current_sort "act_at" %} ascending{% endifequal %}">
-                            <a href="{{ nodes.paginator.act_at_sort_link }}">{% trans "Last activity at" %}</a>
+                        <th class="sorted {{ act_at }}">
+                            <a href="{{ act_at_link }}">{% trans "Last activity at" %}</a>
                         </th>
                         <th>{% trans "Tags" %}</th>
-                        <th>{% trans "State" %}</th>
                         {% endspaceless %}
                     </tr>
                 </thead>
@@ -295,7 +330,11 @@
                         {% ifequal filter_form.node_type.data "all" %}
                             <th>{{ node.friendly_name }}</th>
                         {% endifequal %}
-                        <td><a href="{{ node.get_absolute_url }}" title="{{ node.summary }}" target="_blank">{{ node.headline }}</a></td>
+                        <td>
+                            <a href="{{ node.get_absolute_url }}" target="_blank">{{ node.headline }}</a><br />
+                            {{ node.summary }}
+                        </td>
+                        <td>{{ node.state_list|join:", " }}</td>
                         <td><a href="{{ node.author.get_absolute_url  }}">{{ node.author.username }}</a></td>
                         <td>{% diff_date node.added_at %}</td>
                         <td>{{ node.score }}</td>
@@ -307,7 +346,6 @@
                                 {% else %}{{ t.name }}{% endif %}
                             {% endfor %}
                         </td>
-                        <td>{{ node.state_list|join:", " }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

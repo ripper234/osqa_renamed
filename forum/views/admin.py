@@ -410,14 +410,26 @@ def create_user(request):
 class NodeManagementPaginatorContext(pagination.PaginatorContext):
     def __init__(self, id='QUESTIONS_LIST', prefix='', default_pagesize=100):
         super (NodeManagementPaginatorContext, self).__init__(id, sort_methods=(
-            (_('title'), pagination.SimpleSort(_('title'), '-title', "")),
             (_('added_at'), pagination.SimpleSort(_('added_at'), '-added_at', "")),
+            (_('added_at_asc'), pagination.SimpleSort(_('added_at_asc'), 'added_at', "")),
             (_('score'), pagination.SimpleSort(_('score'), '-score', "")),
+            (_('score_asc'), pagination.SimpleSort(_('score_asc'), 'score', "")),
             (_('act_at'), pagination.SimpleSort(_('act_at'), '-last_activity_at', "")),
-        ), pagesizes=(default_pagesize,), default_pagesize=default_pagesize, prefix=prefix)
+            (_('act_at_asc'), pagination.SimpleSort(_('act_at_asc'), 'last_activity_at', "")),
+        ), pagesizes=(default_pagesize,), force_sort='added_at', default_pagesize=default_pagesize, prefix=prefix)
 
 @admin_tools_page(_("nodeman"), _("Node management"))
 def node_management(request):
+    if request.is_ajax():
+        if request.POST and request.POST.get('filtername', None) and request.GET:
+            params = pagination.generate_uri(request.GET, ('page',))
+            current_filters = settings.NODE_MAN_FILTERS.value
+            current_filters.add((request.POST['filtername'], params))
+            settings.NODE_MAN_FILTERS.set_value(current_filters)
+            return HttpResponse('OK')
+
+        return HttpResponse('ERROR')
+
     if request.POST:
         selected_nodes = request.POST.getlist('_selected_node')
 
@@ -454,7 +466,9 @@ def node_management(request):
                 message = _("All selected nodes deleted")
 
             request.user.message_set.create(message=message)
-            return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'nodeman'}))
+
+            params = pagination.generate_uri(request.GET, ('page',))
+            return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'nodeman'}) + "?" + params)
 
 
     nodes = Node.objects.all()
@@ -512,8 +526,6 @@ def node_management(request):
     'tags': tags,
     'hide_menu': True
     }))
-
-
 
 
 

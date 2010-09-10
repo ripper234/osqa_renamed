@@ -4,10 +4,20 @@ from django import template
 from django.core.paginator import Paginator, EmptyPage
 from django.utils.translation import ugettext as _
 from django.http import Http404
+from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 
 import logging
+
+def generate_uri(querydict, exclude=None):
+    all = []
+
+    for k, l in querydict.iterlists():
+        if (not exclude) or (not k in exclude):
+            all += ["%s=%s" % (k, urlquote(v)) for v in l]
+        
+    return "&".join(all)
 
 class SortBase(object):
     def __init__(self, label, description=''):
@@ -189,10 +199,10 @@ def _paginated(request, objects, context):
         base_path = context.base_path
     else:
         base_path = request.path
-        get_params = ["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (context.PAGE, context.PAGESIZE, context.SORT)]
+        get_params = generate_uri(request.GET, (context.PAGE, context.PAGESIZE, context.SORT))
 
         if get_params:
-            base_path += "?" + "&".join(get_params)
+            base_path += "?" + get_params
 
     url_joiner = "?" in base_path and "&" or "?"
 
