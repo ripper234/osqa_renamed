@@ -104,14 +104,16 @@
                 $(this).css('color', 'black');
             });
 
-
-            $('#save-filter-button').click(function() {
-                var name =  $('#filter-name-box').val();
-                $.ajax({type:'POST', url: window.location, data: {filtername: name}, success: function() {
-                    $('#pre-filter-container').append('<li><a href="#">' + name  +'</a></li>');
-                }});
-                return false;
+            $('#filter-name-box').keyup(function() {
+                if ($(this).val().trim().length > 0) {
+                    $('#save-filter-button').removeAttr('disabled');
+                    $('#save-filter-button').css('color', 'black');
+                } else {
+                    $('#save-filter-button').css('color', '#AAA');
+                    $('#save-filter-button').attr('disabled', 'disabled');
+                }
             });
+
         });
     </script>
     <style>
@@ -255,18 +257,20 @@
             {% endif %}
             <input type="text" size="20" autocomplete="off" id="tag-selector" />
 
-            {% comment %}<h3>{% trans "Pre defined" %}</h3>
+            <h3>{% trans "Pre defined" %}</h3>
             {% if not settings.NODE_MAN_FILTERS %}
                 <small>{% trans "There are no saved filters. Click bellow to add." %}</small>
             {% endif %}
             <ul id="pre-filter-container">
-                {% for uri, name in settings.NODE_MAN_FILTERS %}
-                <li><a href="{% url admin_tools "nodeman" %}{{ uri }}">{{ name }}</a></li>
+                {% for name, uri in settings.NODE_MAN_FILTERS %}
+                <li class="selected"><a href="{% url admin_tools "nodeman" %}?{{ uri }}">{{ name }}</a></li>
                 {% endfor %}
             </ul>
-            <input type="text" size="20" id="filter-name-box" style="color: #AAA;" value="{% trans "Filter name..." %}" />
-            <button name="add-filter" value="0" title="{% trans "Click to save the current filter" %}" id="save-filter-button" class="button">{% trans "Save" %}</button>
-            {% endcomment %}
+            <form action="" method="POST">
+                <input name="filter_name" type="text" size="20" id="filter-name-box" style="color: #AAA;" value="{% trans "Filter name..." %}" />
+                <button name="save_filter" value="0" style="color: #AAA;" title="{% trans "Click to save the current filter" %}" id="save-filter-button" disabled="disabled" class="button">{% trans "Save" %}</button>
+            </form>
+
             {% comment %}<h3>{% trans "Show" %}</h3>
             <form action="" method="get">
                 <div>{{ show_form.show }}</div>
@@ -284,7 +288,7 @@
                         <option value="close_selected">{% trans "Close (questions only)" %}</option>
                     </select>
                 </label>
-                <button value="0" name="index" title="{% trans "Run the selected action" %}" class="button" type="submit">{% trans "Go" %}</button>
+                <button value="0" name="execute" title="{% trans "Run the selected action" %}" class="button" type="submit">{% trans "Go" %}</button>
             </div>
             <table id="result_list" cellspacing="0">
                 <thead>

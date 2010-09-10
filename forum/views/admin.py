@@ -420,17 +420,14 @@ class NodeManagementPaginatorContext(pagination.PaginatorContext):
 
 @admin_tools_page(_("nodeman"), _("Node management"))
 def node_management(request):
-    if request.is_ajax():
-        if request.POST and request.POST.get('filtername', None) and request.GET:
-            params = pagination.generate_uri(request.GET, ('page',))
-            current_filters = settings.NODE_MAN_FILTERS.value
-            current_filters.add((request.POST['filtername'], params))
-            settings.NODE_MAN_FILTERS.set_value(current_filters)
-            return HttpResponse('OK')
+    if request.POST and "save_filter" in request.POST:
+        filter_name = request.POST.get('filter_name', _('filter'))
+        params = pagination.generate_uri(request.GET, ('page',))
+        current_filters = settings.NODE_MAN_FILTERS.value
+        current_filters.append((filter_name, params))
+        settings.NODE_MAN_FILTERS.set_value(current_filters)
 
-        return HttpResponse('ERROR')
-
-    if request.POST:
+    if request.POST and "execute" in request.POST:
         selected_nodes = request.POST.getlist('_selected_node')
 
         if selected_nodes and request.POST.get('action', None):
