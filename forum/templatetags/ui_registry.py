@@ -20,7 +20,7 @@ class LoadRegistryNode(template.Node):
                         if result:
                             result += separator
                         result += ui_object.render(context)
-            except Exception, e:
+            except (KeyError, Exception), e:
                 import traceback
                 logging.error("Exception %s rendering ui objects %s: \n%s" % (
                     e, ui_object, traceback.format_exc()
