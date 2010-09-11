@@ -92,19 +92,6 @@ class PageForm(forms.Form):
 
     comments = forms.BooleanField(label=_("Allow comments"), initial=False, required=False)
 
-TEXT_IN_CHOICES = (
-('title', _('Title')),
-('body', _('Body')),
-('both', _('Title and Body'))
-)
-
-class NodeManFilterForm(forms.Form):
-    node_type = forms.CharField(widget=forms.HiddenInput, initial='all')
-    state_type = forms.CharField(widget=forms.HiddenInput, initial='any')
-    text = forms.CharField(required=False, widget=forms.TextInput(attrs={'size': 40}))
-    text_in = forms.ChoiceField(required=False, widget=forms.RadioSelect, choices=TEXT_IN_CHOICES, initial='title')
-
-
 from forum.forms.auth import SimpleRegistrationForm
 from forum.forms.general import SetPasswordForm
 

@@ -10,7 +10,7 @@ from django.utils.translation import ugettext as _
 from django.utils import simplejson
 from django.db import models
 from forum.settings.base import Setting
-from forum.forms import MaintenanceModeForm, PageForm, NodeManFilterForm, CreateUserForm
+from forum.forms import MaintenanceModeForm, PageForm, CreateUserForm
 from forum.settings.forms import SettingsSetForm
 from forum.utils import pagination, html
 
@@ -412,113 +412,137 @@ class NodeManagementPaginatorContext(pagination.PaginatorContext):
         super (NodeManagementPaginatorContext, self).__init__(id, sort_methods=(
             (_('added_at'), pagination.SimpleSort(_('added_at'), '-added_at', "")),
             (_('added_at_asc'), pagination.SimpleSort(_('added_at_asc'), 'added_at', "")),
+            (_('author'), pagination.SimpleSort(_('author'), '-author__username', "")),
+            (_('author_asc'), pagination.SimpleSort(_('author_asc'), 'author__username', "")),
             (_('score'), pagination.SimpleSort(_('score'), '-score', "")),
             (_('score_asc'), pagination.SimpleSort(_('score_asc'), 'score', "")),
             (_('act_at'), pagination.SimpleSort(_('act_at'), '-last_activity_at', "")),
             (_('act_at_asc'), pagination.SimpleSort(_('act_at_asc'), 'last_activity_at', "")),
+            (_('act_by'), pagination.SimpleSort(_('act_by'), '-last_activity_by__username', "")),
+            (_('act_by_asc'), pagination.SimpleSort(_('act_by_asc'), 'last_activity_by__username', "")),
         ), pagesizes=(default_pagesize,), force_sort='added_at', default_pagesize=default_pagesize, prefix=prefix)
 
 @admin_tools_page(_("nodeman"), _("Bulk management"))
 def node_management(request):
-    if request.POST and "save_filter" in request.POST:
-        filter_name = request.POST.get('filter_name', _('filter'))
+    if request.POST:
         params = pagination.generate_uri(request.GET, ('page',))
-        current_filters = settings.NODE_MAN_FILTERS.value
-        current_filters.append((filter_name, params))
-        settings.NODE_MAN_FILTERS.set_value(current_filters)
 
-    if request.POST and "execute" in request.POST:
-        selected_nodes = request.POST.getlist('_selected_node')
-
-        if selected_nodes and request.POST.get('action', None):
-            action = request.POST['action']
-            selected_nodes = Node.objects.filter(id__in=selected_nodes)
-
-            message = _("No action performed")
-
-            if action == 'delete_selected':
-                for node in selected_nodes:
-                    if node.node_type in ('question', 'answer', 'comment') and (not node.nis.deleted):
-                        DeleteAction(user=request.user, node=node, ip=request.META['REMOTE_ADDR']).save()
-                        
-                message = _("All selected nodes marked as deleted")
-
-            if action == "close_selected":
-                for node in selected_nodes:
-                    if node.node_type == "question" and (not node.nis.closed):
-                        CloseAction(node=node.leaf, user=request.user, extra=_("bulk close"), ip=request.META['REMOTE_ADDR']).save()
-
-                message = _("Selected questions were closed")
-
-            if action == "hard_delete_selected":
-                ids = [n.id for n in selected_nodes]
-
-                for id in ids:
-                    try:
-                        node = Node.objects.get(id=id)
-                        node.delete()
-                    except:
-                        pass                        
-
-                message = _("All selected nodes deleted")
-
-            request.user.message_set.create(message=message)
-
+        if "save_filter" in request.POST:
+            filter_name = request.POST.get('filter_name', _('filter'))
             params = pagination.generate_uri(request.GET, ('page',))
+            current_filters = settings.NODE_MAN_FILTERS.value
+            current_filters.append((filter_name, params))
+            settings.NODE_MAN_FILTERS.set_value(current_filters)
+
+        elif r"execute" in request.POST:
+            selected_nodes = request.POST.getlist('_selected_node')
+
+            if selected_nodes and request.POST.get('action', None):
+                action = request.POST['action']
+                selected_nodes = Node.objects.filter(id__in=selected_nodes)
+
+                message = _("No action performed")
+
+                if action == 'delete_selected':
+                    for node in selected_nodes:
+                        if node.node_type in ('question', 'answer', 'comment') and (not node.nis.deleted):
+                            DeleteAction(user=request.user, node=node, ip=request.META['REMOTE_ADDR']).save()
+
+                    message = _("All selected nodes marked as deleted")
+
+                if action == 'undelete_selected':
+                    for node in selected_nodes:
+                        if node.node_type in ('question', 'answer', 'comment') and (node.nis.deleted):
+                            node.nstate.deleted.cancel(ip=request.META['REMOTE_ADDR'])
+
+                    message = _("All selected nodes undeleted")
+
+                if action == "close_selected":
+                    for node in selected_nodes:
+                        if node.node_type == "question" and (not node.nis.closed):
+                            CloseAction(node=node.leaf, user=request.user, extra=_("bulk close"), ip=request.META['REMOTE_ADDR']).save()
+
+                    message = _("Selected questions were closed")
+
+                if action == "hard_delete_selected":
+                    ids = [n.id for n in selected_nodes]
+
+                    for id in ids:
+                        try:
+                            node = Node.objects.get(id=id)
+                            node.delete()
+                        except:
+                            pass
+
+                    message = _("All selected nodes deleted")
+
+                request.user.message_set.create(message=message)
+
+                params = pagination.generate_uri(request.GET, ('page',))
+                
             return HttpResponseRedirect(reverse("admin_tools", kwargs={'name': 'nodeman'}) + "?" + params)
 
 
     nodes = Node.objects.all()
 
-    if (request.GET):
-        filter_form = NodeManFilterForm(request.GET)
-    else:
-        filter_form = NodeManFilterForm({'node_type': 'all', 'state_type': 'any'})
+    text = request.GET.get('text', '')
+    text_in = request.GET.get('text_in', 'body')
 
     authors = request.GET.getlist('authors')
     tags = request.GET.getlist('tags')
 
-    if filter_form.is_valid():
-        data = filter_form.cleaned_data
+    type_filter = request.GET.getlist('node_type')
+    state_filter = request.GET.getlist('state_type')
+    state_filter_type = request.GET.get('state_filter_type', 'any')
 
-        if data['node_type'] != 'all':
-            nodes = nodes.filter(node_type=data['node_type'])
+    if type_filter:
+        nodes = nodes.filter(node_type__in=type_filter)
 
-        if (data['state_type'] != 'any'):
-            nodes = nodes.filter_state(**{str(data['state_type']): True})
-
-        if (authors):
-            nodes = nodes.filter(author__id__in=authors)
-            authors = User.objects.filter(id__in=authors)
-
-        if (tags):
-            nodes = nodes.filter(tags__id__in=tags)
-            tags = Tag.objects.filter(id__in=tags)
-
-        if data['text']:
-            filter = None
-
-            if data['text_in'] == 'title' or data['text_in'] == 'both':
-                filter = models.Q(title__icontains=data['text'])
-
-            if data['text_in'] == 'body' or data['text_in'] == 'both':
-                sec_filter = models.Q(body__icontains=data['text'])
-                if filter:
-                    filter = filter | sec_filter
-                else:
-                    filter = sec_filter
-
-            if filter:
-                nodes = nodes.filter(filter)
-
-    node_types = [('all', _("all"))] + [(k, n.friendly_name) for k, n in NodeMetaClass.types.items()]
     state_types = NodeState.objects.filter(node__in=nodes).values_list('state_type', flat=True).distinct('state_type')
+    state_filter = [s for s in state_filter if s in state_types]
+
+    if state_filter:
+        if state_filter_type == 'all':
+            nodes = nodes.all_states(*state_filter)
+        else:
+            nodes = nodes.any_state(*state_filter)
+
+    if (authors):
+        nodes = nodes.filter(author__id__in=authors)
+        authors = User.objects.filter(id__in=authors)
+
+    if (tags):
+        nodes = nodes.filter(tags__id__in=tags)
+        tags = Tag.objects.filter(id__in=tags)
+
+    if text:
+        text_in = request.GET.get('text_in', 'body')
+        filter = None
+
+        if text_in == 'title' or text_in == 'both':
+            filter = models.Q(title__icontains=text)
+
+        if text_in == 'body' or text_in == 'both':
+            sec_filter = models.Q(body__icontains=text)
+            if filter:
+                filter = filter | sec_filter
+            else:
+                filter = sec_filter
+
+        if filter:
+            nodes = nodes.filter(filter)
+
+    node_types = [(k, n.friendly_name) for k, n in NodeMetaClass.types.items()]
 
     return ('osqaadmin/nodeman.html', pagination.paginated(request, ("nodes", NodeManagementPaginatorContext()), {
     'nodes': nodes,
+    'text': text,
+    'text_in': text_in,
+    'type_filter': type_filter,
+    'state_filter': state_filter,
+    'state_filter_type': state_filter_type,
     'node_types': node_types,
     'state_types': state_types,
-    'filter_form': filter_form,
     'authors': authors,
     'tags': tags,
     'hide_menu': True

@@ -108,6 +108,30 @@ class NodeQuerySet(CachedQuerySet):
 
         return node
 
+    def any_state(self, *args):
+        filter = None
+
+        for s in args:
+            s_filter = models.Q(state_string__contains="(%s)" % s)
+            filter = filter and (filter | s_filter) or s_filter
+
+        if filter:
+            return self.filter(filter)
+        else:
+            return self
+
+    def all_states(self, *args):
+        filter = None
+
+        for s in args:
+            s_filter = models.Q(state_string__contains="(%s)" % s)
+            filter = filter and (filter & s_filter) or s_filter
+
+        if filter:
+            return self.filter(filter)
+        else:
+            return self
+
     def filter_state(self, **kwargs):
         apply_bool = lambda q, b: b and q or ~q
         return self.filter(*[apply_bool(models.Q(state_string__contains="(%s)" % s), b) for s, b in kwargs.items()])
