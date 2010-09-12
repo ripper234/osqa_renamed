@@ -1,6 +1,6 @@
 {% extends basetemplate %}
 
-{% load i18n user_tags extra_tags %}
+{% load i18n user_tags extra_tags extra_filters %}
 
 {% block adminjs %}
     <script type="text/javascript">
@@ -335,7 +335,7 @@
                     <a id="all-node-type-link" href="#all" title="{% trans "click to clear the type filter" %}">{% trans "all" %}</a>
                 </li>
                 {% for type, name in node_types %}
-                <li{% if type in type_filter %} class="selected" title="{% trans "click to remove from the filter" %}"{% else %} title="{% trans "click to add to the filter" %}"{% endif %}>
+                <li{% if type|contained_in:type_filter %} class="selected" title="{% trans "click to remove from the filter" %}"{% else %} title="{% trans "click to add to the filter" %}"{% endif %}>
                     <a class="node-type-link" href="#{{ type }}">{{ name }}</a>
                 </li>
                 {% endfor %}
@@ -346,7 +346,7 @@
                     <a id="all-state-link" href="#any" title="{% trans "click to clear the state filter" %}">{% trans "any" %}</a>
                 </li>
                 {% for state_type in state_types %}
-                    <li{% if state_type in state_filter %} class="selected" title="{% trans "click to remove from the filter" %}"{% else %} title="{% trans "click to add to the filter" %}"{% endif %}>
+                    <li{% if state_type|contained_in:state_filter %} class="selected" title="{% trans "click to remove from the filter" %}"{% else %} title="{% trans "click to add to the filter" %}"{% endif %}>
                         <a class="state-type-link" href="#{{ state_type }}">{{ state_type }}</a>
                     </li>
                 {% endfor %}
@@ -504,7 +504,7 @@
                         <td>{% diff_date node.last_activity_at %}</td>
                         <td>
                             {% for t in node.tags.all %}
-                                {% if t in tags %}<b>{{ t.name }}</b>
+                                {% if t|contained_in:tags %}<b>{{ t.name }}</b>
                                 {% else %}{{ t.name }}{% endif %}
                             {% endfor %}
                         </td>
