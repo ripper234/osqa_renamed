@@ -1,3 +1,47 @@
+jQuery.extend({createUploadIframe:function(d,b){var a="jUploadFrame"+d;if(window.ActiveXObject){var c=document.createElement('<iframe id="'+a+'" name="'+a+'" />');if(typeof b=="boolean"){c.src="javascript:false"}else{if(typeof b=="string"){c.src=b}}}else{var c=document.createElement("iframe");c.id=a;c.name=a}c.style.position="absolute";c.style.top="-1000px";c.style.left="-1000px";document.body.appendChild(c);return c},createUploadForm:function(g,b){var e="jUploadForm"+g;var a="jUploadFile"+g;var d=$('<form  action="" method="POST" name="'+e+'" id="'+e+'" enctype="multipart/form-data"></form>');var c=$("#"+b);var f=$(c).clone();$(c).attr("id",a);$(c).before(f);$(c).appendTo(d);$(d).css("position","absolute");$(d).css("top","-1200px");$(d).css("left","-1200px");$(d).appendTo("body");return d},ajaxFileUpload:function(k){k=jQuery.extend({},jQuery.ajaxSettings,k);var a=new Date().getTime();var b=jQuery.createUploadForm(a,k.fileElementId);var i=jQuery.createUploadIframe(a,k.secureuri);var h="jUploadFrame"+a;var j="jUploadForm"+a;if(k.global&&!jQuery.active++){jQuery.event.trigger("ajaxStart")}var c=false;var f={};if(k.global){jQuery.event.trigger("ajaxSend",[f,k])}var d=function(l){var p=document.getElementById(h);try{if(p.contentWindow){f.responseText=p.contentWindow.document.body?p.contentWindow.document.body.innerText:null;f.responseXML=p.contentWindow.document.XMLDocument?p.contentWindow.document.XMLDocument:p.contentWindow.document}else{if(p.contentDocument){f.responseText=p.contentDocument.document.body?p.contentDocument.document.body.textContent||document.body.innerText:null;f.responseXML=p.contentDocument.document.XMLDocument?p.contentDocument.document.XMLDocument:p.contentDocument.document}}}catch(o){jQuery.handleError(k,f,null,o)}if(f||l=="timeout"){c=true;var m;try{m=l!="timeout"?"success":"error";if(m!="error"){var n=jQuery.uploadHttpData(f,k.dataType);if(k.success){k.success(n,m)}if(k.global){jQuery.event.trigger("ajaxSuccess",[f,k])}}else{jQuery.handleError(k,f,m)}}catch(o){m="error";jQuery.handleError(k,f,m,o)}if(k.global){jQuery.event.trigger("ajaxComplete",[f,k])}if(k.global&&!--jQuery.active){jQuery.event.trigger("ajaxStop")}if(k.complete){k.complete(f,m)}jQuery(p).unbind();setTimeout(function(){try{$(p).remove();$(b).remove()}catch(q){jQuery.handleError(k,f,null,q)}},100);f=null}};if(k.timeout>0){setTimeout(function(){if(!c){d("timeout")}},k.timeout)}try{var b=$("#"+j);$(b).attr("action",k.url);$(b).attr("method","POST");$(b).attr("target",h);if(b.encoding){b.encoding="multipart/form-data"}else{b.enctype="multipart/form-data"}$(b).submit()}catch(g){jQuery.handleError(k,f,null,g)}if(window.attachEvent){document.getElementById(h).attachEvent("onload",d)}else{document.getElementById(h).addEventListener("load",d,false)}return{abort:function(){}}},uploadHttpData:function(r,type){var data=!type;data=type=="xml"||data?r.responseXML:r.responseText;if(type=="script"){jQuery.globalEval(data)}if(type=="json"){eval("data = "+data)}if(type=="html"){jQuery("<div>").html(data).evalScripts()}return data}});
+/*Upload call*/
+function ajaxFileUpload(imageUrl)
+{
+  $("#loading").ajaxStart(function(){
+      $(this).show();
+  }).ajaxComplete(function(){
+      $(this).hide();
+  });
+
+  $("#upload").ajaxStart(function(){
+          $(this).hide();
+      }).ajaxComplete(function(){
+          $(this).show();
+      });
+
+      $.ajaxFileUpload
+      (
+        {
+            url:'/upload/',
+              secureuri:false,
+              fileElementId:'file-upload',
+              dataType: 'xml',
+              success: function (data, status)
+              {
+                  var fileURL = $(data).find('file_url').text();
+                  var error = $(data).find('error').text();
+                  if(error != ''){
+                    alert(error);
+                  }else{
+                    imageUrl.attr('value', fileURL);
+                  }
+
+              },
+              error: function (data, status, e)
+              {
+                  alert(e);
+              }
+          }
+      );
+
+    return false;
+}
+
 var Attacklab = Attacklab || {};
 
 Attacklab.wmdBase = function(){
@@ -27,7 +71,19 @@ Attacklab.wmdBase = function(){
 	global.isOpera 		= /opera/.test(nav.userAgent.toLowerCase());
 	global.isKonqueror 	= /konqueror/.test(nav.userAgent.toLowerCase());
 	
-	
+	var toolbar_strong_label = $.i18n._('bold') + " <strong> Ctrl-B";
+    var toolbar_emphasis_label = $.i18n._('italic') + " <em> Ctrl-I";
+    var toolbar_hyperlink_label = $.i18n._('link') + " <a> Ctrl-L";
+    var toolbar_blockquote_label = $.i18n._('quote') + " <blockquote> Ctrl-.";
+    var toolbar_code_label = $.i18n._('preformatted text') + " <pre><code> Ctrl-K";
+    var toolbar_image_label = $.i18n._('image') + " <img> Ctrl-G";
+    var toolbar_numbered_label = $.i18n._('numbered list') + " <ol> Ctrl-O";
+    var toolbar_bulleted_label = $.i18n._('bulleted list') + " <ul> Ctrl-U";
+    var toolbar_heading_label = $.i18n._('heading') + " <h1>/<h2> Ctrl-H";
+    var toolbar_horizontal_label = $.i18n._('horizontal bar') + " <hr> Ctrl-R";
+    var toolbar_undo_label = $.i18n._('undo') + " Ctrl-Z";
+    var toolbar_redo_label = $.i18n._('redo') + " Ctrl-Y";
+
 	// -------------------------------------------------------------------
 	//  YOUR CHANGES GO HERE
 	//
@@ -37,9 +93,14 @@ Attacklab.wmdBase = function(){
 	
 	// The text that appears on the upper part of the dialog box when
 	// entering links.
-	var imageDialogText = "<p style='margin-top: 0px'><b>Enter the image URL.</b></p><p>You can also add a title, which will be displayed as a tool tip.</p><p>Example:<br />http://wmd-editor.com/images/cloud1.jpg   \"Optional title\"</p>";
-	var linkDialogText = "<p style='margin-top: 0px'><b>Enter the web address.</b></p><p>You can also add a title, which will be displayed as a tool tip.</p><p>Example:<br />http://wmd-editor.com/   \"Optional title\"</p>";
-	
+	var imageDialogText = "<p style='margin-top: 0px'>" + $.i18n._('enter image url') + "</p>";
+	var linkDialogText = "<p style='margin-top: 0px'>" + $.i18n._('enter url') + "</p>";
+    var uploadImageHTML ="<div>" + $.i18n._('upload image') + "</div>" +
+            "<input type=\"file\" name=\"file-upload\" id=\"file-upload\" size=\"26\" "+
+            "onchange=\"return ajaxFileUpload($('#image-url'));\"/><br>" +
+            "<img id=\"loading\" src=\"" + mediaUrl("media/images/indicator.gif") + "\" style=\"display:none;\"/>";
+
+    
 	// The default text that appears in the dialog input box when entering
 	// links.
 	var imageDefaultText = "http://";
@@ -206,7 +267,11 @@ Attacklab.wmdBase = function(){
 		var dialog;			// The dialog box.
 		var background;		// The background beind the dialog box.
 		var input;			// The text box where you enter the hyperlink.
-		
+        var type = 0;
+        // The dialog box type(0: Link, 1: Image)
+        if(arguments.length == 4){
+            type = arguments[3];
+        }
 
 		if (defaultInputText === undefined) {
 			defaultInputText = "";
@@ -237,7 +302,7 @@ Attacklab.wmdBase = function(){
 				text = text.replace('http://https://', 'https://');
 				text = text.replace('http://ftp://', 'ftp://');
 				
-				if (text.indexOf('http://') === -1 && text.indexOf('ftp://') === -1 && text.indexOf('https://') === -1) {
+				if (text.indexOf('http://') === -1 && text.indexOf('ftp://') === -1 && text.indexOf('https://') === -1 && text.indexOf('/') !== 0) {
 					text = 'http://' + text;
 				}
 			}
@@ -321,6 +386,9 @@ Attacklab.wmdBase = function(){
 			
 			// The input text box
 			input = doc.createElement("input");
+            if(type == 1){
+                input.id = "image-url";
+            }
 			input.type = "text";
 			input.value = defaultInputText;
 			style = input.style;
@@ -329,6 +397,14 @@ Attacklab.wmdBase = function(){
 			style.marginLeft = style.marginRight = "auto";
 			form.appendChild(input);
 			
+            // The upload file input
+            if(type == 1){
+                var upload = doc.createElement("div");
+                upload.innerHTML = uploadImageHTML;
+                upload.style.padding = "5px";
+                form.appendChild(upload);
+            }
+
 			// The ok button
 			var okButton = doc.createElement("input");
 			okButton.type = "button";
@@ -926,7 +1002,7 @@ Attacklab.wmdBase = function(){
 			var boldButton = document.createElement("li");
 			boldButton.className = "wmd-button";
 			boldButton.id = "wmd-bold-button";
-			boldButton.title = "Strong <strong> Ctrl+B";
+			boldButton.title = toolbar_strong_label;
 			boldButton.XShift = "0px";
 			boldButton.textOp = command.doBold;
 			setupButton(boldButton, true);
@@ -935,7 +1011,7 @@ Attacklab.wmdBase = function(){
 			var italicButton = document.createElement("li");
 			italicButton.className = "wmd-button";
 			italicButton.id = "wmd-italic-button";
-			italicButton.title = "Emphasis <em> Ctrl+I";
+			italicButton.title = toolbar_emphasis_label;
 			italicButton.XShift = "-20px";
 			italicButton.textOp = command.doItalic;
 			setupButton(italicButton, true);
@@ -949,7 +1025,7 @@ Attacklab.wmdBase = function(){
 			var linkButton = document.createElement("li");
 			linkButton.className = "wmd-button";
 			linkButton.id = "wmd-link-button";
-			linkButton.title = "Hyperlink <a> Ctrl+L";
+			linkButton.title = toolbar_hyperlink_label;
 			linkButton.XShift = "-40px";
 			linkButton.textOp = function(chunk, postProcessing, useDefaultText){
 				return command.doLinkOrImage(chunk, postProcessing, false);
@@ -960,7 +1036,7 @@ Attacklab.wmdBase = function(){
 			var quoteButton = document.createElement("li");
 			quoteButton.className = "wmd-button";
 			quoteButton.id = "wmd-quote-button";
-			quoteButton.title = "Blockquote <blockquote> Ctrl+Q";
+			quoteButton.title = toolbar_blockquote_label;
 			quoteButton.XShift = "-60px";
 			quoteButton.textOp = command.doBlockquote;
 			setupButton(quoteButton, true);
@@ -969,7 +1045,7 @@ Attacklab.wmdBase = function(){
 			var codeButton = document.createElement("li");
 			codeButton.className = "wmd-button";
 			codeButton.id = "wmd-code-button";
-			codeButton.title = "Code Sample <pre><code> Ctrl+K";
+			codeButton.title = toolbar_code_label;
 			codeButton.XShift = "-80px";
 			codeButton.textOp = command.doCode;
 			setupButton(codeButton, true);
@@ -978,7 +1054,7 @@ Attacklab.wmdBase = function(){
 			var imageButton = document.createElement("li");
 			imageButton.className = "wmd-button";
 			imageButton.id = "wmd-image-button";
-			imageButton.title = "Image <img> Ctrl+G";
+			imageButton.title = toolbar_image_label;
 			imageButton.XShift = "-100px";
 			imageButton.textOp = function(chunk, postProcessing, useDefaultText){
 				return command.doLinkOrImage(chunk, postProcessing, true);
@@ -994,7 +1070,7 @@ Attacklab.wmdBase = function(){
 			var olistButton = document.createElement("li");
 			olistButton.className = "wmd-button";
 			olistButton.id = "wmd-olist-button";
-			olistButton.title = "Numbered List <ol> Ctrl+O";
+			olistButton.title = toolbar_numbered_label;
 			olistButton.XShift = "-120px";
 			olistButton.textOp = function(chunk, postProcessing, useDefaultText){
 				command.doList(chunk, postProcessing, true, useDefaultText);
@@ -1005,7 +1081,7 @@ Attacklab.wmdBase = function(){
 			var ulistButton = document.createElement("li");
 			ulistButton.className = "wmd-button";
 			ulistButton.id = "wmd-ulist-button";
-			ulistButton.title = "Bulleted List <ul> Ctrl+U";
+			ulistButton.title = toolbar_bulleted_label;
 			ulistButton.XShift = "-140px";
 			ulistButton.textOp = function(chunk, postProcessing, useDefaultText){
 				command.doList(chunk, postProcessing, false, useDefaultText);
@@ -1016,7 +1092,7 @@ Attacklab.wmdBase = function(){
 			var headingButton = document.createElement("li");
 			headingButton.className = "wmd-button";
 			headingButton.id = "wmd-heading-button";
-			headingButton.title = "Heading <h1>/<h2> Ctrl+H";
+			headingButton.title = toolbar_heading_label;
 			headingButton.XShift = "-160px";
 			headingButton.textOp = command.doHeading;
 			setupButton(headingButton, true);
@@ -1025,7 +1101,7 @@ Attacklab.wmdBase = function(){
 			var hrButton = document.createElement("li");
 			hrButton.className = "wmd-button";
 			hrButton.id = "wmd-hr-button";
-			hrButton.title = "Horizontal Rule <hr> Ctrl+R";
+			hrButton.title = toolbar_horizontal_label;
 			hrButton.XShift = "-180px";
 			hrButton.textOp = command.doHorizontalRule;
 			setupButton(hrButton, true);
@@ -1039,7 +1115,7 @@ Attacklab.wmdBase = function(){
 			var undoButton = document.createElement("li");
 			undoButton.className = "wmd-button";
 			undoButton.id = "wmd-undo-button";
-			undoButton.title = "Undo - Ctrl+Z";
+			undoButton.title = toolbar_undo_label;
 			undoButton.XShift = "-200px";
 			undoButton.execute = function(manager){
 				manager.undo();
@@ -1050,13 +1126,13 @@ Attacklab.wmdBase = function(){
 			var redoButton = document.createElement("li");
 			redoButton.className = "wmd-button";
 			redoButton.id = "wmd-redo-button";
-			redoButton.title = "Redo - Ctrl+Y";
+			redoButton.title = toolbar_redo_label;
 			if (/win/.test(nav.platform.toLowerCase())) {
-				redoButton.title = "Redo - Ctrl+Y";
+				redoButton.title = toolbar_redo_label;
 			}
 			else {
 				// mac and other non-Windows platforms
-				redoButton.title = "Redo - Ctrl+Shift+Z";
+				redoButton.title = $.i18n._('redo') + " - Ctrl+Shift+Z";
 			}
 			redoButton.XShift = "-220px";
 			redoButton.execute = function(manager){
@@ -1723,7 +1799,8 @@ Attacklab.wmdBase = function(){
 			};
 			
 			if (isImage) {
-				util.prompt(imageDialogText, imageDefaultText, makeLinkMarkdown);
+                // add fourth param to identify image window
+				util.prompt(imageDialogText, imageDefaultText, makeLinkMarkdown, 1);
 			}
 			else {
 				util.prompt(linkDialogText, linkDefaultText, makeLinkMarkdown);
