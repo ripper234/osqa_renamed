@@ -7,7 +7,7 @@ from django.http import Http404
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
-
+from forum.utils.html import sanitize_html
 import logging
 
 def generate_uri(querydict, exclude=None):
@@ -15,7 +15,7 @@ def generate_uri(querydict, exclude=None):
 
     for k, l in querydict.iterlists():
         if (not exclude) or (not k in exclude):
-            all += ["%s=%s" % (k, urlquote(v)) for v in l]
+            all += ["%s=%s" % (k, urlquote(strip_tags(v))) for v in l]
         
     return "&".join(all)
 

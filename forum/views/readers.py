@@ -29,6 +29,7 @@ from forum.forms import get_next_url
 from forum.actions import QuestionViewAction
 from forum.http_responses import HttpResponseUnauthorized
 from forum.feed import RssQuestionFeed, RssAnswerFeed
+from forum.utils.pagination import generate_uri
 import decorators
 
 class HottestQuestionsSort(pagination.SortBase):
@@ -163,7 +164,7 @@ def question_list(request, initial,
     #answer_description = _("answers")
 
     if not feed_url:
-        req_params = "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (_('page'), _('pagesize'), _('sort'))])
+        req_params = "&".join(generate_uri(request.GET, (_('page'), _('pagesize'), _('sort'))))
         if req_params:
             req_params = '&' + req_params
 

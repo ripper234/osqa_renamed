@@ -11,6 +11,7 @@ from django.utils.safestring import mark_safe
 from models import Question
 from forum import settings
 from forum.modules import decorate
+from forum.utils.pagination import generate_uri
 
 @decorate(add_domain, needs_origin=False)
 def add_domain(domain, url):
@@ -66,7 +67,7 @@ class BaseNodeFeed(Feed):
 
 class RssQuestionFeed(BaseNodeFeed):
     def __init__(self, request, question_list, title, description):
-        url = request.path + "&" + "&".join(["%s=%s" % (k, v) for k, v in request.GET.items() if not k in (_('page'), _('pagesize'), _('sort'))])
+        url = request.path + "&" + generate_uri(request.GET, (_('page'), _('pagesize'), _('sort')))
         super(RssQuestionFeed, self).__init__(request, title, description, url)
 
         self._question_list = question_list
