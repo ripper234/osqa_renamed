@@ -35,12 +35,15 @@
         });
 
 
-        function submitClicked(e) {
+        function submitClicked(e, f) {
             if(!(browserTester('chrome') || browserTester('safari'))) {
                 $("input.submit")[0].disabled=true;
                 $("input.submit")[1].disabled=true;
             }
             window.removeEventListener('beforeunload', beforeUnload, true);
+            if (f) {
+                f.submit();
+            }
         }
 
         function beforeUnload(e) {
@@ -86,8 +89,8 @@
             <div class="title-desc">
                 {{ form.summary.help_text }}
             </div>
-            <input type="submit" value="{% trans "Save edit" %}" class="submit" onclick="submitClicked(event)" />
-            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="history.back(-1);submitClicked(event)" />
+            <input type="button" value="{% trans "Save edit" %}" class="submit" onclick="submitClicked(event, this.form)" />
+            <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="submitClicked(event, this.form);history.back(-1);" />
         </form>
     </div>
 </div>

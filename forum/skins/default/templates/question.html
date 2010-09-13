@@ -43,11 +43,14 @@
             });
         });
 
-        function submitClicked(e) {
+        function submitClicked(e, f) {
             if(!(browserTester('chrome') || browserTester('safari'))) {
                 $("input.submit")[0].disabled=true;
             }
             window.removeEventListener('beforeunload', beforeUnload, true);
+            if (f) {
+                f.submit();
+            }
         }
 
         function beforeUnload(e) {
@@ -235,7 +238,7 @@
                     <div id="previewer" class="wmd-preview"></div>                    
                 </div>
                 <p><span class="form-error"></span></p>
-                <input type="submit"
+                <input type="button"
                     {% if user.is_anonymous %}
                         value="{% trans "Login/Signup to Post Your Answer" %}" 
                     {% else %}
@@ -245,7 +248,7 @@
                         value="{% trans "Answer the question" %}" 
                         {% endif %}
                     {% endif %}
-                    class="submit" style="float:left" onclick="submitClicked(event)"/>
+                    class="submit" style="float:left" onclick="submitClicked(event, this.form)"/>
             {% endif %}
         </form>
     </div>

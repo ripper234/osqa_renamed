@@ -1077,3 +1077,22 @@ function yourWorkWillBeLost(e) {
 function browserTester(browserString) {
     return navigator.userAgent.toLowerCase().indexOf(browserString) > -1;
 }
+
+// Add missing IE functionality
+if (!window.addEventListener) {
+    if (window.attachEvent) {
+        window.addEventListener = function (type, listener, useCapture) {
+            window.attachEvent('on' + type, listener);
+        };
+        window.removeEventListener = function (type, listener, useCapture) {
+            window.detachEvent('on' + type, listener);
+        };
+    } else {
+        window.addEventListener = function (type, listener, useCapture) {
+            window['on' + type] = listener;
+        };
+        window.removeEventListener = function (type, listener, useCapture) {
+            window['on' + type] = null;
+        };
+    }
+}
