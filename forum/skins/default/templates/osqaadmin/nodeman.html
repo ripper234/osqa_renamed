@@ -186,20 +186,14 @@
             margin-right: 12px;
         }
 
-        #result_list tr.row1 td.deleted {
+        #result_list tr td.deleted {
             background-color: #FDD;
+            border-bottom: 1px solid #a9a9a9;
         }
 
-        #result_list tr.row2 td.deleted {
-            background-color: #FEE;
-        }
-
-        #result_list tr.row1 td.accepted {
+        #result_list tr td.accepted {
             background-color: #DFD;
-        }
-
-        #result_list tr.row2 td.accepted {
-            background-color: #EFD;
+            border-bottom: 1px solid #a9a9a9;
         }
 
         span.question-deleted {
@@ -418,7 +412,7 @@
                         <option selected="selected" value="">---------</option>
                         <option value="delete_selected">{% trans "Mark deleted" %}</option>
                         <option value="undelete_selected">{% trans "Undelete" %}</option>
-                        <option value="hard_delete_selected">{% trans "Delete completelly" %}</option>
+                        <option value="hard_delete_selected">{% trans "Delete completely" %}</option>
                         <option value="close_selected">{% trans "Close (questions only)" %}</option>
                     </select>
                 </label>

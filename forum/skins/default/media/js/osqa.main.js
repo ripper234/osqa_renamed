@@ -449,7 +449,7 @@ $(function() {
                 $container.slideDown('slow');
                 $add_comment_link.fadeOut('slow');
                 $textarea.focus();
-                window.setInterval(function() {
+                interval = window.setInterval(function() {
                     process_form_changes();
                 }, 200);
             }
@@ -529,6 +529,39 @@ $(function() {
             return false;
         });
     });
+
+    if ($('#editor').length) {
+        var $editor = $('#editor');
+        var $previewer = $('#previewer');
+        var $container = $('#editor-metrics');
+
+        var initial_whitespace_rExp = /^[^A-Za-z0-9]+/gi;
+        var non_alphanumerics_rExp = rExp = /[^A-Za-z0-9]+/gi;
+        var editor_interval = null;
+
+        $editor.focus(function() {
+            if (editor_interval == null) {
+                editor_interval = window.setInterval(function() {
+                    recalc_metrics();
+                }, 200);
+            }
+        });
+
+        function recalc_metrics() {
+            var text = $previewer.text();
+
+            var char_count = text.length;
+            var fullStr = text + " ";
+            var left_trimmedStr = fullStr.replace(initial_whitespace_rExp, "");
+            var cleanedStr = left_trimmedStr.replace(non_alphanumerics_rExp, " ");
+            var splitString = cleanedStr.split(" ");
+            var word_count = splitString.length - 1;
+
+            var metrics = char_count + " " + (char_count == 1 ? messages.character : messages.characters);
+            metrics += " / " + word_count + " " + (word_count == 1 ? messages.word : messages.words);
+            $container.html(metrics);
+        }
+    }
 });
 
 //var scriptUrl, interestingTags, ignoredTags, tags, $;

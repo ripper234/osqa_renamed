@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta
+import re
 
 from forum.models import Question, Action
-from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext, ugettext as _
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django import template
 from forum.actions import *
@@ -133,6 +136,21 @@ def post_controls(post, user):
         if post.node_type == "answer" and user.can_convert_to_comment(post):
             menu.append(post_control(_('convert to comment'), reverse('convert_to_comment', kwargs={'id': post.id}),
                         command=True, withprompt=True))
+
+        if user.is_superuser or user.is_staff:
+            plain_text = strip_tags(post.html)
+
+            char_count = len(plain_text)
+            fullStr = plain_text + " "
+            left_trimmedStr = re.sub(re.compile(r"^[^\w]+", re.IGNORECASE), "", fullStr)
+            cleanedStr = re.sub(re.compile(r"[^\w]+", re.IGNORECASE), " ", left_trimmedStr)
+            splitString = cleanedStr.split(" ")
+            word_count = len(splitString) - 1
+
+            metrics = mark_safe("<b>%s %s / %s %s</b>" % (char_count, ungettext('character', 'characters', char_count),
+                                        word_count, ungettext('word', 'words', word_count)))
+
+            menu.append(post_control(metrics, "#", command=False, withprompt=False))
 
     return {'controls': controls, 'menu': menu, 'post': post, 'user': user}
 

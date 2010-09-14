@@ -75,6 +75,7 @@
                 <span class="form-error"></span>
                 <div class="preview-toggle"><span id="pre-collapse" 
 					title="{% trans "Toggle the real time Markdown editor preview" %}">{% trans "toggle preview" %}</span>
+			    <span style="text-align: right; margin-left: 200px;" id="editor-metrics"></span>
 				{% if settings.WIKI_ON %}
                     <div style="float:right;">
                         {{ form.wiki }} <span style="color:#000;cursor:help" title="{{form.wiki.help_text}}">{{ form.wiki.label_tag }} </span>
