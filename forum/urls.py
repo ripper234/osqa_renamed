@@ -6,14 +6,14 @@ from django.conf.urls.defaults import *
 from django.conf import settings as djsettings
 from django.contrib import admin
 from forum import views as app
-from forum.sitemap import QuestionsSitemap
+from forum.sitemap import OsqaSitemap
 from django.utils.translation import ugettext as _
 import logging
 
 admin.autodiscover()
 
 sitemaps = {
-    'questions': QuestionsSitemap
+    'questions': OsqaSitemap
 }
 
 APP_PATH = os.path.dirname(__file__)

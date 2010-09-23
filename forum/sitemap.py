@@ -2,7 +2,7 @@ from django.contrib.sitemaps import Sitemap
 from forum.models import Question
 from django.conf import settings
 
-class QuestionsSitemap(Sitemap):
+class OsqaSitemap(Sitemap):
     changefreq = 'daily'
     priority = 0.5
     def items(self):

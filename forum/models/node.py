@@ -247,7 +247,7 @@ class Node(BaseModel, NodeContent):
     @classmethod
     def _generate_cache_key(cls, key, group="node"):
         return super(Node, cls)._generate_cache_key(key, group)
-
+        
     @classmethod
     def get_type(cls):
         return cls.__name__.lower()
@@ -282,6 +282,13 @@ class Node(BaseModel, NodeContent):
             self._nis = nis
 
         return nis
+
+    @property
+    def last_activity(self):
+        try:
+            return self.actions.order_by('-action_date')[0].action_date
+        except:
+            return self.last_seen
 
     @property
     def state_list(self):
