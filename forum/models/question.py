@@ -44,6 +44,9 @@ class Question(Node):
     @models.permalink    
     def get_absolute_url(self):
         return ('question', (), {'id': self.id, 'slug': django_urlquote(slugify(self.title))})
+        
+    def meta_description(self):
+        return self.summary
 
     def get_revision_url(self):
         return reverse('question_revisions', args=[self.id])

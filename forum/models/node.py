@@ -78,13 +78,10 @@ class NodeMetaClass(BaseMetaClass):
             return node_cls.objects.filter(parent=self)
 
         def parent(self):
-            p = self.__dict__.get('_%s_cache' % name, None)
+            if (self.parent is not None) and self.parent.node_type == name:
+                return self.parent.leaf
 
-            if p is None and (self.parent is not None) and self.parent.node_type == name:
-                p = self.parent.leaf
-                self.__dict__['_%s_cache' % name] = p
-
-            return p
+            return None
 
         Node.add_to_class(name + 's', property(children))
         Node.add_to_class(name, property(parent))

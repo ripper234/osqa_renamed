@@ -208,5 +208,3 @@ def contributors_info(node):
 @register.inclusion_tag("node/reviser_info.html")
 def reviser_info(revision):
     return {'revision': revision}
-
-

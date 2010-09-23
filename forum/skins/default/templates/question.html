@@ -8,7 +8,7 @@
 {% load humanize %}
 {% load i18n %}
 {% load cache %}
-{% block metadescription %}{{question.summary}}{% endblock %}
+{% block metadescription %}{{ question.meta_description }}{% endblock %}
 {% block metakeywords %}{{question.tagname_meta_generator}}{% endblock %}
 {% block meta %}
         <link rel="canonical" href="{{settings.APP_URL}}{{question.get_absolute_url}}" />
