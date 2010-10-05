@@ -144,7 +144,7 @@ urlpatterns += patterns('',
                             name='user_recent'),
                         url(r'^%s(?P<id>\d+)/(?P<slug>.*)/$' % _('users/'), app.users.user_profile, name='user_profile'),
                         url(r'^%s$' % _('badges/'), app.meta.badges, name='badges'),
-                        url(r'^%s(?P<id>\d+)/(?P<slug>.*)$' % _('badges/'), app.meta.badge, name='badge'),
+                        url(r'^%s(?P<id>\d+)/(?P<slug>[\w-]+)/?$' % _('badges/'), app.meta.badge, name='badge'),
                         # (r'^admin/doc/' % _('admin/doc'), include('django.contrib.admindocs.urls')),
 
                         url(r'^%s$' % _('upload/'), app.writers.upload, name='upload'),

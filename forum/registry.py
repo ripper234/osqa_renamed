@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 from forum.templatetags.extra_tags import get_score_badge
+from forum.utils.html import cleanup_urls
 from forum import settings
 
 
@@ -38,7 +39,7 @@ class SupportLink(ui.Link):
 ui.register(ui.FOOTER_LINKS,
             ui.Link(
                     text=_('contact'),
-                    url=lambda u, c: settings.CONTACT_URL and settings.CONTACT_URL or "%s?next=%s" % (reverse('feedback'), c['request'].path),
+                    url=lambda u, c: settings.CONTACT_URL and settings.CONTACT_URL or "%s?next=%s" % (reverse('feedback'), cleanup_urls( c['request'].path)),
                     weight=400),
             SupportLink(_('support'), settings.SUPPORT_URL, attrs={'target': '_blank'}, weight=300),
             ui.Link(_('privacy'), ui.Url('privacy'), weight=200),

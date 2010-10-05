@@ -1,6 +1,7 @@
 """Utilities for working with HTML."""
 import html5lib
 from html5lib import sanitizer, serializer, tokenizer, treebuilders, treewalkers
+from django.utils.html import strip_tags
 from forum.utils.html2text import HTML2Text
 from django.template import mark_safe
 from forum import settings
@@ -47,6 +48,9 @@ def sanitize_html(html):
                                   quote_attr_values=True)
     output_generator = s.serialize(stream)
     return u''.join(output_generator)
+
+def cleanup_urls(url):
+    return strip_tags(url)
 
 
 def html2text(s, ignore_tags=(), indent_width=4, page_width=80):
