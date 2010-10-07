@@ -88,18 +88,32 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
 
 GOOD_TAG_NAME = re.compile("^\w+$")
 
-def make_extra(el, extra):
-    if not extra:
+def make_extra(el, v):
+    if v is None:
         return
 
-    if isinstance(extra, dict):
-        for k, v in extra.items():
-            if GOOD_TAG_NAME.match(k):
-                make_extra(el.add(k), v)
-            else:
-                make_extra(el.add("key", name=k), v)
+
+    if isinstance(v, (int, long, str, float, bool, dict, list, tuple)):
+        if isinstance(v, tuple):
+            t = 'list'
+        else:
+            t = v.__class__.__name__
     else:
-        el.text = unicode(extra)
+        t = 'unknown'
+
+    value = el.add('value', type=t)
+
+    if isinstance(v, (list, tuple)):
+        for i in v:
+            item = value.add('item')
+            make_extra(item, i)
+
+    elif isinstance(v, dict):
+        for k, i in v.items():
+            item = value.add('item', key=k)
+            make_extra(item, i)
+    else:
+        value.text = unicode(v)
 
 def write_to_file(root, tmp, filename):
     tree = ET.ElementTree(root)
@@ -243,6 +257,7 @@ def export_users(u, el, anon_data):
     el.add('username', u.username)
     el.add('password', u.password)
     el.add('email', u.email, validated=u.email_isvalid and 'true' or 'false')
+    el.add('reputation', u.reputation)
     el.add('joindate', u.date_joined)
 
     el.add('firstname', u.first_name)
@@ -266,7 +281,29 @@ def export_users(u, el, anon_data):
         key.add('provider', a.provider)
         key.add('key', a.key)
 
-    el.add('reputation', u.reputation)
+
+    ss = u.subscription_settings
+
+    notify = el.add('notifications', enabled=ss.enable_notifications and 'true' or 'false')
+
+    notify.add('notify', **dict([(t, ss.__dict__.get(t, 'n') == 'i' and 'true' or 'false') for t in ['member_joins', 'new_question', 'new_question_watched_tags', 'subscribed_questions']]))
+
+    notify.add('autoSubscribe', **dict([(t, ss.__dict__.get(t, False) and 'true' or 'false') for t in [
+            'all_questions', 'all_questions_watched_tags', 'questions_asked', 'questions_answered', 'questions_commented', 'questions_viewed']]))
+
+    notify.add('notifyOnSubscribed', **dict([(t, ss.__dict__.get("notify_%s" % t, False) and 'true' or 'false') for t in [
+            'answers', 'reply_to_comments', 'comments_own_post', 'comments', 'accepted']]))
+
+    notify.add('digest', ss.send_digest and 'on' or 'off')
+
+    watched = el.add('watchedTags')
+    rejected = el.add('rejectedTags')
+
+    for m in u.tag_selections.all():
+        if m.reason == 'good':
+            watched.add('tag', m.tag.name)
+        else:
+            rejected.add('tag', m.tag.name)
 
     
 
