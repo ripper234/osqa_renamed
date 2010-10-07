@@ -1,0 +1,132 @@
+{% extends basetemplate %}
+
+{% load i18n %}
+
+{% block subtitle %}
+    {% trans "XML data exporter" %}
+{% endblock %}
+{% block description %}
+    {% trans "Export database to XML format" %}
+{% endblock %}
+
+{% block adminjs %}
+    <style type="text/css">
+        .state_bar {
+            width:100%;
+            height: 20px;
+            border: 1px solid black;
+            margin-bottom: 15px;
+            position: relative;
+            background: #FDF;
+        }
+
+        .state_label {
+            margin-left: auto;
+            margin-right: auto;
+            z-index: 1000;
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .progress {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            width: 0%;
+            height: 100%;
+            background: #DFF;
+            z-index: 0;
+        }
+
+        #download_link {
+            display: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+    $(function() {
+        var state = null;
+
+        function set_state(name, data) {
+            var $bar = $('#state_' + name);
+
+            if (data[name] === undefined) {
+                $bar.find('.state_label').html('{% trans "Skiped" %}')
+            } else if (state == null || data[name] != state[name]) {
+                var width = $bar.width();
+
+                $bar.find('.state_parsed').html(data[name].parsed);
+                $bar.find('.state_count').html(data[name].count);
+                $bar.find('.state_status').html(data[name].status);
+
+                var rel_parse = data[name].parsed / data[name].count;
+
+                $bar.find('.state_percentage').html(parseInt(rel_parse * 100) + '%');
+                $bar.find('.progress').css('width', parseInt(rel_parse * width) + 'px')
+            }
+        }
+
+        function check_state() {
+         $.getJSON('{% url exporter_state %}', function(data) {
+            set_state('overall', data.state)
+            {% for s in steps %}
+                set_state('{{ s.id }}', data.state);
+            {% endfor %}
+
+            $('#time_started').html(data.time_started);
+
+            state = data;
+
+            if (data.running) {
+                check_state();
+            } else {
+                if (data.errors == false) {
+                    $('#wait_message').html('{% trans "Your backup is ready to be downloaded."%}')
+                    $('#download_link').slideDown();
+                } else {
+                    $('#wait_message').html('{% trans "An error has occurred during de export proccess: "%}' + data.errors + '<br />' +
+                    '{% trans "Please check the log file for a full stack trace." %}')
+                }
+            }
+         });
+        }
+
+        check_state();
+    });
+    </script>
+{% endblock %}
+
+{% block admincontent %}
+    <p id="wait_message">
+        {% trans "Please wait while we prepare your backup file to download. Started" %} -
+        {% blocktrans %}
+            Started <span id="time_started"></span>
+        {% endblocktrans %}
+    </p>
+    <p id="download_link"><a href="{% url exporter_download %}">{% trans "Download file" %}</a></p>
+    <table style="width: 100%">
+        <tr>
+            <td colspan="2">
+                <div class="state_bar" id="state_overall">
+                    <div class="state_label"><span class="state_status"></span> ({% trans "Total progress" %}: <span class="state_percentage">0%</span>)</div>
+                    <div class="progress"></div>
+                </div>
+            </td>
+        </tr>
+        {% for s in steps %}
+        <tr>
+            <td>{{ s.name }}:</td>
+            <td width="100%">
+                <div class="state_bar" id="state_{{ s.id }}">
+                    <div class="state_label"><span class="state_status"></span> - </span><span class="state_parsed">0</span> {% trans " of " %} <span class="state_count">{% trans "unknown" %}</span> (<span class="state_percentage">0%</span>)</div>
+                    <div class="progress"></div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends basetemplate %}
+
+{% load i18n %}
+
+{% block subtitle %}
+    {% trans "XML data exporter" %}
+{% endblock %}
+{% block description %}
+    {% trans "Export database to XML format" %}
+{% endblock %}
+
+{% block admincontent %}
+<form method="POST" action="">
+    <table>
+    {{ form.as_table }}
+    </table>
+    <input type="submit" name="start" value="{% trans "Start" %}" />
+</form>
+{% endblock %}
