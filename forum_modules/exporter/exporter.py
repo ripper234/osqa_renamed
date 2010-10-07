@@ -1,4 +1,4 @@
-import os, tarfile, datetime, logging
+import os, tarfile, datetime, logging, re
 
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
@@ -75,8 +75,8 @@ def _add_tag(el, name, content = None):
         tag.text = content
     return tag
 
-def ET_Element_add_tag(el, name, content = None, **attrs):
-    tag = ET.SubElement(el, name)
+def ET_Element_add_tag(el, tag_name, content = None, **attrs):
+    tag = ET.SubElement(el, tag_name)
 
     if content:
         tag.text = unicode(content)
@@ -86,13 +86,18 @@ def ET_Element_add_tag(el, name, content = None, **attrs):
 
     return tag
 
+GOOD_TAG_NAME = re.compile("^\w+$")
+
 def make_extra(el, extra):
     if not extra:
         return
 
     if isinstance(extra, dict):
         for k, v in extra.items():
-            make_extra(el.add(k), v)
+            if GOOD_TAG_NAME.match(k):
+                make_extra(el.add(k), v)
+            else:
+                make_extra(el.add("key", name=k), v)
     else:
         el.text = unicode(extra)
 
@@ -202,7 +207,7 @@ def exporter_step(queryset, root_tag_name, el_tag_name, name, date_lock=None, us
         def decorated(ping, lock, anon_data):
             root = ET.Element(root_tag_name)
 
-            for item in qs(lock).select_related():
+            for item in qs(lock).order_by('id').select_related():
                 el = root.add(el_tag_name)
                 fn(item, el, anon_data)
                 ping()
@@ -236,6 +241,7 @@ def export_tags(t, el, anon_data):
 def export_users(u, el, anon_data):
     el.add('id', u.id)
     el.add('username', u.username)
+    el.add('password', u.password)
     el.add('email', u.email, validated=u.email_isvalid and 'true' or 'false')
     el.add('joindate', u.date_joined)
 
@@ -254,7 +260,15 @@ def export_users(u, el, anon_data):
     if u.is_staff:
         roles.add('role', 'moderator')
 
+    auth = el.add('authKeys')
+    for a in u.auth_keys.all():
+        key = auth.add('key')
+        key.add('provider', a.provider)
+        key.add('key', a.key)
+
     el.add('reputation', u.reputation)
+
+    
 
 @exporter_step(Node.objects.all(), 'nodes', 'node', _('Nodes'), 'added_at')
 def export_nodes(n, el, anon_data):
@@ -345,6 +359,11 @@ def export_awards(a, el, anon_data):
     el.add('node', a.node and a.node.id or "")
     el.add('trigger', a.trigger and a.trigger.id or "")
     el.add('action', a.action.id)
+
+@exporter_step(KeyValue.objects.all(), 'settings', 'setting', _('Settings'))
+def export_settings(s, el, anon_data):
+    el.add('key', s.key)
+    make_extra(el.add('value'), s.value)
 
 
 
