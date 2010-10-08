@@ -222,7 +222,7 @@ class Pundit(AbstractBadge):
 
     def award_to(self, action):
         if action.user.nodes.filter_state(deleted=False).filter(node_type="comment").count() == int(
-                settings.CIVIC_DUTY_VOTES):
+                settings.PUNDIT_COMMENT_COUNT):
             return action.user
 
 
