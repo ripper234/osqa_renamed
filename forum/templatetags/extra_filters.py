@@ -1,4 +1,5 @@
 from django import template
+from django.utils.safestring import mark_safe
 import logging
 
 register = template.Library()
@@ -15,13 +16,17 @@ def can_edit_post(user, post):
 
 
 @register.filter
-def cnprog_intword(number):
+def decorated_int(number, cls="thousand"):
     try:
-        if 1000 <= number < 10000:
-            string = str(number)[0:1]
-            return "<span class=""thousand"">%sk</span>" % string
-        else:
-            return number
+        if number > 999:
+            if number > 9999:
+                s = str(number)[:-3]
+            else:
+                s = str(number)
+                s = "%s.%s" % (s[0], s[1])
+
+            return mark_safe("<span class=\"%s\">%sk</span>" % (cls, s))
+        return number
     except:
         return number
 

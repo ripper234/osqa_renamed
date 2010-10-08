@@ -7,7 +7,7 @@
                 <tr>
                     <td><span class="num">{{ question.answer_count|intcomma }}</span> </td>
                     <td><span class="num">{{ question.score|intcomma }}</span> </td>
-                    <td><span class="num">{{ question.view_count|cnprog_intword|safe }}</span> </td>
+                    <td><span class="num">{{ question.view_count|decorated_int|safe }}</span> </td>
                 </tr>  
                 <tr>
                     <td><span class="unit">{% trans "answers" %}</span></td>

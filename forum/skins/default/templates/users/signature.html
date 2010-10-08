@@ -1,11 +1,11 @@
-{% load i18n %}{% spaceless %}
+{% load i18n extra_filters %}{% spaceless %}
 
 {% if not user.is_suspended %}
     {% ifequal format "full" %}
 
     {% else %}
         <a href="{{ user.get_absolute_url }}">{{ user.decorated_name }}</a>
-        <span class="score" title="{{ user.reputation }} {% trans "reputation" %}">{{ user.reputation }}</span>
+        <span class="score" title="{{ user.reputation }} {% trans "reputation" %}">{{ user.reputation|decorated_int:"" }}</span>
         {% ifequal format "badges" %}
             {% if user.gold %}
             <span title="{{ user.gold }} {% trans "badges" %}">
