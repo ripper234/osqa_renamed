@@ -13,6 +13,9 @@ def sximporter(request):
         members = [f for f in dump.namelist() if f.endswith('.xml')]
         extract_to = os.path.join(os.path.dirname(__file__), 'tmp')
 
+        if not os.path.exists(extract_to):
+            os.makedirs(extract_to)
+
         for m in members:
             f = open(os.path.join(extract_to, m), 'w')
             f.write(dump.read(m))

@@ -12,6 +12,7 @@ from forum.models.utils import dbsafe_encode
 from orm import orm
 
 from django.utils.encoding import force_unicode
+from django.db.utils import IntegrityError
 
 try:
     from cPickle import loads, dumps
@@ -170,6 +171,7 @@ def userimport(path, options):
 #users = readTable(dump, "Users")
 
     usernames = []
+    openids = set()
     uidmapper = IdMapper()
     #merged_users = []
 
@@ -186,6 +188,8 @@ def userimport(path, options):
         #print "\n".join(["%s : %s" % i for i in sxu.items()])
         if int(sxu.get('id')) == int(owneruid):
             osqau = orm.User.objects.get(id=1)
+            for assoc in orm.AuthKeyUserAssociation.objects.filter(user=osqau):
+                openids.add(assoc.key)
             uidmapper[owneruid] = 1
             uidmapper[-1] = 1
             create = False
@@ -290,9 +294,16 @@ def userimport(path, options):
         usernames.append(osqau.username)
 
         openid = sxu.get('openid', None)
-        if openid and openidre.match(openid):
+        if openid and openidre.match(openid) and (not openid in openids):
             assoc = orm.AuthKeyUserAssociation(user=osqau, key=openid, provider="openidurl")
             assoc.save()
+            openids.add(openid)
+
+        openidalt = sxu.get('openidalt', None)
+        if openidalt and openidre.match(openidalt) and (not openidalt in openids):
+            assoc = orm.AuthKeyUserAssociation(user=osqau, key=openidalt, provider="openidurl")
+            assoc.save()
+            openids.add(openidalt)
 
     readTable(path, "Users", callback)
 

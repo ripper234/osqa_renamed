@@ -1,4 +1,4 @@
-import os, tarfile, datetime, logging, re
+import os, tarfile, datetime, logging, re, ConfigParser, shutil
 
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
@@ -8,12 +8,20 @@ from forum.templatetags.extra_tags import diff_date
 import xml.etree.ElementTree
 from xml.etree import ElementTree as ET
 from xml.etree.ElementTree import Comment, _encode, ProcessingInstruction, QName, fixtag, _escape_attrib, _escape_cdata
+from forum import settings
+from django.conf import settings as djsettings
+import settings as selfsettings
 
 CACHE_KEY = "%s_exporter_state" % APP_URL
 EXPORT_STEPS = []
 
 TMP_FOLDER = os.path.join(os.path.dirname(__file__), 'tmp')
 LAST_BACKUP = os.path.join(TMP_FOLDER, 'backup.tar.gz')
+
+DATE_AND_AUTHOR_INF_SECTION = 'DateAndAuthor'
+OPTIONS_INF_SECTION = 'Options'
+
+DATETIME_FORMAT = "%a %b %d %H:%M:%S %Y"
 
 def Etree_pretty__write(self, file, node, encoding, namespaces,
                         level=0, identator="    "):
@@ -119,19 +127,80 @@ def write_to_file(root, tmp, filename):
     tree = ET.ElementTree(root)
     tree.write(os.path.join(tmp, filename), encoding='UTF-8')
 
-def create_targz(tmp, files):
+def create_targz(tmp, files, start_time, options, user, state, set_state):
     if os.path.exists(LAST_BACKUP):
         os.remove(LAST_BACKUP)
         
     t = tarfile.open(name=LAST_BACKUP, mode = 'w:gz')
 
+    state['overall']['status'] = _('Compressing xml files')
+    set_state()
+
     for f in files:
         t.add(os.path.join(tmp, f), arcname=f)
 
+    if options.get('uplodaded_files', False):
+        state['overall']['status'] = _('Importing uploaded files')
+        set_state()
+        export_upfiles(t)
+
+    if options.get('import_skins_folder', False):
+        state['overall']['status'] = _('Importing skins folder')
+        set_state()
+        export_skinsfolder(t)
+
+    state['overall']['status'] = _('Writing inf file.')
+    set_state()
+
+    now = datetime.datetime.now()
+    domain = re.match('[\w-]+\.[\w-]+(\.[\w-]+)*', djsettings.APP_URL)
+    if domain:
+        domain = '_'.join(domain.get(0).split('.'))
+    else:
+        domain = 'localhost'
+
+    fname = "%s-%s.tar.gz" % (domain, now.strftime('%Y%m%d%H%M'))
+
+    inf = ConfigParser.SafeConfigParser()
+
+    inf.add_section(DATE_AND_AUTHOR_INF_SECTION)
+
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'file-name', fname)
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'author', unicode(user.id))
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'site', djsettings.APP_URL)
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'started', start_time.strftime(DATETIME_FORMAT))
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'finished', now.strftime(DATETIME_FORMAT))
+
+    inf.add_section(OPTIONS_INF_SECTION)
+    inf.set(OPTIONS_INF_SECTION, 'anon-data', str(options.get('anon_data', False)))
+    inf.set(OPTIONS_INF_SECTION, 'with-upfiles', str(options.get('uplodaded_files', False)))
+    inf.set(OPTIONS_INF_SECTION, 'with-skins', str(options.get('import_skins_folder', False)))
+
+    with open(os.path.join(tmp, 'backup.inf'), 'wb') as inffile:
+        inf.write(inffile)
+
+    t.add(os.path.join(tmp, 'backup.inf'), arcname='backup.inf')
+    state['overall']['status'] = _('Saving backup file')
+    set_state()
     t.close()
+    shutil.copyfile(LAST_BACKUP, os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, fname))
+    
+
+def export_upfiles(tf):
+    folder = str(settings.UPFILES_FOLDER)
+
+    if os.path.exists(folder):
+        tf.add(folder, arcname='upfiles')
 
 
-def export(options):
+def export_skinsfolder(tf):
+    folder = djsettings.TEMPLATE_DIRS[0]
+
+    if os.path.exists(folder):
+        tf.add(folder, arcname='skins')
+
+
+def export(options, user):
     original__write = xml.etree.ElementTree.ElementTree._write
     xml.etree.ElementTree.ElementTree._write = Etree_pretty__write
     xml.etree.ElementTree._ElementInterface.add = ET_Element_add_tag
@@ -154,7 +223,7 @@ def export(options):
 
     def set_state():
         full_state['time_started'] = diff_date(start_time)
-        cache.set(CACHE_KEY, full_state)
+        cache.set(CACHE_KEY, full_state, 60)
 
     set_state()
 
@@ -193,7 +262,7 @@ def export(options):
         state['overall']['status'] = _('Compressing files')
         set_state()
 
-        create_targz(tmp, dump_files)
+        create_targz(tmp, dump_files, start_time, options, user, state, set_state)
         full_state['running'] = False
         full_state['errors'] = False
         state['overall']['status'] = _('Done')
@@ -206,9 +275,11 @@ def export(options):
         
         import traceback
         logging.error("Error executing xml backup: \n %s" % (traceback.format_exc()))
+        print traceback.format_exc()
     finally:
         xml.etree.ElementTree.ElementTree._write = original__write
         del xml.etree.ElementTree._ElementInterface.add
+
 
 def exporter_step(queryset, root_tag_name, el_tag_name, name, date_lock=None, user_data=False):
 

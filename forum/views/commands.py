@@ -490,7 +490,7 @@ def matching_tags(request):
     if len(request.GET['q']) == 0:
         raise CommandException(_("Invalid request"))
 
-    possible_tags = Tag.active.filter(name__istartswith = request.GET['q'])
+    possible_tags = Tag.active.filter(name__icontains = request.GET['q'])
     tag_output = ''
     for tag in possible_tags:
         tag_output += "%s|%s|%s\n" % (tag.id, tag.name, tag.used_count)
@@ -501,7 +501,7 @@ def matching_users(request):
     if len(request.GET['q']) == 0:
         raise CommandException(_("Invalid request"))
 
-    possible_users = User.objects.filter(username__istartswith = request.GET['q'])
+    possible_users = User.objects.filter(username__icontains = request.GET['q'])
     output = ''
 
     for user in possible_users:

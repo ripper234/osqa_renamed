@@ -77,7 +77,6 @@ def feed(request):
                 settings.APP_TITLE + _(' - ')+ _('latest questions'),
                 settings.APP_DESCRIPTION)(request)
 
-
 @decorators.render('index.html')
 def index(request):
     paginator_context = QuestionListPaginatorContext()

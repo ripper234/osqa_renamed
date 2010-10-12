@@ -36,9 +36,13 @@
         	$("#id_tags").autocomplete("/matching_tags/", {
                 minChars: 1,
         		matchContains: true,
-                max: 20,
+                max: 10,
                 multiple: true,
                 multipleSeparator: " ",
+                highlightItem: true,
+                scroll: true,
+                scrollHeight: 300,
+
 
         		/*
         		formatItem: function(row, i, max) {
