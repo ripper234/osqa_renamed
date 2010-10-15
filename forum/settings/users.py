@@ -30,7 +30,8 @@ required=False,
 
 EMAIL_UNIQUE = Setting('EMAIL_UNIQUE', True, USERS_SET, dict(
 label = _("Force unique email"),
-help_text = _("Should each user have an unique email.")))
+help_text = _("Should each user have an unique email."),
+required=False))
 
 REQUIRE_EMAIL_VALIDATION_TO = Setting('REQUIRE_EMAIL_VALIDATION_TO', [], USERS_SET, dict(
 label = _("Require email validation to..."),
