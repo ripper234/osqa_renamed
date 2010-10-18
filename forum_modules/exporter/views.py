@@ -14,6 +14,7 @@ import settings as selsettings
 from forum import settings
 
 from exporter import export, CACHE_KEY, EXPORT_STEPS, LAST_BACKUP, DATE_AND_AUTHOR_INF_SECTION, DATETIME_FORMAT
+from importer import start_import
 
 
 @admin_tools_page(_('exporter'), _('XML data export'))
@@ -37,22 +38,23 @@ def exporter(request):
 
     available = []
 
-    #folder = unicode(selsettings.EXPORTER_BACKUP_STORAGE)
+    folder = unicode(selsettings.EXPORTER_BACKUP_STORAGE)
 
-    #for f in os.listdir(folder):
-    #    if (not os.path.isdir(os.path.join(folder, f))) and f.endswith('.tar.gz'):
-    #        try:
-    #            tar = tarfile.open(os.path.join(folder, f), "r")
-    #            inf = ConfigParser.SafeConfigParser()
-    #            inf.readfp(tar.extractfile('backup.inf'))
-    #
-    #            if inf.get(DATE_AND_AUTHOR_INF_SECTION, 'site') == settings.APP_URL:
-    #                available.append({
-    #                    'author': User.objects.get(id=inf.get(DATE_AND_AUTHOR_INF_SECTION, 'author')),
-    #                    'date': datetime.strptime(inf.get(DATE_AND_AUTHOR_INF_SECTION, 'finished'), )
-    #                })
-    #        except Exception, e:
-    #            pass
+    for f in os.listdir(folder):
+        if (not os.path.isdir(os.path.join(folder, f))) and f.endswith('.backup.inf'):
+            try:
+                with open(os.path.join(folder, f), 'r') as inffile:
+                    inf = ConfigParser.SafeConfigParser()
+                    inf.readfp(inffile)
+
+                    if inf.get(DATE_AND_AUTHOR_INF_SECTION, 'site') == settings.APP_URL and os.path.exists(
+                                    os.path.join(folder, inf.get(DATE_AND_AUTHOR_INF_SECTION, 'file-name'))):
+                        available.append({
+                            'author': User.objects.get(id=inf.get(DATE_AND_AUTHOR_INF_SECTION, 'author')),
+                            'date': datetime.datetime.strptime(inf.get(DATE_AND_AUTHOR_INF_SECTION, 'finished'), DATETIME_FORMAT)
+                        })
+            except Exception, e:
+                pass
 
     return ('modules/exporter/exporter.html', {
         'form': form,
@@ -84,5 +86,13 @@ def download(request):
     response['Content-Disposition'] = 'attachment; filename=backup.tar.gz'
     return response
 
+
+@admin_page
+def importer(request):
+    start_import('/Users/admin/dev/pyenv/osqa/maintain/forum_modules/exporter/backups/localhost-201010121118.tar.gz', request.user)
+
+    return ('modules/exporter/importer.html', {
+
+    })
 
     

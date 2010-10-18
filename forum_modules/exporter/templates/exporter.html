@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block admincontent %}
-{% comment %}<p>
+<p>
     <strong>{% trans "Available backups" %}</strong>
 </p>
 <ul>
@@ -19,7 +19,7 @@
         {{ b.date }} by {{ b.author }}
     </li>
     {% endfor %}
-</ul>{% endcomment %}
+</ul>
 
 <p>
     <strong>{% trans "Start new backup" %}</strong>

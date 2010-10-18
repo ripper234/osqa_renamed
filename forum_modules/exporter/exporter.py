@@ -21,7 +21,8 @@ LAST_BACKUP = os.path.join(TMP_FOLDER, 'backup.tar.gz')
 DATE_AND_AUTHOR_INF_SECTION = 'DateAndAuthor'
 OPTIONS_INF_SECTION = 'Options'
 
-DATETIME_FORMAT = "%a %b %d %H:%M:%S %Y"
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+DATE_FORMAT = "%Y-%m-%d"
 
 def Etree_pretty__write(self, file, node, encoding, namespaces,
                         level=0, identator="    "):
@@ -87,7 +88,7 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
     tag = ET.SubElement(el, tag_name)
 
     if content:
-        tag.text = unicode(content)
+        tag.text = unicode(content).encode('utf-8')
 
     for k, v in attrs.items():
         tag.set(k, unicode(v))
@@ -101,7 +102,7 @@ def make_extra(el, v):
         return
 
 
-    if isinstance(v, (int, long, str, float, bool, dict, list, tuple)):
+    if isinstance(v, (int, long, str, unicode, float, bool, dict, list, tuple)):
         if isinstance(v, tuple):
             t = 'list'
         else:
@@ -159,13 +160,13 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     else:
         domain = 'localhost'
 
-    fname = "%s-%s.tar.gz" % (domain, now.strftime('%Y%m%d%H%M'))
+    fname = "%s-%s" % (domain, now.strftime('%Y%m%d%H%M'))
 
     inf = ConfigParser.SafeConfigParser()
 
     inf.add_section(DATE_AND_AUTHOR_INF_SECTION)
 
-    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'file-name', fname)
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'file-name', "%s.tar.gz" % fname)
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'author', unicode(user.id))
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'site', djsettings.APP_URL)
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'started', start_time.strftime(DATETIME_FORMAT))
@@ -183,7 +184,9 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     state['overall']['status'] = _('Saving backup file')
     set_state()
     t.close()
-    shutil.copyfile(LAST_BACKUP, os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, fname))
+    shutil.copyfile(LAST_BACKUP, os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, "%s.tar.gz" % fname))
+    shutil.copyfile(os.path.join(tmp, 'backup.inf'), os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, "%s.backup.inf" % fname))
+
     
 
 def export_upfiles(tf):
@@ -223,7 +226,7 @@ def export(options, user):
 
     def set_state():
         full_state['time_started'] = diff_date(start_time)
-        cache.set(CACHE_KEY, full_state, 60)
+        cache.set(CACHE_KEY, full_state)
 
     set_state()
 
@@ -275,7 +278,6 @@ def export(options, user):
         
         import traceback
         logging.error("Error executing xml backup: \n %s" % (traceback.format_exc()))
-        print traceback.format_exc()
     finally:
         xml.etree.ElementTree.ElementTree._write = original__write
         del xml.etree.ElementTree._ElementInterface.add
@@ -329,14 +331,15 @@ def export_users(u, el, anon_data):
     el.add('password', u.password)
     el.add('email', u.email, validated=u.email_isvalid and 'true' or 'false')
     el.add('reputation', u.reputation)
-    el.add('joindate', u.date_joined)
+    el.add('badges', bronze=u.bronze, silver=u.silver, gold=u.gold)
+    el.add('joindate', u.date_joined.strftime(DATETIME_FORMAT))
+    el.add('active', u.is_active and 'true' or 'false')
 
-    el.add('firstname', u.first_name)
-    el.add('lastname', u.last_name)
+    el.add('realname', u.real_name)
     el.add('bio', u.about)
     el.add('location', u.location)
     el.add('website', u.website)
-    el.add('birthdate', u.date_of_birth)
+    el.add('birthdate', u.date_of_birth and u.date_of_birth.strftime(DATE_FORMAT) or "")
 
     roles = el.add('roles')
 
@@ -385,8 +388,13 @@ def export_nodes(n, el, anon_data):
 
     if not anon_data:
         el.add('author', n.author.id)
-    el.add('date', n.added_at)
+    el.add('date', n.added_at.strftime(DATETIME_FORMAT))
     el.add('parent', n.parent and n.parent.id or "")
+    el.add('absparent', n.abs_parent and n.abs_parent or "")
+
+    act = el.add('lastactivity')
+    act.add('by', n.last_activity_by and n.last_activity_by.id or "")
+    act.add('at', n.last_activity_at and n.last_activity_at.strftime(DATETIME_FORMAT) or "")
 
     el.add('title', n.title)
     el.add('body', n.body)
@@ -396,7 +404,7 @@ def export_nodes(n, el, anon_data):
     for t in n.tagname_list():
         tags.add('tag', t)
 
-    revs = el.add('revisions', active=n.active_revision and n.active_revision or n.revisions.order_by('revision')[0])
+    revs = el.add('revisions', active=n.active_revision and n.active_revision.revision or n.revisions.order_by('revision')[0].revision)
 
     for r in n.revisions.order_by('revision'):
         rev = _add_tag(revs, 'revision')
@@ -404,14 +412,16 @@ def export_nodes(n, el, anon_data):
         rev.add('summary', r.summary)
         if not anon_data:
             rev.add('author', r.author.id)
-        rev.add('date', r.revised_at)
+        rev.add('date', r.revised_at.strftime(DATETIME_FORMAT))
 
         rev.add('title', r.title)
         rev.add('body', r.body)
         rev.add('tags', ", ".join(r.tagname_list()))
 
+    el.add('marked', n.marked and 'true' or 'false')
     el.add('extraRef', n.extra_ref and n.extra_ref.id or "")
-    make_extra(el.add('exraData'), n.extra)
+    make_extra(el.add('extraData'), n.extra)
+    el.add('extraCount', n.extra_count and n.extra_count or "")
 
 
 @exporter_step(Action.objects.all(), 'actions', 'action', _('Actions'), 'action_date')
@@ -446,24 +456,24 @@ def export_actions(a, el, anon_data):
             repute.add('value', r.value)
 
 
-@exporter_step(NodeState.objects.all(), 'states', 'state', _('Node states'), 'action__action_date')
-def export_states(s, el, anon_data):
-    el.add('type', s.state_type)
-    el.add('node', s.node.id)
-    el.add('trigger', s.action.id)
+#@exporter_step(NodeState.objects.all(), 'states', 'state', _('Node states'), 'action__action_date')
+#def export_states(s, el, anon_data):
+#    el.add('type', s.state_type)
+#    el.add('node', s.node.id)
+#    el.add('trigger', s.action.id)
 
 
-@exporter_step(Badge.objects.all(), 'badges', 'badge', _('Badges'), user_data=True)
-def export_badges(b, el, anon_data):
-    el.add('type', ["", 'gold', 'silver', 'bronze'][b.type])
-    el.add('name', b.cls)
-    el.add('count', b.awarded_count)
+#@exporter_step(Badge.objects.all(), 'badges', 'badge', _('Badges'), user_data=True)
+#def export_badges(b, el, anon_data):
+#    el.add('type', ["", 'gold', 'silver', 'bronze'][b.type])
+#    el.add('name', b.cls)
+#    el.add('count', b.awarded_count)
 
 
 @exporter_step(Award.objects.all(), 'awards', 'award', _('Awards'), 'awarded_at', True)
 def export_awards(a, el, anon_data):
     el.add('badge', a.badge.cls)
-    el.add('user', a.user)
+    el.add('user', a.user.id)
     el.add('node', a.node and a.node.id or "")
     el.add('trigger', a.trigger and a.trigger.id or "")
     el.add('action', a.action.id)
