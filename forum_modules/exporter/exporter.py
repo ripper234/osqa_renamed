@@ -84,6 +84,13 @@ def _add_tag(el, name, content = None):
         tag.text = content
     return tag
 
+def make_date(date, with_time=True):
+    try:
+        return date.strftime(with_time and DATETIME_FORMAT or DATE_FORMAT)
+    except ValueError, e:
+        return date.replace(year=1900).strftime(with_time and DATETIME_FORMAT or DATE_FORMAT)
+
+
 def ET_Element_add_tag(el, tag_name, content = None, **attrs):
     tag = ET.SubElement(el, tag_name)
 
@@ -332,14 +339,14 @@ def export_users(u, el, anon_data):
     el.add('email', u.email, validated=u.email_isvalid and 'true' or 'false')
     el.add('reputation', u.reputation)
     el.add('badges', bronze=u.bronze, silver=u.silver, gold=u.gold)
-    el.add('joindate', u.date_joined.strftime(DATETIME_FORMAT))
+    el.add('joindate', make_date(u.date_joined))
     el.add('active', u.is_active and 'true' or 'false')
 
     el.add('realname', u.real_name)
     el.add('bio', u.about)
     el.add('location', u.location)
     el.add('website', u.website)
-    el.add('birthdate', u.date_of_birth and u.date_of_birth.strftime(DATE_FORMAT) or "")
+    el.add('birthdate', u.date_of_birth and make_date(u.date_of_birth, with_time=False) or "")
 
     roles = el.add('roles')
 
@@ -388,13 +395,13 @@ def export_nodes(n, el, anon_data):
 
     if not anon_data:
         el.add('author', n.author.id)
-    el.add('date', n.added_at.strftime(DATETIME_FORMAT))
+    el.add('date', make_date(n.added_at))
     el.add('parent', n.parent and n.parent.id or "")
     el.add('absparent', n.abs_parent and n.abs_parent or "")
 
     act = el.add('lastactivity')
     act.add('by', n.last_activity_by and n.last_activity_by.id or "")
-    act.add('at', n.last_activity_at and n.last_activity_at.strftime(DATETIME_FORMAT) or "")
+    act.add('at', n.last_activity_at and make_date(n.last_activity_at) or "")
 
     el.add('title', n.title)
     el.add('body', n.body)
@@ -412,7 +419,7 @@ def export_nodes(n, el, anon_data):
         rev.add('summary', r.summary)
         if not anon_data:
             rev.add('author', r.author.id)
-        rev.add('date', r.revised_at.strftime(DATETIME_FORMAT))
+        rev.add('date', make_date(r.revised_at))
 
         rev.add('title', r.title)
         rev.add('body', r.body)
