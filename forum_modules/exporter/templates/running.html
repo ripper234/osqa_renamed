@@ -3,10 +3,10 @@
 {% load i18n %}
 
 {% block subtitle %}
-    {% trans "XML data exporter" %}
+    {% ifequal mode "exporter" %}{% trans "XML data exporter" %}{% else %}{% trans "XML data importer" %}{% endifequal %}
 {% endblock %}
 {% block description %}
-    {% trans "Export database to XML format" %}
+    {% ifequal mode "exporter" %}{% trans "Export database to XML format" %}{% else %}{% trans "Restore data from a previouus export" %}{% endifequal %}
 {% endblock %}
 
 {% block adminjs %}
@@ -49,6 +49,8 @@
 
     <script type="text/javascript">
     $(function() {
+        var exporting = {% ifequal mode "exporter" %}true{% else %}false{% endifequal %};
+
         var state = null;
 
         function set_state(name, data) {
@@ -71,28 +73,54 @@
         }
 
         function check_state() {
-         $.getJSON('{% url exporter_state %}', function(data) {
-            set_state('overall', data.state)
-            {% for s in steps %}
-                set_state('{{ s.id }}', data.state);
-            {% endfor %}
+            var done = false;
 
-            $('#time_started').html(data.time_started);
-
-            state = data;
-
-            if (data.running) {
-                check_state();
-            } else {
-                if (data.errors == false) {
-                    $('#wait_message').html('{% trans "Your backup is ready to be downloaded."%}')
-                    $('#download_link').slideDown();
-                } else {
-                    $('#wait_message').html('{% trans "An error has occurred during de export proccess: "%}' + data.errors + '<br />' +
-                    '{% trans "Please check the log file for a full stack trace." %}')
+             function callback(data) {
+                if (done) {
+                   return;
                 }
-            }
-         });
+                set_state('overall', data.state);
+                {% for s in steps %}
+                    set_state('{{ s.id }}', data.state);
+                {% endfor %}
+
+                $('#time_started').html(data.time_started);
+
+                state = data;
+
+                if (data.running) {
+                    check_state();
+                } else {
+                    if (data.errors == false) {
+                        if (exporting) {
+                            $('#wait_message').html('{% trans "Your backup is ready to be downloaded."%}');
+                            $('#download_link').slideDown();
+                        } else {
+                            $('#wait_message').html('{% trans "All data sucessfully imported."%}')
+                        }
+                    } else {
+                        var msg;
+                        if (exporting) {
+                            msg = '{% trans "An error has occurred during de export proccess"%}';
+                        } else {
+                            msg = '{% trans "An error has occurred during de import proccess"%}';
+                        }
+                        $('#wait_message').html(msg + ': ' + data.errors + '<br />' +
+                        '{% trans "Please check the log file for a full stack trace." %}')
+                    }
+                }
+
+                done = true;
+             }
+
+             window.setTimeout(function() {
+                if (!done) {
+                    done = true;
+                    check_state();
+                }
+             }, 1000);
+
+             $.getJSON('{% url exporter_state %}', callback);
         }
 
         check_state();
@@ -102,7 +130,11 @@
 
 {% block admincontent %}
     <p id="wait_message">
-        {% trans "Please wait while we prepare your backup file to download." %} -
+        {% ifequal mode "exporter" %}
+            {% trans "Please wait while we prepare your backup file to download." %}
+        {% else %}
+            {% trans "Please wait while we import your data." %}
+        {% endifequal %} -
         {% blocktrans %}
             Started <span id="time_started"></span>
         {% endblocktrans %}

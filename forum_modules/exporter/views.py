@@ -32,7 +32,7 @@ def exporter(request):
             thread.setDaemon(True)
             thread.start()
 
-            return HttpResponseRedirect(reverse('exporter_running'))
+            return HttpResponseRedirect(reverse('exporter_running', kwargs=dict(mode='exporter')))
     else:
         form = ExporterForm()
 
@@ -62,12 +62,13 @@ def exporter(request):
     })
 
 @admin_page
-def running(request):
+def running(request, mode):
     state = cache.get(CACHE_KEY)
     if state is None:
         return HttpResponseRedirect(reverse('admin_tools', args=[_('exporter')]))
 
     return ('modules/exporter/running.html', {
+        'mode': mode,
         'steps': EXPORT_STEPS
     })
 
@@ -89,10 +90,14 @@ def download(request):
 
 @admin_page
 def importer(request):
-    start_import('/Users/admin/dev/pyenv/osqa/maintain/forum_modules/exporter/backups/localhost-201010121118.tar.gz', request.user)
+    thread = Thread(target=start_import, args=['/Users/admin/dev/pyenv/osqa/maintain/forum_modules/exporter/backups/localhost-201010121118.tar.gz', request.user])
+    thread.setDaemon(True)
+    thread.start()
 
-    return ('modules/exporter/importer.html', {
+    return HttpResponseRedirect(reverse('exporter_running', kwargs=dict(mode='importer')))
 
-    })
+    #return ('modules/exporter/importer.html', {
+
+    #})
 
     

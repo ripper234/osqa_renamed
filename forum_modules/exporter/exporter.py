@@ -20,6 +20,7 @@ LAST_BACKUP = os.path.join(TMP_FOLDER, 'backup.tar.gz')
 
 DATE_AND_AUTHOR_INF_SECTION = 'DateAndAuthor'
 OPTIONS_INF_SECTION = 'Options'
+META_INF_SECTION = 'Meta'
 
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 DATE_FORMAT = "%Y-%m-%d"
@@ -56,10 +57,10 @@ def Etree_pretty__write(self, file, node, encoding, namespaces,
                         if xmlns: xmlns_items.append(xmlns)
                 except TypeError:
                     raise #_raise_serialization_error(v)
-                file.write(" %s=\"%s\"" % (_encode(k, encoding),
+                file.write(u" %s=\"%s\"" % (_encode(k, encoding),
                                             _escape_attrib(v, encoding)))
             for k, v in xmlns_items:
-                file.write(" %s=\"%s\"" % (_encode(k, encoding),
+                file.write(u" %s=\"%s\"" % (_encode(k, encoding),
                                             _escape_attrib(v, encoding)))
         if node.text or len(node):
             file.write(">")
@@ -78,12 +79,6 @@ def Etree_pretty__write(self, file, node, encoding, namespaces,
     if node.tail:
         file.write(_escape_cdata(node.tail.replace("\n", level * identator + "\n"), encoding))
 
-def _add_tag(el, name, content = None):
-    tag = ET.SubElement(el, name)
-    if content:
-        tag.text = content
-    return tag
-
 def make_date(date, with_time=True):
     try:
         return date.strftime(with_time and DATETIME_FORMAT or DATE_FORMAT)
@@ -95,7 +90,7 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
     tag = ET.SubElement(el, tag_name)
 
     if content:
-        tag.text = unicode(content).encode('utf-8')
+        tag.text = unicode(content)
 
     for k, v in attrs.items():
         tag.set(k, unicode(v))
@@ -183,6 +178,11 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     inf.set(OPTIONS_INF_SECTION, 'anon-data', str(options.get('anon_data', False)))
     inf.set(OPTIONS_INF_SECTION, 'with-upfiles', str(options.get('uplodaded_files', False)))
     inf.set(OPTIONS_INF_SECTION, 'with-skins', str(options.get('import_skins_folder', False)))
+
+    inf.add_section(META_INF_SECTION)
+
+    for id, s in state.items():
+        inf.set(META_INF_SECTION, id, str(s['count']))
 
     with open(os.path.join(tmp, 'backup.inf'), 'wb') as inffile:
         inf.write(inffile)
@@ -406,6 +406,8 @@ def export_nodes(n, el, anon_data):
     el.add('title', n.title)
     el.add('body', n.body)
 
+    el.add('score', n.score)
+
     tags = el.add('tags')
 
     for t in n.tagname_list():
@@ -414,7 +416,7 @@ def export_nodes(n, el, anon_data):
     revs = el.add('revisions', active=n.active_revision and n.active_revision.revision or n.revisions.order_by('revision')[0].revision)
 
     for r in n.revisions.order_by('revision'):
-        rev = _add_tag(revs, 'revision')
+        rev = revs.add('revision')
         rev.add('number', r.revision)
         rev.add('summary', r.summary)
         if not anon_data:
@@ -435,7 +437,7 @@ def export_nodes(n, el, anon_data):
 def export_actions(a, el, anon_data):
     el.add('id', a.id)
     el.add('type', a.action_type)
-    el.add('date', a.action_date)
+    el.add('date', make_date(a.action_date))
 
     if not anon_data:
         el.add('user', a.user.id)
@@ -452,7 +454,7 @@ def export_actions(a, el, anon_data):
             canceled.add('user', a.canceled_by.id)
             canceled.add('ip', a.canceled_ip)
 
-        canceled.add('date', a.canceled_at)        
+        canceled.add('date', make_date(a.canceled_at))        
 
     if not anon_data:
         reputes = el.add('reputes')
