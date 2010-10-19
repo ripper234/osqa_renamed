@@ -22,7 +22,7 @@ def exporter(request):
     state = cache.get(CACHE_KEY)
 
     if state and state['running']:
-        return HttpResponseRedirect(reverse('exporter_running'))
+        return HttpResponseRedirect(reverse('exporter_running', kwargs=dict(mode='exporter')))
 
     if request.method == 'POST':
         form = ExporterForm(request.POST)
