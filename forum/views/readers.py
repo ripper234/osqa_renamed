@@ -243,7 +243,7 @@ def update_question_view_times(request, question):
 
     request.session['last_seen_in_question'][question.id] = datetime.datetime.now()
 
-def match_question_slug(slug):
+def match_question_slug(id, slug):
     slug_words = slug.split('-')
     qs = Question.objects.filter(title__istartswith=slug_words[0])
 
@@ -287,7 +287,7 @@ def question(request, id, slug='', answer=None):
         question = Question.objects.get(id=id)
     except:
         if slug:
-            question = match_question_slug(slug)
+            question = match_question_slug(id, slug)
             if question is not None:
                 return HttpResponseRedirect(question.get_absolute_url())
 

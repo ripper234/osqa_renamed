@@ -116,5 +116,14 @@ begin
 end
 $$ LANGUAGE plpgsql;
 
-ALTER table forum_rootnode_doc DISABLE TRIGGER ALL;
-UPDATE forum_noderevision SET id = id WHERE TRUE;
+CREATE OR REPLACE FUNCTION public.rebuild_index() RETURNS VOID as $$
+	DECLARE
+		r integer;
+	BEGIN
+		FOR r IN SELECT active_revision_id FROM forum_node WHERE node_type = 'question' LOOP
+			UPDATE forum_noderevision SET id = id WHERE id = r;
+		END LOOP;
+	END
+$$ LANGUAGE 'plpgsql';
+
+SELECT rebuild_index();

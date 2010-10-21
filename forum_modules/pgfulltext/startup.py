@@ -3,7 +3,7 @@ from forum.models import KeyValue
 from django.db import connection, transaction
 import settings
 
-VERSION = 10
+VERSION = 11
 
 if int(settings.PG_FTSTRIGGERS_VERSION) < VERSION:
     f = open(os.path.join(os.path.dirname(__file__), 'pg_fts_install.sql'), 'r')
