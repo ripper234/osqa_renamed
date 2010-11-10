@@ -223,7 +223,7 @@ def tags(request):
     if request.method == "GET":
         stag = request.GET.get("q", "").strip()
         if stag:
-            tags = tags.filter(name__contains=stag)
+            tags = tags.filter(name__icontains=stag)
 
     return pagination.paginated(request, ('tags', TagPaginatorContext()), {
         "tags" : tags,
