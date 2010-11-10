@@ -3,7 +3,7 @@
 {% if show %}
 {% if wrap %}<div id="{{ blockid }}" class="boxC">
     <div class="body">{% endif %}
-        {{ content }}
+        {{ content|markdown }}
      {% if wrap %}</div>
 </div>{% endif %}
 {% endif %}
