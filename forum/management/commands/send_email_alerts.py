@@ -1,5 +1,6 @@
 import datetime
 from forum.models import *
+from forum import settings
 from django.db import models
 from forum.utils.mail import send_template_email
 from django.core.management.base import NoArgsCommand
