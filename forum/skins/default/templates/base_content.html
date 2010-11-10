@@ -56,7 +56,7 @@
         </script>
         {% endif %}
         {% if settings.USE_CUSTOM_HEAD|or_preview:request %}
-            {{ settings.CUSTOM_HEAD|or_preview:request|markdown:"settingsparser" }}
+            {{ settings.CUSTOM_HEAD|or_preview:request|safe }}
         {% endif %}
         {% block forejs %}{% endblock %}
         <link rel="search" type="application/opensearchdescription+xml" href="{% url opensearch %}" title="{{ settings.APP_SHORT_NAME }} Search" />
@@ -75,7 +75,7 @@
         </div>
         {% if settings.USE_CUSTOM_HEADER|or_preview:request %}
             <div id="custom_header">
-                {{ settings.CUSTOM_HEADER|or_preview:request|safe }}
+                {{ settings.CUSTOM_HEADER|or_preview:request|static_content:settings.CUSTOM_HEADER_RENDER_MODE }}
             </div>
         {% endif %}
         {% include "header.html" %}
@@ -98,19 +98,19 @@
         {% if settings.USE_CUSTOM_FOOTER|or_preview:request %}
             {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "above" %}
                 <div id="custom_footer">
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|static_content:settings.CUSTOM_FOOTER_RENDER_MODE }}
                 </div>
             {% endifequal %}
             <div id="ground">
                 {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "replace" %}
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|static_content:settings.CUSTOM_FOOTER_RENDER_MODE }}
                 {% else %}
                     {% include "footer.html" %}
                 {% endifequal %}
             </div>
             {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "below" %}
                 <div id="custom_footer">
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|static_content:settings.CUSTOM_FOOTER_RENDER_MODE }}
                 </div>
             {% endifequal %}
         {% else %}

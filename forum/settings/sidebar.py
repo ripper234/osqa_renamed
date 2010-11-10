@@ -1,6 +1,8 @@
 from base import Setting, SettingSet
-from django.forms.widgets import Textarea
+from django.forms.widgets import Textarea, Select
 from django.utils.translation import ugettext_lazy as _
+
+from static import RENDER_CHOICES
 
 SIDEBAR_SET = SettingSet('sidebar', 'Sidebar content', "Enter contents to display in the sidebar. You can use markdown and some basic html tags.", 10, True)
 
@@ -40,6 +42,12 @@ label = "Upper Block Content",
 help_text = " The upper sidebar block. ",
 widget=Textarea(attrs={'rows': '10'})))
 
+SIDEBAR_UPPER_RENDER_MODE = Setting('SIDEBAR_UPPER_RENDER_MODE', 'markdown', SIDEBAR_SET, dict(
+label = _("Upper block rendering mode"),
+help_text = _("How to render your upper block code."),
+widget=Select(choices=RENDER_CHOICES),
+required=False))
+
 
 SIDEBAR_LOWER_SHOW = Setting('SIDEBAR_LOWER_SHOW', True, SIDEBAR_SET, dict(
 label = "Show Lower Block",
@@ -62,3 +70,9 @@ are great resources to help you learn more about the OSQA open source Q&A system
 label = "Lower Block Content",
 help_text = " The lower sidebar block. ",
 widget=Textarea(attrs={'rows': '10'})))
+
+SIDEBAR_LOWER_RENDER_MODE = Setting('SIDEBAR_LOWER_RENDER_MODE', 'markdown', SIDEBAR_SET, dict(
+label = _("Lower block rendering mode"),
+help_text = _("How to render your lower block code."),
+widget=Select(choices=RENDER_CHOICES),
+required=False))

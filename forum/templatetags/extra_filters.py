@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 import logging
+import markdown
 
 register = template.Library()
 
@@ -47,3 +48,12 @@ def getval(map, key):
 @register.filter
 def contained_in(item, container):
     return item in container
+
+@register.filter
+def static_content(content, render_mode):
+    if render_mode == 'markdown':
+        return mark_safe(markdown.markdown(unicode(content), ["settingsparser"]))
+    elif render_mode == "html":
+        return mark_safe(unicode(content))
+    else:
+        return unicode(content)

@@ -2,6 +2,8 @@ from django import template
 from forum.models import Tag, Award
 from forum import settings
 
+from extra_filters import static_content
+
 register = template.Library()
 
 @register.inclusion_tag('sidebar/markdown_help.html')
@@ -16,7 +18,7 @@ def recent_awards():
 def sidebar_upper():
     return {
         'show': settings.SIDEBAR_UPPER_SHOW,
-        'content': settings.SIDEBAR_UPPER_TEXT,
+        'content': static_content(settings.SIDEBAR_UPPER_TEXT, settings.SIDEBAR_UPPER_RENDER_MODE),
         'wrap': not settings.SIDEBAR_UPPER_DONT_WRAP,
         'blockid': 'sidebar-upper'
     }
@@ -25,7 +27,7 @@ def sidebar_upper():
 def sidebar_lower():
     return {
         'show': settings.SIDEBAR_LOWER_SHOW,
-        'content': settings.SIDEBAR_LOWER_TEXT,
+        'content': static_content(settings.SIDEBAR_LOWER_TEXT, settings.SIDEBAR_LOWER_RENDER_MODE),
         'wrap': not settings.SIDEBAR_LOWER_DONT_WRAP,
         'blockid': 'sidebar-lower'
     }

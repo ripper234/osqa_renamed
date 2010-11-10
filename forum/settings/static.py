@@ -1,6 +1,12 @@
 from base import Setting, SettingSet
-from django.forms.widgets import Textarea, RadioSelect
+from django.forms.widgets import Textarea, RadioSelect, Select
 from django.utils.translation import ugettext_lazy as _
+
+RENDER_CHOICES = (
+('markdown', _('Markdown')),
+('html', _('HTML')),
+('escape', _('Escaped'))
+)
 
 STATIC_PAGE_REGISTRY = Setting('STATIC_PAGE_REGISTRY', {})
 
@@ -32,6 +38,12 @@ CUSTOM_HEADER = Setting('CUSTOM_HEADER', '', HEAD_AND_FOOT_SET, dict(
         widget=Textarea(attrs={'rows': '25'}),
         required=False))
 
+CUSTOM_HEADER_RENDER_MODE = Setting('CUSTOM_HEADER_RENDER_MODE', 'markdown', HEAD_AND_FOOT_SET, dict(
+        label = _("Custom Header rendering mode"),
+        help_text = _("How to render your custom header code."),
+        widget=Select(choices=RENDER_CHOICES),
+        required=False))
+
 USE_ANNOUNCEMENT_BAR = Setting('USE_ANNOUNCEMENT_BAR', False, HEAD_AND_FOOT_SET, dict(
         label = _("Show announcement bar"),
         help_text = _("Some piece of content that goes under the search bar and can be used for announcements, etc."),
@@ -43,6 +55,12 @@ ANNOUNCEMENT_BAR = Setting('ANNOUNCEMENT_BAR', '', HEAD_AND_FOOT_SET, dict(
         widget=Textarea(attrs={'rows': '25'}),
         required=False))
 
+ANNOUNCEMENT_BAR_RENDER_MODE = Setting('ANNOUNCEMENT_BAR_RENDER_MODE', 'markdown', HEAD_AND_FOOT_SET, dict(
+        label = _("Announcement bar rendering mode"),
+        help_text = _("How to render your announcement bar code."),
+        widget=Select(choices=RENDER_CHOICES),
+        required=False))
+
 USE_CUSTOM_FOOTER = Setting('USE_CUSTOM_FOOTER', False, HEAD_AND_FOOT_SET, dict(
         label = _("Use custom footer"),
         help_text = _("Do you want to use a custom footer."),
@@ -52,6 +70,12 @@ CUSTOM_FOOTER = Setting('CUSTOM_FOOTER', '', HEAD_AND_FOOT_SET, dict(
         label = _("Custom Footer"),
         help_text = _("Your custom footer."),
         widget=Textarea(attrs={'rows': '25'}),
+        required=False))
+
+CUSTOM_FOOTER_RENDER_MODE = Setting('CUSTOM_FOOTER_RENDER_MODE', 'markdown', HEAD_AND_FOOT_SET, dict(
+        label = _("Custom footer rendering mode"),
+        help_text = _("How to render your custom footer code."),
+        widget=Select(choices=RENDER_CHOICES),
         required=False))
 
 CUSTOM_FOOTER_MODE_CHOICES = (
