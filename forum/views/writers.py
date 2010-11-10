@@ -107,6 +107,7 @@ def ask(request):
 
     return render_to_response('ask.html', {
         'form' : form,
+        'tab' : 'ask'
         }, context_instance=RequestContext(request))
 
 def edit_question(request, id):

@@ -1,6 +1,6 @@
 """Utilities for working with HTML."""
-import html5lib
-from html5lib import sanitizer, serializer, tokenizer, treebuilders, treewalkers
+#import html5lib
+from html5lib import sanitizer, serializer, tokenizer, treebuilders, treewalkers, HTMLParser
 from django.utils.html import strip_tags
 from forum.utils.html2text import HTML2Text
 from django.template import mark_safe
@@ -39,7 +39,7 @@ class HTMLSanitizer(tokenizer.HTMLTokenizer, HTMLSanitizerMixin):
 
 def sanitize_html(html):
     """Sanitizes an HTML fragment."""
-    p = html5lib.HTMLParser(tokenizer=HTMLSanitizer,
+    p = HTMLParser(tokenizer=HTMLSanitizer,
                             tree=treebuilders.getTreeBuilder("dom"))
     dom_tree = p.parseFragment(html)
     walker = treewalkers.getTreeWalker("dom")

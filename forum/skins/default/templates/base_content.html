@@ -75,7 +75,7 @@
         </div>
         {% if settings.USE_CUSTOM_HEADER|or_preview:request %}
             <div id="custom_header">
-                {{ settings.CUSTOM_HEADER|or_preview:request|markdown:"settingsparser" }}    
+                {{ settings.CUSTOM_HEADER|or_preview:request|safe }}
             </div>
         {% endif %}
         {% include "header.html" %}
@@ -98,19 +98,19 @@
         {% if settings.USE_CUSTOM_FOOTER|or_preview:request %}
             {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "above" %}
                 <div id="custom_footer">
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|safe }}
                 </div>
             {% endifequal %}
             <div id="ground">
                 {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "replace" %}
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|safe }}
                 {% else %}
                     {% include "footer.html" %}
                 {% endifequal %}
             </div>
             {% ifequal settings.CUSTOM_FOOTER_MODE|or_preview:request "below" %}
                 <div id="custom_footer">
-                    {{ settings.CUSTOM_FOOTER|or_preview:request|markdown:"settingsparser" }}
+                    {{ settings.CUSTOM_FOOTER|or_preview:request|safe }}
                 </div>
             {% endifequal %}
         {% else %}

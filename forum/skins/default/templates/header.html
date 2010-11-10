@@ -40,7 +40,7 @@
 
 	{% if settings.USE_ANNOUNCEMENT_BAR|or_preview:request %}
   <div id="announcement">
-      {{ settings.ANNOUNCEMENT_BAR|or_preview:request|markdown:"settingsparser" }}
+      {{ settings.ANNOUNCEMENT_BAR|or_preview:request|safe }}
   </div>
   {% endif %}
 
