@@ -187,7 +187,7 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     with open(os.path.join(tmp, 'backup.inf'), 'wb') as inffile:
         inf.write(inffile)
 
-    t.add(os.path.join(tmp, 'backup.inf'), arcname='backup.inf')
+    t.add(os.path.join(tmp, '/backup.inf'), arcname='backup.inf')
     state['overall']['status'] = _('Saving backup file')
     set_state()
     t.close()
