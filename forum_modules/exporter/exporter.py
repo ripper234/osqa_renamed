@@ -140,7 +140,7 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     set_state()
 
     for f in files:
-        t.add(os.path.join(tmp, f), arcname=f)
+        t.add(os.path.join(tmp, f), arcname="/%s" % f)
 
     if options.get('uplodaded_files', False):
         state['overall']['status'] = _('Importing uploaded files')
@@ -200,14 +200,14 @@ def export_upfiles(tf):
     folder = str(settings.UPFILES_FOLDER)
 
     if os.path.exists(folder):
-        tf.add(folder, arcname='upfiles')
+        tf.add(folder, arcname='/upfiles')
 
 
 def export_skinsfolder(tf):
     folder = djsettings.TEMPLATE_DIRS[0]
 
     if os.path.exists(folder):
-        tf.add(folder, arcname='skins')
+        tf.add(folder, arcname='/skins')
 
 
 def export(options, user):
@@ -413,7 +413,12 @@ def export_nodes(n, el, anon_data):
     for t in n.tagname_list():
         tags.add('tag', t)
 
-    revs = el.add('revisions', active=n.active_revision and n.active_revision.revision or n.revisions.order_by('revision')[0].revision)
+    try:
+        active = n.active_revision and n.active_revision.revision or n.revisions.order_by('revision')[0].revision
+    except IndexError:
+        active = 0
+
+    revs = el.add('revisions', active=active)
 
     for r in n.revisions.order_by('revision'):
         rev = revs.add('revision')

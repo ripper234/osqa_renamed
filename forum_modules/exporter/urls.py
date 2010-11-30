@@ -8,6 +8,4 @@ urlpatterns = patterns('',
     url(r'^%s%s%s$' % (_('admin/'), _('exporter/'), _('state/')),  state, name='exporter_state'),
     url(r'^%s(?P<mode>\w+)/%s$' % (_('admin/'), _('running/')),  running, name='exporter_running'),
     url(r'^%s%s%s$' % (_('admin/'), _('exporter/'), _('download/')),  download, name='exporter_download'),
-
-    url(r'^%s%s%s$' % (_('admin/'), _('exporter/'), _('import/')),  importer, name='exporter_import'),
 )

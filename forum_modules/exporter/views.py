@@ -88,9 +88,59 @@ def download(request):
     return response
 
 
-@admin_page
+@admin_tools_page(_('importer'), _('XML data restore'))
 def importer(request):
-    thread = Thread(target=start_import, args=['/Users/admin/dev/pyenv/osqa/maintain/forum_modules/exporter/backups/localhost-201010121118.tar.gz', request.user])
+    thread = Thread(target=start_import, args=[
+            '/Users/admin/dev/pyenv/osqa/maintain/forum_modules/exporter/backups/localhost-201010121118.tar.gz',
+            {
+                'sql2008': 'sql-server-2008',
+                'sql2005': 'sql-server-2005',
+                'sql2000': 'sql-server-2000',
+                'design' : 'database-design',
+                'fulltextsearch' : 'full-text',
+                'access': 'microsoft-access',
+                'subquery': 'sub-query',
+                'count': 'aggregates',
+                'join': 'joins',
+                'metadata': 'meta-data',
+                'stored-procedure': 'stored-procedures',
+                'temp-tables': 'temporary-tables',
+                'sqlce': 'sql-server-ce',
+                'maintenance-plan': 'maintenance-plans',
+                'meta': 'meta-askssc',
+                'msaccess2000': 'microsoft-access',
+                'agent': 'sql-agent',
+                'udf': 'user-defined-function',
+                'report': 'reporting',
+                'ssas2005': 'ssas',
+                'case': 'case-statement',
+                'export': 'export-data',
+                'recursive': 'recursion',
+                'table-variables': 'table-variable',
+                'sqldmo': 'dmo',
+                'install': 'installation',
+                'function': 'user-defined-function',
+                'average': 'aggregates',
+                'aggregate-function': 'aggregates',
+                'email': 'database-email',
+                'distinct': 'aggregates',
+                'dynamic-query': 'dynamic',
+                'learn': 'learning',
+                'permission': 'permissions',
+                'shrink': 'shrink-database',
+                'normalise': 'normalization',
+                'datatype-text': 'datatypes',
+                'reporting-services': 'ssrs',
+                'aggregate-sum': 'aggregates',
+                'aggregate-max': 'aggregates',
+                'bulk-import': 'bulk-insert',
+                'attach-database': 'attach',
+                'scripting': 'script',
+                'analysis-services': 'ssas',
+                'create-table': 'create',
+                '2005': 'sql-server-2005'
+            },
+            request.user])
     thread.setDaemon(True)
     thread.start()
 
@@ -100,4 +150,3 @@ def importer(request):
 
     #})
 
-    
