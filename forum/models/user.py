@@ -163,8 +163,8 @@ class User(BaseModel, DjangoUser):
 
     @property
     def gravatar(self):
-        return md5(self.email).hexdigest()
-
+        return md5(self.email.lower()).hexdigest()
+    
     def save(self, *args, **kwargs):
         if self.reputation < 0:
             self.reputation = 0
