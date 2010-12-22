@@ -21,7 +21,7 @@ class NodeContent(models.Model):
 
     @property
     def html(self):
-        return self.as_markdown()
+        return self.body
 
     @classmethod
     def _as_markdown(cls, content, *extensions):
@@ -334,10 +334,10 @@ class Node(BaseModel, NodeContent):
         self.activate_revision(user, revision)
         return revision
 
-    def activate_revision(self, user, revision):
+    def activate_revision(self, user, revision, *extensions):
         self.title = revision.title
         self.tagnames = revision.tagnames
-        self.body = revision.body
+        self.body = self._as_markdown(revision.body, *extensions)
 
         self.active_revision = revision
         self.update_last_activity(user)
