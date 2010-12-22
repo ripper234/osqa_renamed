@@ -67,6 +67,10 @@ REP_TO_CONVERT_TO_COMMENT = Setting('REP_TO_CONVERT_TO_COMMENT', 2000, MIN_REP_S
 label = _("Minimum reputation to convert answers to comment"),
 help_text = _("The minimum reputation an user must have to be allowed to convert an answer into a comment.")))
 
+REP_TO_CONVERT_TO_QUESTION = Setting('REP_TO_CONVERT_TO_QUESTION', 2000, MIN_REP_SET, dict(
+label = _("Minimum reputation to convert answers to questions"),
+help_text = _("The minimum reputation an user must have to be allowed to convert an answer into a question.")))
+
 REP_TO_VIEW_FLAGS = Setting('REP_TO_VIEW_FLAGS', 2000, MIN_REP_SET, dict(
 label = _("Minimum reputation to view offensive flags"),
 help_text = _("The minimum reputation an user must have to view offensive flags.")))

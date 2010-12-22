@@ -279,6 +279,10 @@ class User(BaseModel, DjangoUser):
     def can_convert_to_comment(self, answer):
         return (not answer.marked) and (self.is_superuser or self.is_staff or answer.author == self or self.reputation >= int
                 (settings.REP_TO_CONVERT_TO_COMMENT))
+    
+    def can_convert_to_question(self, answer):
+        return (not answer.marked) and (self.is_superuser or self.is_staff or answer.author == self or self.reputation >= int
+                (settings.REP_TO_CONVERT_TO_QUESTION))
 
     @true_if_is_super_or_staff
     def can_accept_answer(self, answer):

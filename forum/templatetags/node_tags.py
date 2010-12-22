@@ -136,6 +136,10 @@ def post_controls(post, user):
         if post.node_type == "answer" and user.can_convert_to_comment(post):
             menu.append(post_control(_('convert to comment'), reverse('convert_to_comment', kwargs={'id': post.id}),
                         command=True, withprompt=True))
+        
+        if post.node_type == "answer" and user.can_convert_to_question(post):
+            menu.append(post_control(_('convert to question'), reverse('convert_to_question', kwargs={'id': post.id}),
+                        command=True, withprompt=True))
 
         if user.is_superuser or user.is_staff:
             plain_text = strip_tags(post.html)

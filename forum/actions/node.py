@@ -179,6 +179,27 @@ class AnswerToCommentAction(ActionProxy):
             'question': self.describe_node(viewer, self.node.abs_parent),
         }
 
+class AnswerToQuestionAction(ActionProxy):
+    verb = _("converted to question")
+
+    def process_data(self, title):
+        self.node.node_type = "question"
+        self.node.title = title
+        self.node.last_edited = self
+        self.node.update_last_activity(self.user, save=True)
+
+        try:
+            self.node.abs_parent.reset_answer_count_cache()
+        except AttributeError:
+            pass
+
+
+    def describe(self, viewer=None):
+        return _("%(user)s converted an answer to %(question)s into a separate question") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'question': self.describe_node(viewer, self.node.abs_parent),
+        }
+
 class WikifyAction(ActionProxy):
     verb = _("wikified")
 
