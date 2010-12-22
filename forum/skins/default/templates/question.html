@@ -17,6 +17,7 @@
 {% block title %}{% spaceless %}{{ question.headline }}{% endspaceless %}{% endblock %}
 {% block forejs %}
         {% if not question.nis.closed %}
+        <script type='text/javascript' src='{% media  "/media/js/osqa.question.js" %}'></script>
         <script type='text/javascript' src='{% media  "/media/js/wmd/showdown.js" %}'></script>
         <script type='text/javascript' src='{% media  "/media/js/wmd/wmd.js" %}'></script>
         <link rel="stylesheet" type="text/css" href="{% media  "/media/js/wmd/wmd.css" %}" />
@@ -262,7 +263,11 @@
 <div class="boxC" id="subscription_box">
     {% include "subscription_status.html" %}
 </div>
+
+{% markdown_help %}
+
 {% sidebar_upper %}
+
 {% cache 60 questions_tags settings.APP_URL question.id %}
 <div class="boxC">
     <p>
