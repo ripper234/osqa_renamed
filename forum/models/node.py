@@ -425,6 +425,7 @@ class Node(BaseModel, NodeContent):
             super(BaseModel, self).save(*args, **kwargs)
             self.active_revision = self._create_revision(self.author, 1, title=self.title, tagnames=self.tagnames,
                                                          body=self.body)
+            self.activate_revision(self.author, self.active_revision)
             self.update_last_activity(self.author, time=self.added_at)
 
         if self.parent_id and not self.abs_parent_id:
