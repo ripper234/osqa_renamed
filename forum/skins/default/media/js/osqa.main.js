@@ -53,12 +53,14 @@ var response_commands = {
         var $answer = $('#answer-container-' + id);
         $answer.addClass('accepted-answer');
         $answer.find('.accept-answer').addClass('on');
+        $answer.find('.accept-answer').attr('title', $answer.find('.accept-answer').attr('bn:on'));
     },
 
     unmark_accepted: function(id) {
         var $answer = $('#answer-container-' + id);
         $answer.removeClass('accepted-answer');
         $answer.find('.accept-answer').removeClass('on');
+        $answer.find('.accept-answer').attr('title', $answer.find('.accept-answer').attr('bn:off'));
     },
 
     remove_comment: function(id) {
