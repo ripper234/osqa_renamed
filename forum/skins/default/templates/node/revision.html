@@ -4,7 +4,7 @@
     {% if tags %}
         <div class="tags">
             {% for tag in tags %}
-            <a class="post-tag">{{ tag }}</a>
+            <a class="post-tag tag-link-{{ tag }}">{{ tag }}</a>
             {% endfor %}
         </div>
     {% endif %}
