@@ -263,6 +263,7 @@ function process_ajax_response(data, evt, callback) {
     } else if (typeof data['commands'] != undefined){
         for (var command in data.commands) {
             response_commands[command].apply(null, data.commands[command])
+
         }
 
         if (data['message'] != undefined) {
@@ -894,8 +895,8 @@ var i18nZh = {
 	'please confirm offensive':"??????????????????????",
 	'anonymous users cannot flag offensive posts':'???????????',
 	'cannot flag message as offensive twice':'???????',
-	'flag offensive cap exhausted':'?????????????5?‘??’???',
-	'need >15 points to report spam':"??+15??????‘???’?",
+	'flag offensive cap exhausted':'?????????????5?Â‘??Â’???',
+	'need >15 points to report spam':"??+15??????Â‘???Â’?",
 	'confirm delete':"?????/????????",
 	'anonymous users cannot delete/undelete':"???????????????",
 	'post recovered':"?????????????",
@@ -973,8 +974,8 @@ var i18nEs = {
 	'insufficient privilege':'privilegio insuficiente',
 	'cannot pick own answer as best':'no puede escoger su propia respuesta como la mejor',
 	'anonymous users cannot select favorite questions':'usuarios anonimos no pueden seleccionar',
-	'please login':'por favor inicie sesión',
-	'anonymous users cannot vote':'usuarios anónimos no pueden votar',
+	'please login':'por favor inicie sesiÃ³n',
+	'anonymous users cannot vote':'usuarios anÃ³nimos no pueden votar',
 	'>15 points requried to upvote': '>15 puntos requeridos para votar positivamente',
 	'>100 points required to downvote':'>100 puntos requeridos para votar negativamente',
 	'please see': 'por favor vea',
@@ -982,31 +983,31 @@ var i18nEs = {
 	'daily vote cap exhausted':'cuota de votos diarios excedida',
 	'cannot revoke old vote':'no puede revocar un voto viejo',
 	'please confirm offensive':"por favor confirme ofensiva",
-	'anonymous users cannot flag offensive posts':'usuarios anónimos no pueden marcar publicaciones como ofensivas',
+	'anonymous users cannot flag offensive posts':'usuarios anÃ³nimos no pueden marcar publicaciones como ofensivas',
 	'cannot flag message as offensive twice':'no puede marcar mensaje como ofensivo dos veces',
 	'flag offensive cap exhausted':'cuota para marcar ofensivas ha sido excedida',
 	'need >15 points to report spam':"necesita >15 puntos para reportar spam",
-	'confirm delete':"¿Está seguro que desea borrar esto?",
-	'anonymous users cannot delete/undelete':"usuarios anónimos no pueden borrar o recuperar publicaciones",
-	'post recovered':"publicación recuperada",
-	'post deleted':"publicación borrada?",
+	'confirm delete':"Â¿EstÃ¡ seguro que desea borrar esto?",
+	'anonymous users cannot delete/undelete':"usuarios anÃ³nimos no pueden borrar o recuperar publicaciones",
+	'post recovered':"publicaciÃ³n recuperada",
+	'post deleted':"publicaciÃ³n borrada?",
 	'add comment':'agregar comentario',
-	'community karma points':'reputación comunitaria',
-	'to comment, need':'para comentar, necesita reputación',
+	'community karma points':'reputaciÃ³n comunitaria',
+	'to comment, need':'para comentar, necesita reputaciÃ³n',
 	'delete this comment':'borrar este comentario',
 	'hide comments':"ocultar comentarios",
 	'add a comment':"agregar comentarios",
 	'comments':"comentarios",
-	'confirm delete comment':"¿Realmente desea borrar este comentario?",
+	'confirm delete comment':"Â¿Realmente desea borrar este comentario?",
 	'characters':'caracteres faltantes',
 	'can write':'tiene ',
 	'click to close':'haga click para cerrar',
 	'loading...':'cargando...',
-	'tags cannot be empty':'las etiquetas no pueden estar vacías',
+	'tags cannot be empty':'las etiquetas no pueden estar vacÃ­as',
 	'tablimits info':"hasta 5 etiquetas de no mas de 20 caracteres cada una",
-	'content cannot be empty':'el contenido no puede estar vacío',
+	'content cannot be empty':'el contenido no puede estar vacÃ­o',
 	'content minchars': 'por favor introduzca mas de {0} caracteres',
-	'please enter title':'por favor ingrese un título',
+	'please enter title':'por favor ingrese un tÃ­tulo',
 	'title minchars':"por favor introduzca al menos {0} caracteres",
 	'delete':'borrar',
 	'undelete':	'recuperar',
@@ -1045,7 +1046,7 @@ var i18n_dict = i18n[i18nLang];
 /*
  * Autocomplete - jQuery plugin 1.0.3
  *
- * Copyright (c) 2007 Dylan Verheul, Dan G. Switzer, Anjesh Tuladhar, Jörn Zaefferer
+ * Copyright (c) 2007 Dylan Verheul, Dan G. Switzer, Anjesh Tuladhar, JÃ¶rn Zaefferer
  *
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php
