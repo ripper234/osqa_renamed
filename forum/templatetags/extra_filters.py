@@ -19,12 +19,11 @@ def can_edit_post(user, post):
 @register.filter
 def decorated_int(number, cls="thousand"):
     try:
+        number = int(number)    # allow strings or numbers passed in
         if number > 999:
-            if number > 9999:
-                s = str(number)[:-3]
-            else:
-                s = str(number)
-                s = "%s.%s" % (s[0], s[1])
+            thousands = float(number) / 1000.0
+            format = "%.1f" if number < 99500 else "%.0f"
+            s = format % thousands
 
             return mark_safe("<span class=\"%s\">%sk</span>" % (cls, s))
         return number
