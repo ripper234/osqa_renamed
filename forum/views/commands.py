@@ -264,7 +264,8 @@ def comment(request, id):
         'insert_comment': [
                 id, comment.id, comment.comment, user.decorated_name, user.get_profile_url(),
                 reverse('delete_comment', kwargs={'id': comment.id}),
-                reverse('node_markdown', kwargs={'id': comment.id})
+                reverse('node_markdown', kwargs={'id': comment.id}),
+                reverse('convert_comment', kwargs={'id': comment.id}),            
                 ]
         }
         }
@@ -431,6 +432,27 @@ def convert_to_comment(request, id):
         raise CommandException(_("That is an invalid post to put the comment under"))
 
     AnswerToCommentAction(user=user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(new_parent=new_parent))
+
+    return RefreshPageCommand()
+
+@decorate.withfn(command)
+def convert_comment_to_answer(request, id):
+    user = request.user
+    comment = get_object_or_404(Comment, id=id)
+    parent = comment.parent
+
+    if not parent.question:
+        question = parent
+    else:
+        question = parent.question
+    
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_("convert comments to answers"))
+
+    if not user.can_convert_comment_to_answer(comment):
+        raise NotEnoughRepPointsException(_("convert comments to answers"))
+    
+    CommentToAnswerAction(user=user, node=comment, ip=request.META['REMOTE_ADDR']).save(data=dict(question=question))
 
     return RefreshPageCommand()
 

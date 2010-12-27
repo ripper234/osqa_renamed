@@ -179,6 +179,22 @@ class AnswerToCommentAction(ActionProxy):
             'question': self.describe_node(viewer, self.node.abs_parent),
         }
 
+class CommentToAnswerAction(ActionProxy):
+    verb = _("converted")
+
+    def process_data(self, question):
+        self.node.parent = question
+        self.node.node_type = "answer"
+        self.node.last_edited = self
+        self.node.update_last_activity(self.user, save=True)
+
+
+    def describe(self, viewer=None):
+        return _("%(user)s converted comment on %(question)s into an answer") % {
+            'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+            'question': self.describe_node(viewer, self.node.abs_parent),
+        }
+
 class AnswerToQuestionAction(ActionProxy):
     verb = _("converted to question")
 

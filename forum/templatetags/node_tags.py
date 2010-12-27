@@ -173,7 +173,8 @@ def comments(post, user):
         context = {
             'can_delete': user.can_delete_comment(c),
             'can_like': user.can_like_comment(c),
-            'can_edit': user.can_edit_comment(c)
+            'can_edit': user.can_edit_comment(c),
+            'can_convert': user.can_convert_comment_to_answer(c)
         }
 
         if c in top_scorers or c.is_reply_to(user):

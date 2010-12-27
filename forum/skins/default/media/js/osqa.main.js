@@ -71,7 +71,7 @@ var response_commands = {
         });
     },
 
-    insert_comment: function(post_id, comment_id, comment, username, profile_url, delete_url, edit_url) {
+    insert_comment: function(post_id, comment_id, comment, username, profile_url, delete_url, edit_url, convert_url) {
         var $container = $('#comments-container-' + post_id);
         var skeleton = $('#new-comment-skeleton-' + post_id).html().toString();
 
@@ -80,7 +80,8 @@ var response_commands = {
                 .replace(new RegExp('%USERNAME%', 'g'), username)
                 .replace(new RegExp('%PROFILE_URL%', 'g'), profile_url)
                 .replace(new RegExp('%DELETE_URL%', 'g'), delete_url)
-                .replace(new RegExp('%EDIT_URL%', 'g'), edit_url);
+                .replace(new RegExp('%EDIT_URL%', 'g'), edit_url)
+                .replace(new RegExp('%CONVERT_URL%', 'g'), convert_url);
 
         $container.append(skeleton);
 
@@ -263,6 +264,7 @@ function process_ajax_response(data, evt, callback) {
     } else if (typeof data['commands'] != undefined){
         for (var command in data.commands) {
             response_commands[command].apply(null, data.commands[command])
+
 
         }
 

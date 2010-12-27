@@ -81,6 +81,8 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/' % _('comment/'), app.commands.comment, name='comment'),
                         url(r'^%s(?P<id>\d+)/$' % _('delete_comment/'), app.commands.delete_comment,
                             name="delete_comment"),
+                        url(r'^%s(?P<id>\d+)/$' % _('convert_comment/'), app.commands.convert_comment_to_answer,
+                            name="convert_comment"),
                         url(r'^%s(?P<id>\d+)/$' % _('accept_answer/'), app.commands.accept_answer, name="accept_answer")
                         ,
                         url(r'^%s(?P<id>\d+)/$' % _('mark_favorite/'), app.commands.mark_favorite, name="mark_favorite")
