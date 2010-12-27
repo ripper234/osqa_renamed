@@ -919,7 +919,7 @@ span.form-error {
 }
 
 .revision .summary span {
-    /**background-color: yellow;/**/
+    /**background-color: yellow;**/
     display: inline;
     padding-left: 3px;
     padding-right: 3px;

@@ -289,7 +289,7 @@ def validate_email(request, user, code):
         user.save()
         return login_and_forward(request, user, reverse('index'), _("Thank you, your email is now validated."))
     else:
-        raise Http404()
+        return render_to_response('auth/mail_already_validated.html', { 'user' : user }, RequestContext(request))
 
 def auth_settings(request, id):
     user_ = get_object_or_404(User, id=id)
