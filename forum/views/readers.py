@@ -167,7 +167,7 @@ def question_list(request, initial,
         if req_params:
             req_params = '&' + req_params
 
-        feed_url = mark_safe(request.path + "?type=rss" + req_params)
+        feed_url = mark_safe(escape(request.path + "?type=rss" + req_params))
 
     return pagination.paginated(request, ('questions', paginator_context or QuestionListPaginatorContext()), {
     "questions" : questions.distinct(),

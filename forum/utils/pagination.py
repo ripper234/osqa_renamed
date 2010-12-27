@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.http import Http404
 from django.utils.http import urlquote
 from django.utils.safestring import mark_safe
-from django.utils.html import strip_tags
+from django.utils.html import strip_tags, escape
 from forum.utils.html import sanitize_html
 import logging
 
@@ -273,9 +273,9 @@ def _paginated(request, objects, context):
     if pagesize:
         def page_sizes():
             if sort:
-                url_builder = lambda s: mark_safe("%s%s%s=%s&%s=%s" % (base_path, url_joiner, context.SORT, sort, context.PAGESIZE, s))
+                url_builder = lambda s: mark_safe("%s%s%s=%s&%s=%s" % (escape(base_path), url_joiner, context.SORT, sort, context.PAGESIZE, s))
             else:
-                url_builder = lambda s: mark_safe("%s%s%s=%s" % (base_path, url_joiner, context.PAGESIZE, s))
+                url_builder = lambda s: mark_safe("%s%s%s=%s" % (escape(base_path), url_joiner, context.PAGESIZE, s))
 
             sizes = [(s, url_builder(s)) for s in context.pagesizes]
 
@@ -290,7 +290,7 @@ def _paginated(request, objects, context):
 
     if sort:
         def sort_tabs():
-            url_builder = lambda s: mark_safe("%s%s%s=%s" % (base_path, url_joiner, context.SORT, s))
+            url_builder = lambda s: mark_safe("%s%s%s=%s" % (escape(base_path), url_joiner, context.SORT, s))
             sorts = [(n, s.label, url_builder(n), strip_tags(s.description)) for n, s in context.sort_methods.items()]
 
             for name, label, url, descr in sorts:
