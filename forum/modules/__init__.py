@@ -31,13 +31,14 @@ def get_modules_script(script_name):
             pass
         except:
             import traceback
-            logging.error("Error importing %s from module %s: \n %s" % (
+            msg = "Error importing %s from module %s: \n %s" % (
                 script_name, m.__name__, traceback.format_exc()
-            ))
+            )
+            logging.error(msg)
 
     return all
 
-def get_modules_scipt_implementations(script_name, impl_class):
+def get_modules_script_implementations(script_name, impl_class):
     scripts = get_modules_script(script_name)
     all_impls = {}
 
