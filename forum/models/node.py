@@ -331,10 +331,10 @@ class Node(BaseModel, NodeContent):
     def create_revision(self, user, **kwargs):
         number = self.revisions.aggregate(last=models.Max('revision'))['last'] + 1
         revision = self._create_revision(user, number, **kwargs)
-        self.activate_revision(user, revision)
+        self.activate_revision(user, revision, extensions=['urlize'])
         return revision
 
-    def activate_revision(self, user, revision, *extensions):
+    def activate_revision(self, user, revision, extensions):
         self.title = revision.title
         self.tagnames = revision.tagnames
         self.body = self._as_markdown(revision.body, *extensions)
