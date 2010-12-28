@@ -334,7 +334,7 @@ class Node(BaseModel, NodeContent):
         self.activate_revision(user, revision, extensions=['urlize'])
         return revision
 
-    def activate_revision(self, user, revision, extensions):
+    def activate_revision(self, user, revision, extensions=['urlize']):
         self.title = revision.title
         self.tagnames = revision.tagnames
         self.body = self._as_markdown(revision.body, *extensions)
