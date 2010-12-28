@@ -824,7 +824,7 @@ msgstr ""
 msgid ""
 "Every email sent through your website will have the subject prefixed by this "
 "string. It's usually a good idea to have such a prefix so your users can "
-"easilly set up a filter on theyr email clients."
+"easilly set up a filter on their email clients."
 msgstr ""
 
 #: forum/settings/extkeys.py:4
@@ -2595,7 +2595,7 @@ msgid "Click"
 msgstr ""
 
 #: forum/skins/default/templates/auth/signin.html:94
-msgid "if you're having troubles signing in."
+msgid "if you're having trouble signing in."
 msgstr ""
 
 #: forum/skins/default/templates/auth/signin.html:98

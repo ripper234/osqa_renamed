@@ -825,7 +825,7 @@ msgid "Email subject prefix"
 msgstr ""
 
 #: forum/settings/email.py:40
-msgid "Every email sent through your website will have the subject prefixed by this string. It's usually a good idea to have such a prefix so your users can easilly set up a filter on theyr email clients."
+msgid "Every email sent through your website will have the subject prefixed by this string. It's usually a good idea to have such a prefix so your users can easilly set up a filter on their email clients."
 msgstr ""
 
 #: forum/settings/extkeys.py:4
