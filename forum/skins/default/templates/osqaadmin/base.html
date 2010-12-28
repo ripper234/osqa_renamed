@@ -29,6 +29,16 @@
         {% for set in allsets.values %}
             <li><a href="{% url admin_set set.name %}">{{ set.title }}</a></li>
         {% endfor %}
+        {% for set in othersets %}
+            <li>
+                <a href="{% url admin_set set.name %}">{{ set.title }}</a>
+            </li>
+        {% endfor %}
+        <li><a href="{% url admin_maintenance %}">{% trans "Maintenance mode" %}</a></li>
+        <li><a href="{% url admin_flagged_posts %}">{% trans "Flagged Posts" %}</a></li>
+        {% for name,tool in tools.items %}
+            <li><a href="{% url admin_tools name %}">{{ tool.label }}</a></li>
+        {% endfor %}
         </ul>
     </div>
     {% if markdown %}
