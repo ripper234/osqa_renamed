@@ -660,7 +660,7 @@ function pickedTags(){
                 tag_link.html(tagname);
                 var del_link = $('<img></img>');
                 del_link.addClass('delete-icon');
-                del_link.attr('src', mediaUrl('/media/images/close-small-dark.png'));
+                del_link.attr('src', mediaUrl('media/images/close-small-dark.png'));
 
                 setupTagDeleteEvents(del_link, to_target, tagname, reason, true);
 
