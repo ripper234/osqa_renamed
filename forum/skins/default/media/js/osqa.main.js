@@ -185,10 +185,26 @@ function show_dialog (extern) {
         top: options.pos.y,
         left: options.pos.x
     });
-
+    
+    top_position_change = (options.dim.h / 2)
+    left_position_change = (options.dim.w / 2)
+    
+    new_top_position = options.pos.y - top_position_change
+    new_left_position = options.pos.x - left_position_change
+    
+    if (new_left_position < 0) {
+        left_position_change = 0
+    }
+    if (($(window).scrollTop() - new_top_position) > 0) {
+        top_position_change = 0
+    }
+    if ((options.event.pageY + options.dim.h) > ($(window).height() + $(window).scrollTop())) {
+        top_position_change = options.dim.h
+    }
+    
     $dialog.animate({
-        top: "-=" + (options.dim.h / 2),
-        left: "-=" + (options.dim.w / 2),
+        top: "-=" + top_position_change,
+        left: "-=" + left_position_change,
         width: options.dim.w,
         height: options.dim.h
     }, 200, function() {
