@@ -1,6 +1,24 @@
 from django.contrib.sitemaps import Sitemap
 from forum.models import Question
 from django.conf import settings
+from django.http import HttpResponse
+from django.template import loader
+from django.core import urlresolvers
+
+def index(request, sitemaps):
+    sites = []
+    for section, site in sitemaps.items():
+        if callable(site):
+            pages = site().paginator.num_pages
+        else:
+            pages = site.paginator.num_pages
+        sitemap_url = urlresolvers.reverse('django.contrib.sitemaps.views.sitemap', kwargs={'section': section})
+        sites.append('%s%s' % (settings.APP_URL, sitemap_url))
+        if pages > 1:
+            for page in range(2, pages+1):
+                sites.append('%s%s?p=%s' % (settings.APP_URL, sitemap_url, page))
+    xml = loader.render_to_string('sitemap_index.xml', {'sitemaps': sites})
+    return HttpResponse(xml, mimetype='application/xml')
 
 class OsqaSitemap(Sitemap):
     changefreq = 'daily'
