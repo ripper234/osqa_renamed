@@ -37,7 +37,7 @@
         {% if new_question_count %}
 
         {% declare %}
-            new_questions_link = html.hyperlink(app_url + reverse('questions') + '?sort=latest', _('new questions'), style=a_style)
+            new_questions_link = html.hyperlink(app_url + reverse('questions') + '?sort=' + _('latest'), _('new questions'), style=a_style)
             user_questions = digest.get_for_user(recipient)
             subscriptions_link = html.hyperlink(app_url + recipient.get_subscribed_url(), _('subscriptions'), style=a_style)
         {% enddeclare %}
