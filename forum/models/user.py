@@ -54,6 +54,9 @@ class AnonymousUser(DjangoAnonymousUser):
 
     def can_convert_to_comment(self, answer):
         return False
+    
+    def can_convert_comment_to_answer(self, comment):
+        return False
 
     def can_accept_answer(self, answer):
         return False
