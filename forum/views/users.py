@@ -338,7 +338,7 @@ def user_recent(request, user):
     return {"view_user" : user, "activities" : activities}
 
 
-@user_view('users/reputation.html', 'reputation', _('karma history'), _('graph of user karma'))
+@user_view('users/reputation.html', 'reputation', _('reputation history'), _('graph of user karma'))
 def user_reputation(request, user):
     rep = list(user.reputes.order_by('date'))
     values = [r.value for r in rep]
