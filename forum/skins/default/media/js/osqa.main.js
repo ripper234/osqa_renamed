@@ -201,6 +201,9 @@ function show_dialog (extern) {
     if ((options.event.pageY + options.dim.h) > ($(window).height() + $(window).scrollTop())) {
         top_position_change = options.dim.h
     }
+    if ((options.event.pageX + options.dim.w) > ($(window).width() + $(window).scrollLeft())) {
+        left_position_change = options.dim.w
+    }
     
     $dialog.animate({
         top: "-=" + top_position_change,
