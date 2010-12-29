@@ -33,8 +33,15 @@ def static(request, title, content):
                               context_instance=RequestContext(request))
 
 def media(request, skin, path):
-    return serve(request, "%s/media/%s" % (skin, path),
+    response = serve(request, "%s/media/%s" % (skin, path),
                  document_root=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'skins').replace('\\', '/'))
+    content_type = response['Content-Type']
+    if ('charset=' not in content_type):
+        if (content_type.startswith('text') or content_type=='application/x-javascript'):
+            content_type += '; charset=utf-8'
+            response['Content-Type'] = content_type
+    return response
+
 
 def markdown_help(request):
     return render_to_response('markdown_help.html', context_instance=RequestContext(request))
