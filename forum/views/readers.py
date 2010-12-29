@@ -267,7 +267,7 @@ def answer_redirect(request, answer):
     else:
         raise Http404()
 
-    count = answer.question.answers.filter(Q(marked=True) | filter).count()
+    count = answer.question.answers.filter(Q(marked=True) | filter).exclude(state_string="(deleted)").count()
     pagesize = pc.pagesize(request)
 
     page = count / pagesize
