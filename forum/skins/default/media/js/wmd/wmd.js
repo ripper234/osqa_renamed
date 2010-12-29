@@ -17,7 +17,7 @@ function ajaxFileUpload(imageUrl)
       $.ajaxFileUpload
       (
         {
-            url:'/upload/',
+            url: scriptUrl+'upload/',
               secureuri:false,
               fileElementId:'file-upload',
               dataType: 'xml',
