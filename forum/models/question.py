@@ -61,6 +61,29 @@ class Question(Node):
             cache.set(cache_key, related_list, 60 * 60)
 
         return [Question.objects.get(id=r['id']) for r in related_list]
+    
+    def get_active_users(self):
+        active_users = []
+        
+        active_users.append(self.author)
+        
+        for answer in self.answers:
+            active_users.append(answer.author)
+        
+        for child in self.children.all():
+            active_users.append(child.author)
+            for grandchild in child.children.all():
+                active_users.append(grandchild.author)
+        
+        # Remove duplicates
+        unique_active_users = []
+        for user in active_users:
+            if user not in unique_active_users:
+                unique_active_users.append(user)
+        active_users = unique_active_users
+        del unique_active_users
+        
+        return active_users
 
 
 def question_viewed(instance, **kwargs):
