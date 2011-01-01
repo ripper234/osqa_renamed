@@ -1,4 +1,5 @@
 # encoding: utf-8
+import os, sys
 import datetime
 from south.db import db
 from south.v2 import DataMigration
@@ -13,11 +14,20 @@ from forum.utils.html import sanitize_html
 class Migration(DataMigration):
 
     def forwards(self, orm):
+        sys.path.append(os.path.join(os.path.dirname(__file__),'../markdownext'))
+
         count  = orm.Node.objects.count()
         progress = ProgressBar(count)
         
         for node in orm.Node.objects.all():
-            node.body = mark_safe(sanitize_html(markdown.markdown(node.body)))
+            rev = node.active_revision
+
+            if not rev:
+                try:
+                    rev = node.revisions.order_by('-revision')[0]
+                except:
+                    continue
+            node.body = sanitize_html(markdown.markdown(rev.body, ['urlize']))
             node.save()
             progress.update()
 
