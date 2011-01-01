@@ -284,7 +284,7 @@ def node_markdown(request, id):
         raise AnonymousNotAllowedException(_('accept answers'))
 
     node = get_object_or_404(Node, id=id)
-    return HttpResponse(node.body, mimetype="text/plain")
+    return HttpResponse(node.active_revision.body, mimetype="text/plain")
 
 
 @decorate.withfn(command)
