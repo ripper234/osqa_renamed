@@ -14,7 +14,7 @@ from forum.modules import decorate
 from forum.utils.pagination import generate_uri
 
 @decorate(add_domain, needs_origin=False)
-def add_domain(domain, url):
+def add_domain(domain, url, *args, **kwargs):
     return "%s%s" % (settings.APP_URL, url)
 
 class BaseNodeFeed(Feed):
