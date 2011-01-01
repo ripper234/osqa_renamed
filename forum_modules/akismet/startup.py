@@ -13,8 +13,7 @@ from forum.models.user import User
 import settings
 
 def can_bypass_spam_check(user):
-    return user.is_authenticated() and (user.is_superuser or user.is_staff or cmp(user.reputation, REP_FOR_NO_SPAM_CHECK
-                                                                                  ) > 0)
+    return user.is_authenticated and (user.is_superuser or user.is_staff or cmp(int(user.reputation), REP_FOR_NO_SPAM_CHECK) > 0)
 
 
 def check_spam(param, comment_type):
