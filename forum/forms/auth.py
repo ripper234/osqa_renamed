@@ -1,5 +1,6 @@
 from general import NextUrlField,  UserNameField,  UserEmailField, SetPasswordForm
 from forum.models import Question, User
+from forum.settings import INITIAL_EMAIL_SUBSCRIBE_OPTION
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
@@ -42,7 +43,7 @@ class SimpleEmailSubscribeForm(forms.Form):
     )
     subscribe = forms.ChoiceField(widget=forms.widgets.RadioSelect(), \
                                 error_messages={'required':_('please choose one of the options above')},
-                                choices=SIMPLE_SUBSCRIBE_CHOICES)
+                                choices=SIMPLE_SUBSCRIBE_CHOICES, initial=INITIAL_EMAIL_SUBSCRIBE_OPTION)
 
 
 class ChangePasswordForm(SetPasswordForm):
