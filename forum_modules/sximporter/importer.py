@@ -12,7 +12,6 @@ from forum.models.utils import dbsafe_encode
 from orm import orm
 
 from django.utils.encoding import force_unicode
-from django.db.utils import IntegrityError
 
 try:
     from cPickle import loads, dumps
