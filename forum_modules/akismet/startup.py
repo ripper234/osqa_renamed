@@ -52,7 +52,7 @@ def check_spam(param, comment_type):
                     captcha_checked = False
                     
                     if RECAPTCHA_PUB_KEY and RECAPTCHA_PRIV_KEY:
-                        if form.is_valid():
+                        if captcha_form.is_valid():
                             captcha_checked = True
                     
                     if not captcha_checked:
