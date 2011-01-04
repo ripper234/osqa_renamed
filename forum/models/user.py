@@ -33,6 +33,9 @@ class AnonymousUser(DjangoAnonymousUser):
 
     def can_vote_down(self):
         return False
+    
+    def can_vote_count_today(self):
+        return 0
 
     def can_flag_offensive(self, post=None):
         return False
@@ -238,7 +241,15 @@ class User(BaseModel, DjangoUser):
         today = datetime.date.today()
         return self.actions.filter(canceled=False, action_type="flag",
                                    action_date__gte=(today - datetime.timedelta(days=1))).count()
-
+    
+    def can_vote_count_today(self):
+        votes_today = settings.MAX_VOTES_PER_DAY
+        
+        if settings.USER_REPUTATION_TO_MAX_VOTES:
+            votes_today = votes_today + int(self.reputation)
+        
+        return votes_today
+    
     @true_if_is_super_or_staff
     def can_view_deleted_post(self, post):
         return post.author == self

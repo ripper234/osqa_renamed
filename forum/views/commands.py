@@ -73,7 +73,7 @@ def vote_post(request, id, vote_type):
 
     user_vote_count_today = user.get_vote_count_today()
 
-    if user_vote_count_today >= int(settings.MAX_VOTES_PER_DAY):
+    if user_vote_count_today >= user.can_vote_count_today():
         raise NotEnoughLeftException(_('votes'), str(settings.MAX_VOTES_PER_DAY))
 
     new_vote_cls = (vote_type == 'up') and VoteUpAction or VoteDownAction

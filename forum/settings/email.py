@@ -11,7 +11,7 @@ EMAIL_SUBSCRIBE_CHOICES = (
 )
 
 INITIAL_EMAIL_SUBSCRIBE_OPTION = Setting('INITIAL_EMAIL_SUBSCRIBE_OPTION', 'y', EMAIL_SET, dict(
-label = _("Default email subscription "),
+label = _("Default email subscription"),
 widget=RadioSelect,
 choices=EMAIL_SUBSCRIBE_CHOICES,
 help_text = _("Choose what should be the default email subscription status while registering."),
