@@ -34,7 +34,7 @@ urlpatterns += patterns('',
                         url(r'^%s(.*)' % _('nimda/'), admin.site.root),
                         
                         url(r'^sitemap.xml$', 'forum.sitemap.index', {'sitemaps': sitemaps}),
-                        url(r'^sitemap-(?P<section>.+)\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}),
+                        url(r'^sitemap-(?P<section>.+)\.xml$', 'forum.sitemap.sitemap', {'sitemaps': sitemaps}),
 
                         (r'^favicon\.ico$', app.meta.favicon),
                         url(r'^cstyle\.css$', app.meta.custom_css, name="custom_css"),
