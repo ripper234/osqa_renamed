@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 from forum import settings
 from django.http import str_to_unicode
 from forum.models import User
+from forum_modules.recaptcha.formfield import ReCaptchaField
 import urllib
 
 DEFAULT_NEXT = '/' + getattr(settings, 'FORUM_SCRIPT_ALIAS')
@@ -154,3 +155,5 @@ class SetPasswordForm(forms.Form):
         else:
             return self.cleaned_data['password2']
 
+class SimpleCaptchaForm(forms.Form):
+    captcha = ReCaptchaField()

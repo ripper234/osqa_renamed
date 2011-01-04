@@ -11,5 +11,21 @@
 We're sorry, but Akismet believes your {{ action_name }} is spam.<br />
 If you believe this is an error, please contact the forum administrator.
 {% endblocktrans %}
+
+<form action="." method="post">
+<table>
+	<tr>
+		<td>
+		{% for post_item in post_data.items %}
+		<input type="hidden" name="{{ post_item.0 }}" value="{{ post_item.1 }}" />
+		{% endfor %}
+		{{ captcha_form.captcha }}</td>
+	</tr>
+	<tr>
+		<td><input type="submit" value"{% trans "Submit" %} /></td>
+	</tr>
+</table>
+</form>
+
 </div>
 {% endblock %}
