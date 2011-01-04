@@ -1,10 +1,9 @@
 from django.contrib.sitemaps import Sitemap
 from forum.models import Question
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.template import loader
 from django.core import urlresolvers
-from django.contrib.sites.models import get_current_site
 from django.utils.encoding import smart_str
 from django.core.paginator import EmptyPage, PageNotAnInteger
 
