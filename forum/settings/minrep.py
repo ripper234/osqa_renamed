@@ -3,6 +3,10 @@ from django.utils.translation import ugettext_lazy as _
 
 MIN_REP_SET = SettingSet('minrep', _('Minimum reputation config'), _("Configure the minimum reputation required to perform certain actions on your site."), 300)
 
+CAPTCHA_IF_REP_LESS_THAN = Setting('CAPTCHA_IF_REP_LESS_THAN', 0, MIN_REP_SET, dict(
+label = _("Show captcha if user with less reputation than"),
+help_text = _("If the user has less reputation, captcha is used to when adding new content.")))
+
 REP_TO_VOTE_UP = Setting('REP_TO_VOTE_UP', 15, MIN_REP_SET, dict(
 label = _("Minimum reputation to vote up"),
 help_text = _("The minimum reputation an user must have to be allowed to vote up.")))

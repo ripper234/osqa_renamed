@@ -218,7 +218,7 @@ def answer(request, id):
     question = get_object_or_404(Question, id=id)
 
     if request.POST:
-        form = AnswerForm(question, request.POST)
+        form = AnswerForm(request.POST, request.user)
 
         if request.session.pop('reviewing_pending_data', False) or not form.is_valid():
             request.session['redirect_POST_data'] = request.POST

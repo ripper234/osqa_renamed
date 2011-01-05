@@ -314,9 +314,9 @@ def question(request, id, slug='', answer=None):
         return HttpResponsePermanentRedirect(question.get_absolute_url())
 
     if request.POST:
-        answer_form = AnswerForm(question, request.POST)
+        answer_form = AnswerForm(request.POST, user=request.user)
     else:
-        answer_form = AnswerForm(question)
+        answer_form = AnswerForm(user=request.user)
 
     answers = request.user.get_visible_answers(question)
 
