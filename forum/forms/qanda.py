@@ -158,8 +158,8 @@ class AskForm(forms.Form):
 
         self.fields['tags']   = TagNamesField(user)
         
-        if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+        #if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
+        #    self.fields['captcha'] = ReCaptchaField()
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
@@ -171,8 +171,8 @@ class AnswerForm(forms.Form):
     def __init__(self, data=None, user=None, *args, **kwargs):
         super(AnswerForm, self).__init__(data, *args, **kwargs)
         
-        if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+        #if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
+        #    self.fields['captcha'] = ReCaptchaField()
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
@@ -219,8 +219,8 @@ class EditQuestionForm(forms.Form):
         self.fields['tags'] = TagNamesField(user)
         self.fields['tags'].initial = revision.tagnames
 
-        if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+        #if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
+        #    self.fields['captcha'] = ReCaptchaField()
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField(disabled=(question.nis.wiki and not user.can_cancel_wiki(question)), initial=question.nis.wiki)
@@ -237,8 +237,8 @@ class EditAnswerForm(forms.Form):
 
         self.fields['text'].initial = revision.body
 
-        if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+        #if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
+        #    self.fields['captcha'] = ReCaptchaField()
         
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField(disabled=(answer.nis.wiki and not user.can_cancel_wiki(answer)), initial=answer.nis.wiki)
