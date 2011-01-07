@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from general import NextUrlField, UserNameField, SetPasswordForm
 from forum import settings
 
-from forum_modules.recaptcha.formfield import ReCaptchaField
+#from forum_modules.recaptcha.formfield import ReCaptchaField
 
 import logging
 
