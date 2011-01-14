@@ -239,8 +239,17 @@
                         </table>  
                     </div>
                     {{ answer.text.errors }}
-                    <div id="previewer" class="wmd-preview"></div>                    
+                    <div id="previewer" class="wmd-preview"></div>
                 </div>
+
+	            {% if answer.captcha %}
+	            <div class="question-captcha" style="float: left;">
+	            	{{ answer.captcha.errors }}
+	            	{{ answer.captcha }}
+	            </div>
+	            <div class="clear"></div>
+	            {% endif %}
+                
                 <p><span class="form-error"></span></p>
                 <input type="button"
                     {% if user.is_anonymous %}
