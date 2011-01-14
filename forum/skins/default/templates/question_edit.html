@@ -141,10 +141,10 @@
                 {{ form.summary.help_text }}
             </div>
             
-            {% if form.captcha %}
+            {% if form.recaptcha %}
             <div class="question-captcha" style="float: left">
-            	{{ form.captcha.errors }}
-            	{{ form.captcha }}
+            	{{ form.recaptcha.errors }}
+            	{{ form.recaptcha }}
             </div>
             <div class="clear"></div>
             {% endif %}

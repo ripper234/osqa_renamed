@@ -242,10 +242,10 @@
                     <div id="previewer" class="wmd-preview"></div>
                 </div>
 
-	            {% if answer.captcha %}
+	            {% if answer.recaptcha %}
 	            <div class="question-captcha" style="float: left;">
-	            	{{ answer.captcha.errors }}
-	            	{{ answer.captcha }}
+	            	{{ answer.recaptcha.errors }}
+	            	{{ answer.recaptcha }}
 	            </div>
 	            <div class="clear"></div>
 	            {% endif %}

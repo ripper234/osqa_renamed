@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from general import NextUrlField, UserNameField, SetPasswordForm
 from forum import settings
 
-from forum_modules.recaptcha.formfield import ReCaptchaField
+from forum.modules import call_all_handlers
 
 import logging
 
@@ -159,7 +159,15 @@ class AskForm(forms.Form):
         self.fields['tags']   = TagNamesField(user)
         
         if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+            spam_fields = call_all_handlers('create_anti_spam_field')
+            if spam_fields:
+                spam_fields = dict(spam_fields)
+                for name, field in spam_fields.items():
+                    self.fields[name] = field
+
+                self._anti_spam_fields = spam_fields.keys()
+            else:
+                self._anti_spam_fields = []
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
@@ -172,7 +180,15 @@ class AnswerForm(forms.Form):
         super(AnswerForm, self).__init__(data, *args, **kwargs)
         
         if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+            spam_fields = call_all_handlers('create_anti_spam_field')
+            if spam_fields:
+                spam_fields = dict(spam_fields)
+                for name, field in spam_fields.items():
+                    self.fields[name] = field
+
+                self._anti_spam_fields = spam_fields.keys()
+            else:
+                self._anti_spam_fields = []
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField()
@@ -220,7 +236,15 @@ class EditQuestionForm(forms.Form):
         self.fields['tags'].initial = revision.tagnames
 
         if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+            spam_fields = call_all_handlers('create_anti_spam_field')
+            if spam_fields:
+                spam_fields = dict(spam_fields)
+                for name, field in spam_fields.items():
+                    self.fields[name] = field
+
+                self._anti_spam_fields = spam_fields.keys()
+            else:
+                self._anti_spam_fields = []
 
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField(disabled=(question.nis.wiki and not user.can_cancel_wiki(question)), initial=question.nis.wiki)
@@ -238,7 +262,15 @@ class EditAnswerForm(forms.Form):
         self.fields['text'].initial = revision.body
 
         if int(user.reputation) < settings.CAPTCHA_IF_REP_LESS_THAN and not (user.is_superuser or user.is_staff):
-            self.fields['captcha'] = ReCaptchaField()
+            spam_fields = call_all_handlers('create_anti_spam_field')
+            if spam_fields:
+                spam_fields = dict(spam_fields)
+                for name, field in spam_fields.items():
+                    self.fields[name] = field
+
+                self._anti_spam_fields = spam_fields.keys()
+            else:
+                self._anti_spam_fields = []
         
         if settings.WIKI_ON:
             self.fields['wiki'] = WikiField(disabled=(answer.nis.wiki and not user.can_cancel_wiki(answer)), initial=answer.nis.wiki)
