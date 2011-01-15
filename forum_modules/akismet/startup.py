@@ -19,7 +19,7 @@ def can_bypass_spam_check(user):
 
 def check_spam(param, comment_type):
     def wrapper(origin, request, *args, **kwargs):
-        if True: #request.POST and request.POST.get(param, None) and WORDPRESS_API_KEY and (not can_bypass_spam_check(request.user)):
+        if request.POST and request.POST.get(param, None) and WORDPRESS_API_KEY and (not can_bypass_spam_check(request.user)):
         
             comment = smart_str(request.POST[param])
 
@@ -38,7 +38,7 @@ def check_spam(param, comment_type):
                 })
 
             api = Akismet(settings.WORDPRESS_API_KEY, APP_URL, "OSQA/%s" % OSQA_VERSION)
-            if True: # api.comment_check(comment, data):
+            if api.comment_check(comment, data):
                 post_data = request.POST
                 captcha_form = SimpleCaptchaForm(request.POST)
                 
