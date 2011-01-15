@@ -3,7 +3,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 
 urlpatterns = patterns('',
-    (r'^qa/', include('forum.urls')),
+    (r'^%s/' % settings.FORCE_SCRIPT_ALIAS[1:], include('forum.urls')),
 )
 
 if 'rosetta' in settings.INSTALLED_APPS:
