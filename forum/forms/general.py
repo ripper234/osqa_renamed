@@ -8,7 +8,7 @@ from forum.models import User
 from forum.modules import call_all_handlers
 import urllib
 
-DEFAULT_NEXT = '/' + getattr(settings, 'FORUM_SCRIPT_ALIAS')
+DEFAULT_NEXT = getattr(settings, 'APP_BASE_URL')
 def clean_next(next):
     if next is None:
         return DEFAULT_NEXT

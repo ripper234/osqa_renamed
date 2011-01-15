@@ -118,8 +118,8 @@ def diff_date(date, limen=2):
 def media(url):
     url = skins.find_media_source(url)
     if url:
-        url = '///' + settings.FORUM_SCRIPT_ALIAS + '/m/' + url
-        return posixpath.normpath(url)
+        url = settings.APP_URL + '/m/' + url
+        return url
 
 class ItemSeparatorNode(template.Node):
     def __init__(self, separator):
@@ -138,7 +138,7 @@ class BlockMediaUrlNode(template.Node):
         self.items = nodelist
 
     def render(self, context):
-        prefix = '///' + settings.FORUM_SCRIPT_ALIAS + 'm/'
+        prefix = settings.APP_URL + 'm/'
         url = ''
         if self.items:
             url += '/'
@@ -147,7 +147,7 @@ class BlockMediaUrlNode(template.Node):
 
         url = skins.find_media_source(url)
         url = prefix + url
-        out = posixpath.normpath(url)
+        out = url
         return out.replace(' ', '')
 
 @register.tag(name='blockmedia')
