@@ -43,10 +43,10 @@ APP_PROTOCOL = app_url_split[0]
 APP_DOMAIN = app_url_split[1].split('/')[0]
 APP_BASE_URL = '%s://%s' % (APP_PROTOCOL, APP_DOMAIN)
 
-FORCE_SCRIPT_ALIAS = ''
+FORCE_SCRIPT_NAME = ''
 
 for path in app_url_split[1].split('/')[1:]:
-    FORCE_SCRIPT_ALIAS = FORCE_SCRIPT_ALIAS + '/' + path
+    FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME + '/' + path
 
 #LOCALIZATIONS
 TIME_ZONE = 'America/New_York'
