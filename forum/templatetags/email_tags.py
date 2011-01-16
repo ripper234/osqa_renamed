@@ -98,7 +98,7 @@ class FullUrlNode(template.Node):
         self.default_node = default_node
 
     def render(self, context):
-        domain = settings.APP_URL
+        domain = settings.APP_BASE_URL
         path = self.default_node.render(context)
         return "%s%s" % (domain, path)
 
