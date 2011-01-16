@@ -51,15 +51,6 @@ for path in app_url_split[1].split('/')[1:]:
 #LOCALIZATIONS
 TIME_ZONE = 'America/New_York'
 
-###########################
-#
-#   this will allow running your forum with url like http://site.com/forum
-#
-#   FORUM_SCRIPT_ALIAS = 'forum/'
-#
-FORUM_SCRIPT_ALIAS = '' #no leading slash, default = '' empty string
-
-
 #OTHER SETTINGS
 
 USE_I18N = True
