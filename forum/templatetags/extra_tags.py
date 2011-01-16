@@ -167,7 +167,7 @@ def blockmedia(parser, token):
 
 @register.simple_tag
 def fullmedia(url):
-    domain = settings.APP_URL
+    domain = settings.APP_BASE_URL
     #protocol = getattr(settings, "PROTOCOL", "http")
     path = media(url)
     return "%s%s" % (domain, path)

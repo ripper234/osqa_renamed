@@ -15,7 +15,7 @@ from forum.utils.pagination import generate_uri
 
 @decorate(add_domain, needs_origin=False)
 def add_domain(domain, url, *args, **kwargs):
-    return "%s%s" % (settings.APP_URL, url)
+    return "%s%s" % (settings.APP_BASE_URL, url)
 
 class BaseNodeFeed(Feed):
     if old_version:
