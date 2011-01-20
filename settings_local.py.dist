@@ -37,17 +37,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 APP_URL = 'http://' #used by email notif system and RSS
 
-app_url_split = APP_URL.split("://")
-
-APP_PROTOCOL = app_url_split[0]
-APP_DOMAIN = app_url_split[1].split('/')[0]
-APP_BASE_URL = '%s://%s' % (APP_PROTOCOL, APP_DOMAIN)
-
-FORCE_SCRIPT_NAME = ''
-
-for path in app_url_split[1].split('/')[1:]:
-    FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME + '/' + path
-
 #LOCALIZATIONS
 TIME_ZONE = 'America/New_York'
 
