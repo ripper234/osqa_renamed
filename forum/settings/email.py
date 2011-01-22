@@ -40,7 +40,7 @@ widget=PasswordInput))
 
 EMAIL_USE_TLS = Setting('EMAIL_USE_TLS', False, EMAIL_SET, dict(
 label = _("Use TLS"),
-help_text = _("Does your SMTP server usFes TLS for authentication."),
+help_text = _("Whether to use TLS for authentication with your SMTP server."),
 required=False))
 
 DEFAULT_FROM_EMAIL = Setting('DEFAULT_FROM_EMAIL', '', EMAIL_SET, dict(
