@@ -31,6 +31,9 @@ from forum.actions import UserJoinsAction
 
 def signin_page(request):
     request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
+    
+    if reverse('auth_signin') == request.session['on_signin_url'].replace(settings.APP_URL, ''):
+        request.session['on_signin_url'] = reverse('index')
 
     all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
 
