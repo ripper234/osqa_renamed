@@ -100,9 +100,9 @@ def diff_date(date, limen=2):
 
     if days > 2:
         if date.year == now.year:
-            return date.strftime(_("%b %d at %H:%M"))
+            return date.strftime(_("%b %d at %H:%M").encode())
         else:
-            return date.strftime(_("%b %d '%y at %H:%M"))
+            return date.strftime(_("%b %d '%y at %H:%M").encode())
     elif days == 2:
         return _('2 days ago')
     elif days == 1:
