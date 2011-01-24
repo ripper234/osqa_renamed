@@ -118,7 +118,14 @@ def diff_date(date, limen=2):
 def media(url):
     url = skins.find_media_source(url)
     if url:
-        url = settings.FORCE_SCRIPT_NAME + '/m/' + url
+        # Create the URL prefix.
+        url_prefix = settings.FORCE_SCRIPT_NAME + '/m/'
+
+        # Make sure any duplicate forward slashes are replaced with a single
+        # forward slash.
+        url_prefix = re.sub("/+", "/", url_prefix)
+
+        url = url_prefix + url
         return url
 
 class ItemSeparatorNode(template.Node):
