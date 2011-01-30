@@ -280,6 +280,11 @@ def send_validation_email(request):
         try:
             hash = ValidationHash.objects.get(user=request.user, type='email')
             hash.delete()
+            
+            # If we were able to get a previous validation hash we should raise an
+            # Exception immediately. Otherwise new validation hash will not be created
+            # and users will not receive the desired e-mail vaidation link.
+            raise Exception("Validation has already been sent")
         except:
             hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
 
