@@ -76,6 +76,8 @@ FORCE_SCRIPT_NAME = ''
 for path in app_url_split[1].split('/')[1:]:
     FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME + '/' + path
 
+if FORCE_SCRIPT_NAME.endswith('/'):
+    FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME[:-1]
 
 INSTALLED_APPS = [
     'django.contrib.auth',
