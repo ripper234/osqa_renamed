@@ -68,7 +68,7 @@ def hyperlink(url, title, **attrs):
     return mark_safe('<a href="%s" %s>%s</a>' % (url, " ".join('%s="%s"' % i for i in attrs.items()), title))
 
 def objlink(obj, **attrs):
-    return hyperlink(settings.APP_URL + obj.get_absolute_url(), unicode(obj), **attrs)
+    return hyperlink(settings.APP_BASE_URL + obj.get_absolute_url(), unicode(obj), **attrs)
 
     
 

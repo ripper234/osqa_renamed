@@ -100,9 +100,9 @@ def diff_date(date, limen=2):
 
     if days > 2:
         if date.year == now.year:
-            return date.strftime(_("%b %d at %H:%M"))
+            return date.strftime(_("%b %d at %H:%M").encode())
         else:
-            return date.strftime(_("%b %d '%y at %H:%M"))
+            return date.strftime(_("%b %d '%y at %H:%M").encode())
     elif days == 2:
         return _('2 days ago')
     elif days == 1:
@@ -118,8 +118,15 @@ def diff_date(date, limen=2):
 def media(url):
     url = skins.find_media_source(url)
     if url:
-        url = '///' + settings.FORUM_SCRIPT_ALIAS + '/m/' + url
-        return posixpath.normpath(url)
+        # Create the URL prefix.
+        url_prefix = settings.FORCE_SCRIPT_NAME + '/m/'
+
+        # Make sure any duplicate forward slashes are replaced with a single
+        # forward slash.
+        url_prefix = re.sub("/+", "/", url_prefix)
+
+        url = url_prefix + url
+        return url
 
 class ItemSeparatorNode(template.Node):
     def __init__(self, separator):
@@ -138,7 +145,7 @@ class BlockMediaUrlNode(template.Node):
         self.items = nodelist
 
     def render(self, context):
-        prefix = '///' + settings.FORUM_SCRIPT_ALIAS + 'm/'
+        prefix = settings.APP_URL + 'm/'
         url = ''
         if self.items:
             url += '/'
@@ -147,7 +154,7 @@ class BlockMediaUrlNode(template.Node):
 
         url = skins.find_media_source(url)
         url = prefix + url
-        out = posixpath.normpath(url)
+        out = url
         return out.replace(' ', '')
 
 @register.tag(name='blockmedia')
@@ -167,7 +174,7 @@ def blockmedia(parser, token):
 
 @register.simple_tag
 def fullmedia(url):
-    domain = settings.APP_URL
+    domain = settings.APP_BASE_URL
     #protocol = getattr(settings, "PROTOCOL", "http")
     path = media(url)
     return "%s%s" % (domain, path)

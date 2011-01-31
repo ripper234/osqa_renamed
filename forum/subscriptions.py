@@ -1,6 +1,7 @@
 import os
 import re
 import datetime
+import logging
 from forum.models import User, Question, Comment, QuestionSubscription, SubscriptionSettings, Answer
 from forum.utils.mail import send_template_email
 from django.utils.translation import ugettext as _
@@ -110,10 +111,9 @@ def answer_accepted(action, new):
 
     subscribers = question.subscribers.filter(
             subscription_settings__enable_notifications=True,
-            subscription_settings__notify_accepted=True,
             subscription_settings__subscribed_questions='i'
     ).exclude(id=action.node.nstate.accepted.by.id).distinct()
-
+    
     subscribers = filter_subscribers(subscribers)
 
     send_template_email(subscribers, "notifications/answeraccepted.html", {'answer': action.node})

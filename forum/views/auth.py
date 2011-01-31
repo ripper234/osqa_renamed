@@ -31,6 +31,9 @@ from forum.actions import UserJoinsAction
 
 def signin_page(request):
     request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
+    
+    if reverse('auth_signin') == request.session['on_signin_url'].replace(settings.APP_URL, ''):
+        request.session['on_signin_url'] = reverse('index')
 
     all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
 
@@ -258,6 +261,11 @@ def temp_signin(request, user, code):
     user = get_object_or_404(User, id=user)
 
     if (ValidationHash.objects.validate(code, user, 'templogin', [user.id])):
+        
+        # If the user requests temp_signin he must have forgotten his password. So we mark it as unusable.
+        user.set_unusable_password()
+        user.save()
+        
         return login_and_forward(request, user, reverse('user_authsettings', kwargs={'id': user.id}),
                                  _(
                                          "You are logged in with a temporary access key, please take the time to fix your issue with authentication."
@@ -272,6 +280,11 @@ def send_validation_email(request):
         try:
             hash = ValidationHash.objects.get(user=request.user, type='email')
             hash.delete()
+            
+            # If we were able to get a previous validation hash we should raise an
+            # Exception immediately. Otherwise new validation hash will not be created
+            # and users will not receive the desired e-mail vaidation link.
+            raise Exception("Validation has already been sent")
         except:
             hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
 

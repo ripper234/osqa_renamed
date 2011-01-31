@@ -140,6 +140,15 @@
             <div class="title-desc">
                 {{ form.summary.help_text }}
             </div>
+            
+            {% if form.recaptcha %}
+            <div class="question-captcha" style="float: left">
+            	{{ form.recaptcha.errors }}
+            	{{ form.recaptcha }}
+            </div>
+            <div class="clear"></div>
+            {% endif %}
+            
             <div class="error" ></div>
             <input type="button" value="{% trans "Save edit" %}" class="submit" onclick="submitClicked(event, this.form)" />
             <input type="button" value="{% trans "Cancel" %}" class="submit" onclick="submitClicked(event, null); history.back(-1);" />

@@ -80,5 +80,6 @@ class Command(NoArgsCommand):
             print " Your APP_URL does not seem to be a valid url. Please fill this setting with the URL of your OSQA installation"
         else:
             print " APP_URL - %s" % settings.APP_URL
+            print " APP_BASE_URL - %s" % settings.APP_BASE_URL
 
         

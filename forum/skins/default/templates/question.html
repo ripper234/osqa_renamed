@@ -11,7 +11,7 @@
 {% block metadescription %}{{ question.meta_description }}{% endblock %}
 {% block metakeywords %}{{question.tagname_meta_generator}}{% endblock %}
 {% block meta %}
-        <link rel="canonical" href="{{settings.APP_URL}}{{question.get_absolute_url}}" />
+        <link rel="canonical" href="{{settings.APP_BASE_URL}}{{question.get_absolute_url}}" />
         <link rel="alternate" type="application/rss+xml" title="RSS" href="{{ question.get_absolute_url }}?type=rss">
 {% endblock %}
 {% block title %}{% spaceless %}{{ question.headline }}{% endspaceless %}{% endblock %}
@@ -239,8 +239,17 @@
                         </table>  
                     </div>
                     {{ answer.text.errors }}
-                    <div id="previewer" class="wmd-preview"></div>                    
+                    <div id="previewer" class="wmd-preview"></div>
                 </div>
+
+	            {% if answer.recaptcha %}
+	            <div class="question-captcha" style="float: left;">
+	            	{{ answer.recaptcha.errors }}
+	            	{{ answer.recaptcha }}
+	            </div>
+	            <div class="clear"></div>
+	            {% endif %}
+                
                 <p><span class="form-error"></span></p>
                 <input type="button"
                     {% if user.is_anonymous %}
