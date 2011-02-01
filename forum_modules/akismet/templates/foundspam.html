@@ -19,7 +19,10 @@ If you believe this is an error, please contact the forum administrator.
 		{% for post_item in post_data.items %}
 		<input type="hidden" name="{{ post_item.0 }}" value="{{ post_item.1 }}" />
 		{% endfor %}
-		{{ captcha_form.captcha }}</td>
+		
+		{{ captcha_form.recaptcha }}
+		
+		</td>
 	</tr>
 	<tr>
 		<td><input type="submit" value"{% trans "Submit" %} /></td>

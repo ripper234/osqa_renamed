@@ -40,16 +40,16 @@ widget=PasswordInput))
 
 EMAIL_USE_TLS = Setting('EMAIL_USE_TLS', False, EMAIL_SET, dict(
 label = _("Use TLS"),
-help_text = _("Does your SMTP server usFes TLS for authentication."),
+help_text = _("Whether to use TLS for authentication with your SMTP server."),
 required=False))
 
 DEFAULT_FROM_EMAIL = Setting('DEFAULT_FROM_EMAIL', '', EMAIL_SET, dict(
-label = _("Site 'from' email address"),
+label = _("Site 'from' Email Address"),
 help_text = _("The address that will show up on the 'from' field on emails sent by your website."),
 required=False))
 
 EMAIL_SUBJECT_PREFIX = Setting('EMAIL_SUBJECT_PREFIX', '', EMAIL_SET, dict(
-label = _("Email subject prefix"),
+label = _("Email Subject Prefix"),
 help_text = _("Every email sent through your website will have the subject prefixed by this string. It's usually a good idea to have such a prefix so your users can easily set up a filter on theyr email clients."),
 required=False))
 
@@ -59,17 +59,17 @@ help_text = _("Email footer text, usually \"CAN SPAM\" compliance, or the physic
 required=False))
 
 EMAIL_BORDER_COLOR = Setting('EMAIL_BORDER_COLOR', '#e5ebf8', EMAIL_SET, dict(
-label = _("Email Border color"),
+label = _("Email Border Color"),
 help_text = _("The outter border color of the email base template"),
 required=False))
 
 EMAIL_PARAGRAPH_STYLE = Setting('EMAIL_PARAGRAPH_STYLE', "color:#333333;font-family:'helvetica neue', arial, Helvetica, sans-serif;line-height:18px;font-size:14px;margin-top:10px;", EMAIL_SET, dict(
-label = _("Email Paragraph style"),
+label = _("Email Paragraph Style"),
 help_text = _("A valid css string to be used to style email paragraphs (the P tag)."),
 required=False))
 
 EMAIL_ANCHOR_STYLE = Setting('EMAIL_ANCHOR_STYLE', "text-decoration:none;color:#3060a8;font-weight:bold;", EMAIL_SET, dict(
-label = _("Email link style"),
+label = _("Email Link Style"),
 help_text = _("A valid css string to be used to style email links (the A tag)."),
 required=False))
 

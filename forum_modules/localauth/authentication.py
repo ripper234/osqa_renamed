@@ -16,3 +16,4 @@ class LocalAuthContext(ConsumerTemplateContext):
     human_name = 'Local authentication'
     stack_item_template = 'modules/localauth/loginform.html'
     show_to_logged_in_user = False
+

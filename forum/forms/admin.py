@@ -58,9 +58,8 @@ class UrlFieldWidget(forms.TextInput):
 
         return """
                 <input class="url_field" type="text" name="%(name)s" value="%(value)s" />
-                <a class="url_field_anchor" target="_blank" href="%(app_url)s%(script_alias)s"></a>
-            """  % {'name': name, 'value': value, 'app_url': settings.APP_URL,
-                    'script_alias': settings.FORUM_SCRIPT_ALIAS}
+                <a class="url_field_anchor" target="_blank" href="%(app_url)s"></a>
+            """  % {'name': name, 'value': value, 'app_url': settings.APP_URL}
 
 
 class PageForm(forms.Form):

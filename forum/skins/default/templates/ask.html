@@ -148,6 +148,15 @@
 			<p class="title-desc">
 				{{ form.tags.help_text }}
 			</p>
+			
+            {% if form.recaptcha %}
+            <div class="question-captcha" style="float: left">
+            	{{ form.recaptcha.errors }}
+            	{{ form.recaptcha }}
+            </div>
+            <div class="clear"></div>
+            {% endif %}
+			
             {% if not request.user.is_authenticated %}                                                                        
             <input name="ask" type="button" value="{% trans "Login/signup to post your question" %}" class="submit" onclick="submitClicked(event, this.form)"/>
 			{% else %}

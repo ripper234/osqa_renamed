@@ -22,6 +22,8 @@ QUESTIONS_PER_PAGE_CHOICES = (
 )
 
 class AnonymousUser(DjangoAnonymousUser):
+    reputation = 0
+    
     def get_visible_answers(self, question):
         return question.answers.filter_state(deleted=False)
 

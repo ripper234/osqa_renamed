@@ -59,6 +59,26 @@ ALLOW_MAX_FILE_SIZE = 1024 * 1024
 # User settings
 from settings_local import *
 
+try:
+    if len(FORUM_SCRIPT_ALIAS) > 0:
+        APP_URL = '%s/%s' % (APP_URL, FORUM_SCRIPT_ALIAS[:-1])
+except NameError:
+    pass
+
+app_url_split = APP_URL.split("://")
+
+APP_PROTOCOL = app_url_split[0]
+APP_DOMAIN = app_url_split[1].split('/')[0]
+APP_BASE_URL = '%s://%s' % (APP_PROTOCOL, APP_DOMAIN)
+
+FORCE_SCRIPT_NAME = ''
+
+for path in app_url_split[1].split('/')[1:]:
+    FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME + '/' + path
+
+if FORCE_SCRIPT_NAME.endswith('/'):
+    FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME[:-1]
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
