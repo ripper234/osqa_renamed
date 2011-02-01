@@ -16,6 +16,22 @@ import commands, settings
 
 NO_DEFAULT = object()
 
+import string
+
+class SafeReader():
+    def __init__(self, loc):
+        self.base = open(loc)
+
+    def read(self, *args):
+        return "".join(c for c in self.base.read(*args) if c in string.printable)
+
+    def readLine(self, *args):
+        return "".join(c for c in self.base.readLine(*args) if c in string.printable)
+
+    def close(self):
+        self.base.close()
+
+
 class ContentElement():
     def __init__(self, content):
         self._content = content
@@ -296,7 +312,7 @@ def file_handler(file_name, root_tag, el_tag, name, args_handler=None, pre_callb
             parser.setContentHandler(handler)
             #parser.setErrorHandler(SaxErrorHandler())
 
-            parser.parse(os.path.join(location, file_name))
+            parser.parse(SafeReader(os.path.join(location, file_name)))
 
             if post_callback:
                 post_callback()
@@ -570,10 +586,19 @@ def actions_import(row, nodes, users, actions_map):
 
 
 
+# Record of all persisted votes.
+persisted_votes = []
 @post_action('voteup', 'votedown', 'voteupcomment')
 def vote_action(row, action, users, nodes, actions):
-    orm.Vote(user_id=action.user_id, node_id=action.node_id, action=action,
-             voted_at=action.action_date, value=(action.action_type != 'votedown') and 1 or -1).save()
+    # Check to see if the vote has already been registered.
+    if not (action.user_id, action.node_id) in persisted_votes:
+        # Persist the vote action.
+        orm.Vote(user_id=action.user_id, node_id=action.node_id, action=action,
+                 voted_at=action.action_date, value=(action.action_type != 'votedown') and 1 or -1).save()
+
+        # Record the vote action.  This will help us avoid duplicates.
+        persisted_votes.append((action.user_id, action.node_id))
+
 
 def state_action(state):
     def fn(row, action, users, nodes, actions):
