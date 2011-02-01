@@ -277,16 +277,15 @@ def send_validation_email(request):
     if not request.user.is_authenticated():
         return HttpResponseUnauthorized(request)
     else:
+        # We check if there are some old validation hashes. If there are -- we delete them.
         try:
             hash = ValidationHash.objects.get(user=request.user, type='email')
             hash.delete()
-            
-            # If we were able to get a previous validation hash we should raise an
-            # Exception immediately. Otherwise new validation hash will not be created
-            # and users will not receive the desired e-mail vaidation link.
-            raise Exception("Validation has already been sent")
         except:
-            hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
+            pass
+
+        # We don't care if there are previous cashes in the database... In every case we have to create a new one
+        hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
 
         send_template_email([request.user], "auth/mail_validation.html", {'validation_code': hash})
         request.user.message_set.create(message=_("A message with an email validation link was just sent to your address."))
