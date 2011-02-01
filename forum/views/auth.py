@@ -30,10 +30,12 @@ from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answe
 from forum.actions import UserJoinsAction
 
 def signin_page(request):
-    request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
-    
-    if reverse('auth_signin') == request.session['on_signin_url'].replace(settings.APP_URL, ''):
-        request.session['on_signin_url'] = reverse('index')
+    referer = request.META.get('HTTP_REFERER', '/')
+
+    # If the referer is equal to the sign up page, e. g. if the previous login attempt was not successful we do not
+    # change the sign in URL. The user should go to the same page.
+    if not referer.replace(settings.APP_URL, '') == reverse('auth_signin'):
+        request.session['on_signin_url'] = referer
 
     all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
 
@@ -382,7 +384,7 @@ def login_and_forward(request, user, forward=None, message=None):
 
     if not forward:
         forward = request.session.get('on_signin_url', reverse('index'))
-        
+
     pending_data = request.session.get('pending_submission_data', None)
 
     if pending_data and (user.email_isvalid or pending_data['type'] not in settings.REQUIRE_EMAIL_VALIDATION_TO):
