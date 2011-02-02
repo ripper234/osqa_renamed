@@ -30,10 +30,12 @@ from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answe
 from forum.actions import UserJoinsAction
 
 def signin_page(request):
-    request.session['on_signin_url'] = request.META.get('HTTP_REFERER', '/')
-    
-    if reverse('auth_signin') == request.session['on_signin_url'].replace(settings.APP_URL, ''):
-        request.session['on_signin_url'] = reverse('index')
+    referer = request.META.get('HTTP_REFERER', '/')
+
+    # If the referer is equal to the sign up page, e. g. if the previous login attempt was not successful we do not
+    # change the sign in URL. The user should go to the same page.
+    if not referer.replace(settings.APP_URL, '') == reverse('auth_signin'):
+        request.session['on_signin_url'] = referer
 
     all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
 
@@ -277,16 +279,15 @@ def send_validation_email(request):
     if not request.user.is_authenticated():
         return HttpResponseUnauthorized(request)
     else:
+        # We check if there are some old validation hashes. If there are -- we delete them.
         try:
             hash = ValidationHash.objects.get(user=request.user, type='email')
             hash.delete()
-            
-            # If we were able to get a previous validation hash we should raise an
-            # Exception immediately. Otherwise new validation hash will not be created
-            # and users will not receive the desired e-mail vaidation link.
-            raise Exception("Validation has already been sent")
         except:
-            hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
+            pass
+
+        # We don't care if there are previous cashes in the database... In every case we have to create a new one
+        hash = ValidationHash.objects.create_new(request.user, 'email', [request.user.email])
 
         send_template_email([request.user], "auth/mail_validation.html", {'validation_code': hash})
         request.user.message_set.create(message=_("A message with an email validation link was just sent to your address."))
@@ -383,7 +384,7 @@ def login_and_forward(request, user, forward=None, message=None):
 
     if not forward:
         forward = request.session.get('on_signin_url', reverse('index'))
-        
+
     pending_data = request.session.get('pending_submission_data', None)
 
     if pending_data and (user.email_isvalid or pending_data['type'] not in settings.REQUIRE_EMAIL_VALIDATION_TO):
