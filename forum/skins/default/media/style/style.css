@@ -1496,7 +1496,7 @@ a.accept-answer.on, a.accept-answer:hover {
     margin-left: 4px;
 }
 
-a.comment-like, a.comment-delete, a.comment-edit {
+a.comment-like, a.comment-delete, a.comment-edit, a.comment-convert {
     margin-left: 2px;
     width: 18px;
 }
@@ -1515,6 +1515,14 @@ a.comment-delete {
 
 a.comment-delete:hover {
     background: url("../images/comment-delete-hover.png") no-repeat scroll center center transparent;
+}
+
+a.comment-convert {
+    background: url("../images/convert-off.png") no-repeat scroll center center transparent;
+}
+
+a.comment-convert:hover {
+    background: url("../images/convert-hover.png") no-repeat scroll center center transparent;
 }
 
 a.comment-edit {
