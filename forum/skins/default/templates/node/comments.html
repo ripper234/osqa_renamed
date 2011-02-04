@@ -23,7 +23,7 @@
                 {% endif %}
                 {% if comment.can_convert %}
                     <a rel="nofollow" id="comment-{{ comment.id }}-convert" href="{% url convert_comment id=comment.id %}" title="{% trans "Convert comment to answer" %}"
-                        class="ajax-command comment-convert confirm" rel="nofollow">{% trans "Convert comment to answer" %}</a>
+                        class="ajax-command comment-convert confirm" rel="nofollow"> </a>
                 {% endif %}
                     
 
@@ -70,7 +70,7 @@
                     <a id="comment-%ID%-delete" href="%DELETE_URL%"
                         class="ajax-command comment-delete" rel="nofollow"> </a>
                     <a rel="nofollow" id="comment-%ID%-convert" href="%CONVERT_URL%" title="{% trans "Convert comment to answer" %}"
-                        class="ajax-command comment-convert confirm" rel="nofollow">{% trans "Convert comment to answer" %}</a>
+                        class="ajax-command comment-convert confirm" rel="nofollow"> </a>
 
                     <span class="comment-age">({% trans "just now" %})</span>
                     <a class="comment-user" href="%PROFILE_URL%">%USERNAME%</a>
