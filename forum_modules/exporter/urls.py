@@ -2,7 +2,7 @@ from django.conf.urls.defaults import *
 from django.views.generic.simple import direct_to_template
 from django.utils.translation import ugettext as _
 
-from views import state, running, download, importer
+from views import state, running, download
 
 urlpatterns = patterns('',
     url(r'^%s%s%s$' % (_('admin/'), _('exporter/'), _('state/')),  state, name='exporter_state'),

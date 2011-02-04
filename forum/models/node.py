@@ -6,7 +6,6 @@ import markdown
 from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
-from forum.utils.userlinking import auto_user_link
 from forum.utils.html import sanitize_html
 from utils import PickledObjectField
 
@@ -338,6 +337,9 @@ class Node(BaseModel, NodeContent):
     def activate_revision(self, user, revision, extensions=['urlize']):
         self.title = revision.title
         self.tagnames = revision.tagnames
+        
+        from forum.utils.userlinking import auto_user_link
+        
         self.body = auto_user_link(self, self._as_markdown(revision.body, *extensions))
 
         self.active_revision = revision

@@ -65,7 +65,7 @@ def Etree_pretty__write(self, file, node, encoding, namespaces,
         if node.text or len(node):
             file.write(">")
             if node.text:
-                file.write(_escape_cdata(node.text.replace("\n", (level + 1) * identator + "\n"), encoding))
+                file.write(_escape_cdata(node.text, encoding))
             for n in node:
                 self._write(file, n, encoding, namespaces, level + 1, identator)
             if node.text and len(node.text) < 125:
@@ -77,7 +77,7 @@ def Etree_pretty__write(self, file, node, encoding, namespaces,
         for k, v in xmlns_items:
             del namespaces[v]
     if node.tail:
-        file.write(_escape_cdata(node.tail.replace("\n", level * identator + "\n"), encoding))
+        file.write(_escape_cdata(node.tail.replace("\n", (level * identator )+ "\n"), encoding))
 
 def make_date(date, with_time=True):
     try:
@@ -187,7 +187,7 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     with open(os.path.join(tmp, 'backup.inf'), 'wb') as inffile:
         inf.write(inffile)
 
-    t.add(os.path.join(tmp, '/backup.inf'), arcname='backup.inf')
+    t.add(os.path.join(tmp, 'backup.inf'), arcname='backup.inf')
     state['overall']['status'] = _('Saving backup file')
     set_state()
     t.close()
