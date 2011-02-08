@@ -775,6 +775,8 @@ def pages_import(dump, currid):
                 author_id = 1
                 )
 
+        create_and_activate_revision(page)
+
         page.save()
         registry[sxp['url'][1:]] = page.id
 
