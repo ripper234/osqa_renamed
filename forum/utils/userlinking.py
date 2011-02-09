@@ -17,7 +17,7 @@ def find_best_match_in_name(content,  uname,  fullname,  start_index):
             
     return uname    
 
-APPEAL_PATTERN = re.compile(r'@\w+')
+APPEAL_PATTERN = re.compile(r'(?<!\w)@\w+')
 
 def auto_user_link(node, content):
     
