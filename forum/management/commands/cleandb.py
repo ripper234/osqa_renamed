@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-import logging
-
 from forum.models import Node, NodeRevision
+
+import logging
 
 # Used to activate the latest revision connected to some node
 def activate_latest_revision(node):
