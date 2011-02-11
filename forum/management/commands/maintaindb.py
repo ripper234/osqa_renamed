@@ -38,7 +38,7 @@ def create_revision(node):
 class Command(BaseCommand):
 
     def handle(self,*args, **options):
-        print 'Running Cleandb'
+        print 'Running MaintainDb'
 
         nodes = Node.objects.all()
 
