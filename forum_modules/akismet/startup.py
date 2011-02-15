@@ -1,5 +1,6 @@
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpResponseRedirect
+from django.template import RequestContext
 from django.utils import simplejson
 from django.utils.encoding import smart_str
 from django.shortcuts import render_to_response
@@ -7,11 +8,14 @@ from forum.modules import decorate
 from forum import views
 from lib.akismet import Akismet
 from forum.settings import APP_URL, OSQA_VERSION
-from settings import WORDPRESS_API_KEY, REP_FOR_NO_SPAM_CHECK, RECAPTCHA_PUB_KEY, RECAPTCHA_PRIV_KEY
+
+from settings import WORDPRESS_API_KEY, REP_FOR_NO_SPAM_CHECK
+
 from forum.models.user import User
 from forum.forms.general import SimpleCaptchaForm
 
 import settings
+import logging
 
 def can_bypass_spam_check(user):
     return user.is_authenticated and (user.is_superuser or user.is_staff or cmp(int(user.reputation), REP_FOR_NO_SPAM_CHECK) > 0)
@@ -50,17 +54,18 @@ def check_spam(param, comment_type):
                     return HttpResponse(simplejson.dumps(response), mimetype="application/json")
                 else:
                     captcha_checked = False
-                    
-                    if RECAPTCHA_PUB_KEY and RECAPTCHA_PRIV_KEY:
-                        if captcha_form.is_valid():
+                    try:
+                        if captcha_form.is_valid() and 'recaptcha' in captcha_form.fields.keys():
                             captcha_checked = True
-                    
+                    except:
+                        pass
+
                     if not captcha_checked:
                         return render_to_response('modules/akismet/foundspam.html', {
                         'action_name': comment_type,
                         'post_data' : post_data,
                         'captcha_form' : captcha_form,
-                        })
+                        }, RequestContext(request))
 
         return origin(request, *args, **kwargs)
 
