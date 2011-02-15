@@ -192,7 +192,7 @@ def search(request):
             return HttpResponseRedirect(reverse('tags') + '?q=%s' % urlquote(keywords.strip()))
         elif search_type == "user":
             return HttpResponseRedirect(reverse('users') + '?q=%s' % urlquote(keywords.strip()))
-        elif search_type == "question":
+        else:
             return question_search(request, keywords)
     else:
         return render_to_response("search.html", context_instance=RequestContext(request))
