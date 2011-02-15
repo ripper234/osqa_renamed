@@ -7,6 +7,7 @@ from django.http import str_to_unicode
 from forum.models import User
 from forum.modules import call_all_handlers
 import urllib
+import logging
 
 DEFAULT_NEXT = getattr(settings, 'APP_BASE_URL')
 def clean_next(next):
@@ -156,7 +157,11 @@ class SetPasswordForm(forms.Form):
             return self.cleaned_data['password2']
 
 class SimpleCaptchaForm(forms.Form):
+    fields = {}
+
     def __init__(self, *args, **kwargs):
+        super(SimpleCaptchaForm, self).__init__(*args, **kwargs)
+
         spam_fields = call_all_handlers('create_anti_spam_field')
         if spam_fields:
             spam_fields = dict(spam_fields)
@@ -166,4 +171,3 @@ class SimpleCaptchaForm(forms.Form):
             self._anti_spam_fields = spam_fields.keys()
         else:
             self._anti_spam_fields = []
-
