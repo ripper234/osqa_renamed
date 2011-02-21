@@ -8,7 +8,7 @@ from django.conf import settings
 
 MODULES_PACKAGE = 'forum_modules'
 
-MODULES_FOLDER = os.path.join(os.path.dirname(__file__), '../../' + MODULES_PACKAGE)
+MODULES_FOLDER = os.path.join(settings.SITE_SRC_ROOT, MODULES_PACKAGE)
 
 DISABLED_MODULES = getattr(settings, 'DISABLED_MODULES', [])
 
@@ -88,25 +88,7 @@ def get_handler(name, default):
     all = get_all_handlers(name)
     return len(all) and all[0] or default
 
-module_template_re = re.compile('^modules\/(\w+)\/(.*)$')
-
-def module_templates_loader(name, dirs=None):
-    result = module_template_re.search(name)
-
-    if result is not None:
-        file_name = os.path.join(MODULES_FOLDER, result.group(1), 'templates', result.group(2))
-
-        if os.path.exists(file_name):
-            try:
-                f = open(file_name, 'r')
-                source = f.read()
-                f.close()
-                return (source, file_name)
-            except:
-                pass
-
-    raise TemplateDoesNotExist, name 
-
-module_templates_loader.is_usable = True
+from template_loader import ModulesTemplateLoader
+module_templates_loader = ModulesTemplateLoader()
 
 from decorators import decorate, ReturnImediatelyException
