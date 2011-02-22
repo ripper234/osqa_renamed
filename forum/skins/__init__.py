@@ -30,7 +30,7 @@ class Template(object):
     def _load(self):
         try:
             f = open(self._file_name, 'r')
-            self._source = DJTemplate(f.read())
+            self._source = f.read()
             f.close()
             self._loaded = True
 
