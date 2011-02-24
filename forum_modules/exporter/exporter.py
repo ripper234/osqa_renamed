@@ -1,4 +1,4 @@
-import os, tarfile, datetime, logging, re, ConfigParser, shutil
+import os, tarfile, datetime, logging, re, ConfigParser, shutil, zipfile
 
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
@@ -16,7 +16,6 @@ CACHE_KEY = "%s_exporter_state" % APP_URL
 EXPORT_STEPS = []
 
 TMP_FOLDER = os.path.join(os.path.dirname(__file__), 'tmp')
-LAST_BACKUP = os.path.join(TMP_FOLDER, 'backup.tar.gz')
 
 DATE_AND_AUTHOR_INF_SECTION = 'DateAndAuthor'
 OPTIONS_INF_SECTION = 'Options'
@@ -90,7 +89,10 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
     tag = ET.SubElement(el, tag_name)
 
     if content:
-        tag.text = unicode(content)
+        try:
+            tag.text = unicode(content)
+        except:
+            tag.text = u''
 
     for k, v in attrs.items():
         tag.set(k, unicode(v))
@@ -130,17 +132,36 @@ def write_to_file(root, tmp, filename):
     tree = ET.ElementTree(root)
     tree.write(os.path.join(tmp, filename), encoding='UTF-8')
 
-def create_targz(tmp, files, start_time, options, user, state, set_state):
-    if os.path.exists(LAST_BACKUP):
-        os.remove(LAST_BACKUP)
-        
-    t = tarfile.open(name=LAST_BACKUP, mode = 'w:gz')
+def create_targz(tmp, files, start_time, options, user, state, set_state, file_format):
+    now = datetime.datetime.now()
+    domain = re.match('[\w-]+\.[\w-]+(\.[\w-]+)*', djsettings.APP_URL)
+    if domain:
+        domain = '_'.join(domain.get(0).split('.'))
+    else:
+        domain = 'localhost'
+
+    fname = "%s-%s" % (domain, now.strftime('%Y%m%d%H%M'))
+    if file_format == 'zip':
+        full_fname = "%s.zip" % fname
+    else:
+        full_fname = "%s.tar.gz" % fname
+
+    if file_format == 'zip':
+        t = zipfile.ZipFile(os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, full_fname), 'w')
+
+        def add_to_file(f, a):
+            t.write(f, a)
+    else:
+        t = tarfile.open(os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, full_fname), mode = 'w:gz')
+
+        def add_to_file(f, a):
+            t.add(f, a)
 
     state['overall']['status'] = _('Compressing xml files')
     set_state()
 
     for f in files:
-        t.add(os.path.join(tmp, f), arcname="/%s" % f)
+        add_to_file(os.path.join(tmp, f), "/%s" % f)
 
     if options.get('uplodaded_files', False):
         state['overall']['status'] = _('Importing uploaded files')
@@ -155,20 +176,11 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     state['overall']['status'] = _('Writing inf file.')
     set_state()
 
-    now = datetime.datetime.now()
-    domain = re.match('[\w-]+\.[\w-]+(\.[\w-]+)*', djsettings.APP_URL)
-    if domain:
-        domain = '_'.join(domain.get(0).split('.'))
-    else:
-        domain = 'localhost'
-
-    fname = "%s-%s" % (domain, now.strftime('%Y%m%d%H%M'))
-
     inf = ConfigParser.SafeConfigParser()
 
     inf.add_section(DATE_AND_AUTHOR_INF_SECTION)
 
-    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'file-name', "%s.tar.gz" % fname)
+    inf.set(DATE_AND_AUTHOR_INF_SECTION, 'file-name', full_fname)
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'author', unicode(user.id))
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'site', djsettings.APP_URL)
     inf.set(DATE_AND_AUTHOR_INF_SECTION, 'started', start_time.strftime(DATETIME_FORMAT))
@@ -184,17 +196,15 @@ def create_targz(tmp, files, start_time, options, user, state, set_state):
     for id, s in state.items():
         inf.set(META_INF_SECTION, id, str(s['count']))
 
-    with open(os.path.join(tmp, 'backup.inf'), 'wb') as inffile:
+    with open(os.path.join(tmp, '%s.backup.inf' % fname), 'wb') as inffile:
         inf.write(inffile)
 
-    t.add(os.path.join(tmp, 'backup.inf'), arcname='backup.inf')
+    add_to_file(os.path.join(tmp, '%s.backup.inf' % fname), '/backup.inf')
     state['overall']['status'] = _('Saving backup file')
     set_state()
     t.close()
-    shutil.copyfile(LAST_BACKUP, os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, "%s.tar.gz" % fname))
-    shutil.copyfile(os.path.join(tmp, 'backup.inf'), os.path.join(selfsettings.EXPORTER_BACKUP_STORAGE, "%s.backup.inf" % fname))
+    return full_fname
 
-    
 
 def export_upfiles(tf):
     folder = str(settings.UPFILES_FOLDER)
@@ -272,10 +282,11 @@ def export(options, user):
         state['overall']['status'] = _('Compressing files')
         set_state()
 
-        create_targz(tmp, dump_files, start_time, options, user, state, set_state)
+        fname = create_targz(tmp, dump_files, start_time, options, user, state, set_state, options['file_format'])
         full_state['running'] = False
         full_state['errors'] = False
         state['overall']['status'] = _('Done')
+        state['overall']['fname'] = fname
 
         set_state()
     except Exception, e:
