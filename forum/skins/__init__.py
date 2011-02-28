@@ -10,6 +10,7 @@ UNEXISTENT_TEMPLATE = object()
 SKINS_FOLDER = os.path.dirname(__file__)
 SKIN_TEMPLATES_FOLDER = 'templates'
 DEFAULT_SKIN_NAME = 'default'
+FORCE_DEFAULT_PREFIX = "%s/" % DEFAULT_SKIN_NAME
 
 
 class Template(object):
@@ -93,10 +94,15 @@ class BaseTemplateLoader(object):
 class SkinsTemplateLoader(BaseTemplateLoader):
 
     def load_template_source(self, name, dirs=None):
-        file_name = os.path.join(SKINS_FOLDER, settings.OSQA_DEFAULT_SKIN, SKIN_TEMPLATES_FOLDER, name)
 
-        if os.path.exists(file_name):
-            return Template(file_name)
+        if not name.startswith(FORCE_DEFAULT_PREFIX):
+
+            file_name = os.path.join(SKINS_FOLDER, settings.OSQA_DEFAULT_SKIN, SKIN_TEMPLATES_FOLDER, name)
+
+            if os.path.exists(file_name):
+                return Template(file_name)
+        else:
+            name = name[len(FORCE_DEFAULT_PREFIX)]
 
         file_name = os.path.join(SKINS_FOLDER, DEFAULT_SKIN_NAME, SKIN_TEMPLATES_FOLDER, name)
 
