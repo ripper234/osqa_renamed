@@ -13,7 +13,7 @@ from threading import Thread
 import settings as selsettings
 from forum import settings
 
-from exporter import export, CACHE_KEY, EXPORT_STEPS, LAST_BACKUP, DATE_AND_AUTHOR_INF_SECTION, DATETIME_FORMAT
+from exporter import export, CACHE_KEY, EXPORT_STEPS, DATE_AND_AUTHOR_INF_SECTION, DATETIME_FORMAT
 from importer import start_import
 
 
@@ -77,14 +77,24 @@ def state(request):
 
 @admin_page
 def download(request):
-    fname = LAST_BACKUP
+    if request.GET and request.GET.get('file', None):
+        fname = os.path.join(selsettings.EXPORTER_BACKUP_STORAGE, request.GET.get('file'))
+    else:
+        raise Http404
 
     if not os.path.exists(fname):
         raise Http404
 
-    response = HttpResponse(open(fname, 'rb').read(), content_type='application/x-gzip')
+    if fname.endswith('.gz'):
+        content_type='application/x-gzip'
+        filename = 'backup.tar.gz'
+    else:
+        content_type='application/zip'
+        filename = 'backup.zip'
+
+    response = HttpResponse(open(fname, 'rb').read(), content_type=content_type)
     response['Content-Length'] = os.path.getsize(fname)
-    response['Content-Disposition'] = 'attachment; filename=backup.tar.gz'
+    response['Content-Disposition'] = 'attachment; filename=%s' % filename
     return response
 
 

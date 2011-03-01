@@ -94,6 +94,7 @@
                     if (data.errors == false) {
                         if (exporting) {
                             $('#wait_message').html('{% trans "Your backup is ready to be downloaded."%}');
+                            $('#download_link_a').attr('href', '{% url exporter_download %}?file=' + data.state.overall.fname)
                             $('#download_link').slideDown();
                         } else {
                             $('#wait_message').html('{% trans "All data sucessfully imported."%}')
@@ -139,7 +140,7 @@
             Started <span id="time_started"></span>
         {% endblocktrans %}
     </p>
-    <p id="download_link"><a href="{% url exporter_download %}">{% trans "Download file" %}</a></p>
+    <p id="download_link"><a id="download_link_a" href="#">{% trans "Download file" %}</a></p>
     <table style="width: 100%">
         <tr>
             <td colspan="2">
