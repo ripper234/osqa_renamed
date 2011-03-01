@@ -6,6 +6,7 @@ import time
 import re
 import os
 import gc
+import logging
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import slugify
 from forum.models.utils import dbsafe_encode
@@ -876,42 +877,42 @@ def sximport(dump, options):
     except:
         triggers_disabled = False
 
-    print 'importing users'
+    logging.log('importing users')
     uidmap = userimport(dump, options)
-    print 'importing tags'
+    logging.log('importing tags')
     tagmap = tagsimport(dump, uidmap)
     gc.collect()
 
-    print 'importing posts'
+    logging.log('importing posts')
     posts = postimport(dump, uidmap, tagmap)
     gc.collect()
 
-    print 'importing comments'
+    logging.log('importing comments')
     posts, comments = comment_import(dump, uidmap, posts)
     gc.collect()
 
-    print 'importing votes'
+    logging.log('importing votes')
     post_vote_import(dump, uidmap, posts)
     gc.collect()
 
-    print 'importing likes'
+    logging.log('importing likes')
     comment_vote_import(dump, uidmap, comments)
     gc.collect()
 
-    print 'importing badges'
+    logging.log('importing badges')
     badges_import(dump, uidmap, posts)
 
-    print 'importing pages'
+    logging.log('importing pages')
     pages_import(dump, max(posts))
-    print 'importing settings'
+    logging.log('importing settings')
     static_import(dump)
     gc.collect()
 
-    print 'commiting'
+    logging.log('commiting')
     from south.db import db
     db.commit_transaction()
 
-    print 'done'
+    logging.log('done with the import')
     reset_sequences()
 
     if triggers_disabled:
