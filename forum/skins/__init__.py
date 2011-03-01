@@ -95,19 +95,20 @@ class SkinsTemplateLoader(BaseTemplateLoader):
 
     def load_template_source(self, name, dirs=None):
 
-        if not name.startswith(FORCE_DEFAULT_PREFIX):
+        if name.startswith(FORCE_DEFAULT_PREFIX):
 
-            file_name = os.path.join(SKINS_FOLDER, settings.OSQA_DEFAULT_SKIN, SKIN_TEMPLATES_FOLDER, name)
+            file_name = os.path.join(SKINS_FOLDER, DEFAULT_SKIN_NAME, SKIN_TEMPLATES_FOLDER, name[len(FORCE_DEFAULT_PREFIX):])
 
             if os.path.exists(file_name):
                 return Template(file_name)
-        else:
-            name = name[len(FORCE_DEFAULT_PREFIX)]
+            else:
+                return None
 
-        file_name = os.path.join(SKINS_FOLDER, DEFAULT_SKIN_NAME, SKIN_TEMPLATES_FOLDER, name)
+        for skin in (settings.OSQA_DEFAULT_SKIN, DEFAULT_SKIN_NAME):
+            file_name = os.path.join(SKINS_FOLDER, skin, SKIN_TEMPLATES_FOLDER, name)
 
-        if os.path.exists(file_name):
-            return Template(file_name)
+            if os.path.exists(file_name):
+                return Template(file_name)
 
         return None
 

@@ -234,7 +234,7 @@ def tags(request):
 def update_question_view_times(request, question):
     last_seen_in_question = request.session.get('last_seen_in_question', {})
 
-    last_seen = request.session['last_seen_in_question'].get(question.id, None)
+    last_seen = last_seen_in_question.get(question.id, None)
 
     if (not last_seen) or (last_seen < question.last_activity_at):
         QuestionViewAction(question, request.user, ip=request.META['REMOTE_ADDR']).save()

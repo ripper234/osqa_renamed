@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from xml.dom import minidom
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import re
 import os
 import gc
-import logging
 from django.utils.translation import ugettext as _
-from django.template.defaultfilters import slugify
-from forum.models.utils import dbsafe_encode
 from orm import orm
 
 from django.utils.encoding import force_unicode
@@ -877,42 +873,31 @@ def sximport(dump, options):
     except:
         triggers_disabled = False
 
-    logging.log('importing users')
     uidmap = userimport(dump, options)
-    logging.log('importing tags')
     tagmap = tagsimport(dump, uidmap)
     gc.collect()
 
-    logging.log('importing posts')
     posts = postimport(dump, uidmap, tagmap)
     gc.collect()
 
-    logging.log('importing comments')
     posts, comments = comment_import(dump, uidmap, posts)
     gc.collect()
 
-    logging.log('importing votes')
     post_vote_import(dump, uidmap, posts)
     gc.collect()
 
-    logging.log('importing likes')
     comment_vote_import(dump, uidmap, comments)
     gc.collect()
 
-    logging.log('importing badges')
     badges_import(dump, uidmap, posts)
 
-    logging.log('importing pages')
     pages_import(dump, max(posts))
-    logging.log('importing settings')
     static_import(dump)
     gc.collect()
 
-    logging.log('commiting')
     from south.db import db
     db.commit_transaction()
 
-    logging.log('done with the import')
     reset_sequences()
 
     if triggers_disabled:
