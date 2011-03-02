@@ -1,9 +1,7 @@
 import os
 import types
-import re
 import logging
 
-from django.template import Template, TemplateDoesNotExist
 from django.conf import settings
 
 MODULES_PACKAGE = 'forum_modules'
@@ -24,6 +22,10 @@ def get_modules_script(script_name):
     all = []
 
     for m in MODULE_LIST:
+        if hasattr(m, script_name):
+            all.append(getattr(m, script_name))
+            continue
+
         try:
             all.append(__import__('%s.%s' % (m.__name__, script_name), globals(), locals(), [m.__name__]))
         except ImportError, e:
@@ -32,7 +34,7 @@ def get_modules_script(script_name):
         except:
             import traceback
             msg = "Error importing %s from module %s: \n %s" % (
-                script_name, m.__name__, traceback.format_exc()
+                script_name, m, traceback.format_exc()
             )
             logging.error(msg)
 
