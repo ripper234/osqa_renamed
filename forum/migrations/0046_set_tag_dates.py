@@ -10,12 +10,14 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         for tag in Tag.objects.all():
-            if not tag.created_at:
+            try:
                 question = Question.objects.filter(tags__name=unquote(tag.name)).order_by('pk')[0]
                 date = question.added_at
                 tag.created_at = date
                 tag.save()
                 print str(date)
+            except:
+                pass
 
 
     def backwards(self, orm):
@@ -274,3 +276,4 @@ class Migration(DataMigration):
     }
 
     complete_apps = ['forum']
+
