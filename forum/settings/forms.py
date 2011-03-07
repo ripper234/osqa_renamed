@@ -4,6 +4,7 @@ from django import forms
 from forum.settings.base import Setting
 from django.utils.translation import ugettext as _
 from django.core.files.storage import FileSystemStorage
+from django.core.urlresolvers import reverse
 
 class DummySetting:
     pass
@@ -120,7 +121,20 @@ class CommaStringListWidget(forms.Textarea):
         else:
             return ', '.join(data[name])    
 
+class TestEmailSettingsWidget(forms.TextInput):
+    def render(self, name, value, attrs=None):
+        if not value:
+            value = ''
 
+        return """
+            <div id="test_email_settings">
+                <a href="%s" onclick="return false;" class="button test_button" href="/">Test</a>
 
-
-
+                <div style="margin-top: 7px">
+                <div style="display: none" class="ajax_indicator">
+                    Testing your current e-mail settings. Please, wait.
+                </div>
+                <div class="test_status"></div>
+                </div>
+            </div>
+            """ % reverse("test_email_settings")
