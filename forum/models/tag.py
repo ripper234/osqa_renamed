@@ -1,3 +1,4 @@
+import datetime
 from base import *
 
 from django.utils.translation import ugettext as _
@@ -11,6 +12,7 @@ class ActiveTagManager(models.Manager):
 class Tag(BaseModel):
     name            = models.CharField(max_length=255, unique=True)
     created_by      = models.ForeignKey(User, related_name='created_tags')
+    created_at      = models.DateTimeField(default=datetime.datetime.now, blank=True, null=True)
     marked_by       = models.ManyToManyField(User, related_name="marked_tags", through="MarkedTag")
     # Denormalised data
     used_count = models.PositiveIntegerField(default=0)
@@ -22,7 +24,7 @@ class Tag(BaseModel):
         app_label = 'forum'
 
     def __unicode__(self):
-        return self.name
+        return u'%s' % self.name
 
     def add_to_usage_count(self, value):
         if self.used_count + value < 0:

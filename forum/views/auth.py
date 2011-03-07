@@ -27,7 +27,10 @@ from forum.authentication.base import InvalidAuthentication
 from forum.authentication import AUTH_PROVIDERS
 
 from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answer
-from forum.actions import UserJoinsAction
+from forum.actions import UserJoinsAction, EmailValidationAction
+from forum.models.action import ActionRepute
+
+from forum.settings import REP_GAIN_BY_EMAIL_VALIDATION
 
 def signin_page(request):
     referer = request.META.get('HTTP_REFERER', '/')
@@ -299,9 +302,14 @@ def validate_email(request, user, code):
     user = get_object_or_404(User, id=user)
 
     if (ValidationHash.objects.validate(code, user, 'email', [user.email])):
-        user.email_isvalid = True
-        user.save()
-        return login_and_forward(request, user, reverse('index'), _("Thank you, your email is now validated."))
+        EmailValidationAction(user=user, ip=request.META['REMOTE_ADDR']).save()
+        if REP_GAIN_BY_EMAIL_VALIDATION > 0:
+            message = _("Thank you, your email is now validated and you've got %d points." % int(REP_GAIN_BY_EMAIL_VALIDATION))
+
+        else:
+            message = _("Thank you, your email is now validated.")
+
+        return login_and_forward(request, user, reverse('index'), message)
     else:
         return render_to_response('auth/mail_already_validated.html', { 'user' : user }, RequestContext(request))
 

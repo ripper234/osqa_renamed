@@ -55,3 +55,9 @@ input.longstring {
     border: 3px double #b8860b;
     padding: 4px;
 }
+
+.ajax_indicator {
+    background: transparent url('../images/indicator.gif') top left no-repeat;
+    padding: 7px 25px;
+    min-height: 24px;
+}

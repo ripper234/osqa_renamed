@@ -11,6 +11,10 @@ MAX_REP_BY_UPVOTE_DAY = Setting('MAX_REP_BY_UPVOTE_DAY', 200, REP_GAIN_SET, dict
 label = "Max rep by up votes / day",
 help_text = _("Maximum reputation a user can gain in one day for being upvoted.")))
 
+REP_GAIN_BY_EMAIL_VALIDATION = Setting('REP_GAIN_BY_EMAIL_VALIDATION', 10, REP_GAIN_SET, dict(
+label = _("Rep gain by e-mail validation"),
+help_text = _("Reputation a user gains for validating his e-mail.")))
+
 REP_GAIN_BY_UPVOTED = Setting('REP_GAIN_BY_UPVOTED', 10, REP_GAIN_SET, dict(
 label = _("Rep gain by upvoted"),
 help_text = _("Reputation a user gains for having one of his posts up voted.")))

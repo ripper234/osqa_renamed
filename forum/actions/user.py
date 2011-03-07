@@ -23,6 +23,23 @@ class UserJoinsAction(ActionProxy):
         'app_name': APP_SHORT_NAME,
         }
 
+class EmailValidationAction(ActionProxy):
+    verb = _("validated e-mail")
+
+    def repute_users(self):
+        self.repute(self.user, int(settings.REP_GAIN_BY_EMAIL_VALIDATION))
+
+    def process_action(self):
+        self.user.email_isvalid = True
+        self.user.save()
+
+    def describe(self, viewer=None):
+        return _("%(user)s %(have_has)s validated the e-mail %(email)s") % {
+        'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+        'have_has': self.viewer_or_user_verb(viewer, self.user, _('have'), _('has')),
+        'email' : self.user.email
+        }
+
 class EditProfileAction(ActionProxy):
     verb = _("edited profile")
 

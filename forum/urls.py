@@ -210,6 +210,9 @@ urlpatterns += patterns('',
                         url(r'^%s%s(?P<set_name>\w+)/$' % (_('admin/'), _('settings/')), app.admin.settings_set,
                             name="admin_set"),
 
+                        url(r'%s%s' % (_('admin/'), _('test_email_settings/')), app.admin.test_email_settings,
+                            name="test_email_settings"),
+
                         url(r'^feeds/rss[/]?$', app.readers.feed, name="latest_questions_feed"),
 
                         url(r'^(?P<path>.+)$', app.meta.page, name="static_page"),
