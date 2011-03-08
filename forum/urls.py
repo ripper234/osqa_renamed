@@ -83,8 +83,8 @@ urlpatterns += patterns('',
                             name="delete_comment"),
                         url(r'^%s(?P<id>\d+)/$' % _('convert_comment/'), app.commands.convert_comment_to_answer,
                             name="convert_comment"),
-                        url(r'^%s(?P<id>\d+)/$' % _('accept_answer/'), app.commands.accept_answer, name="accept_answer")
-                        ,
+                        url(r'^%s(?P<id>\d+)/$' % _('accept_answer/'), app.commands.accept_answer, name="accept_answer"),
+                        url(r'^%s(?P<id>\d+)/$' % _('answer_link/'), app.commands.answer_permanent_link, name="answer_permanent_link"),
                         url(r'^%s(?P<id>\d+)/$' % _('mark_favorite/'), app.commands.mark_favorite, name="mark_favorite")
                         ,
                         url(r'^%s(?P<id>\d+)/' % _('flag/'), app.commands.flag_post, name='flag_post'),
