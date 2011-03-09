@@ -101,8 +101,13 @@ def questions(request):
 
 @decorators.render('questions.html')
 def tag(request, tag):
+    try:
+        tag = Tag.active.get(name=unquote(tag))
+    except Tag.DoesNotExist:
+        raise Http404
+
     return question_list(request,
-                         Question.objects.filter(tags__name=unquote(tag)),
+                         Question.objects.filter(tags=tag),
                          mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          None,
                          mark_safe(_('Questions Tagged With %(tag)s') % {'tag': tag}),
