@@ -570,9 +570,13 @@ def related_questions(request):
     else:
         raise Http404()
 
+@decorate.withfn(command)
+def answer_permanent_link(request, id):
+    # Getting the current answer object
+    answer = get_object_or_404(Answer, id=id)
 
+    # Getting the current object URL -- the Application URL + the object relative URL
+    url = '%s%s' % (settings.APP_BASE_URL, answer.get_absolute_url())
 
-
-
-
-
+    # Display the template
+    return render_to_response('node/permanent_link.html', { 'url' : url, })

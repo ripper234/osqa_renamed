@@ -82,13 +82,16 @@ def post_control(text, url, command=False, withprompt=False, confirm=False, titl
 def post_controls(post, user):
     controls = []
     menu = []
+    post_type = post.node_type
 
+    # We show the link tool if the post is an Answer. It is visible to Guests too.
+    if post_type == "answer":
+        # Answer permanent link tool
+        controls.append(post_control(_('permanent link'), reverse('answer_permanent_link', kwargs={'id' : post.id}),
+                                     title=_("answer permanent link"), command=True, withprompt=True))
+
+    # The other controls are visible only to authenticated users.
     if user.is_authenticated():
-        post_type = post.node_type
-
-        if post_type == "answer":
-            controls.append(post_control(_('permanent link'), post.get_absolute_url(), title=_("answer permanent link")))
-
         edit_url = reverse('edit_' + post_type, kwargs={'id': post.id})
         if user.can_edit_post(post):
             controls.append(post_control(_('edit'), edit_url))
