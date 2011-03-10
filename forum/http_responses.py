@@ -25,3 +25,17 @@ class HttpResponseUnauthorized(HttpResponse):
                 content=render_to_string('401.html', context_instance=RequestContext(request)),
                 status=401
             )
+
+class HttpResponseNotFound(HttpResponse):
+    def __init__(self, request):
+        super(HttpResponseNotFound, self).__init__(
+            content=render_to_string('404.html', context_instance=RequestContext(request)),
+            status=404
+        )
+
+class HttpResponseIntServerError(HttpResponse):
+    def __init__(self, request):
+        super(HttpResponseIntServerError, self).__init__(
+            content=render_to_string('500.html', context_instance=RequestContext(request)),
+            status=500
+        )

@@ -15,12 +15,6 @@ from random import Random
 from django.utils.translation import ugettext as _
 import logging
 
-QUESTIONS_PER_PAGE_CHOICES = (
-(10, u'10'),
-(30, u'30'),
-(50, u'50'),
-)
-
 class AnonymousUser(DjangoAnonymousUser):
     reputation = 0
     
@@ -187,9 +181,6 @@ class User(BaseModel, DjangoUser):
         if new:
             sub_settings = SubscriptionSettings(user=self)
             sub_settings.save()
-
-    def get_absolute_url(self):
-        return self.get_profile_url()
 
     def get_messages(self):
         messages = []

@@ -1,4 +1,5 @@
 from django import template
+from django.conf import settings
 from forum.modules import ui
 import logging
 
@@ -21,10 +22,11 @@ class LoadRegistryNode(template.Node):
                             result += separator
                         result += ui_object.render(context)
             except (KeyError, Exception), e:
-                import traceback
-                logging.error("Exception %s rendering ui objects %s: \n%s" % (
-                    e, ui_object, traceback.format_exc()
-                ))
+                if settings.DEBUG:
+                    import traceback
+                    logging.error("Exception %s rendering ui objects %s: \n%s" % (
+                        e, ui_object, traceback.format_exc()
+                    ))
 
         return result
 

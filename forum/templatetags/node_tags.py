@@ -212,10 +212,10 @@ def comments(post, user):
 
 
 @register.inclusion_tag("node/contributors_info.html")
-def contributors_info(node):
+def contributors_info(node, verb=None):
     return {
-        'node_verb': (node.node_type == "question") and _("asked") or (
-                    (node.node_type == "answer") and _("answered") or _("posted")),
+        'node_verb': verb and verb or ((node.node_type == "question") and _("asked") or (
+                    (node.node_type == "answer") and _("answered") or _("posted"))),
         'node': node,
     }
 

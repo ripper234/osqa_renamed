@@ -69,7 +69,7 @@ class ReturnImediatelyException(Exception):
         self.ret = ret
 
 def _check_decoratable(origin, install=True):
-    if not isinstance(origin, DecoratableObject):
+    if not hasattr(origin, '_decoratable_obj'):
         if inspect.ismethod(origin) and not hasattr(origin, '_decoratable_obj'):
             decoratable = DecoratableObject(origin)
 
@@ -91,10 +91,18 @@ def _check_decoratable(origin, install=True):
         elif inspect.isfunction(origin):
             decoratable = DecoratableObject(origin)
 
-            if install:
-                setattr(inspect.getmodule(origin), origin.__name__, decoratable)
+            def decorated(*args, **kwargs):
+                return decoratable(*args, **kwargs)
 
-            return decoratable
+            decorated._decoratable_obj = decoratable
+
+            if install:
+                setattr(inspect.getmodule(origin), origin.__name__, decorated)
+
+            decorated.__name__ = origin.__name__
+            decorated.__module__ = origin.__module__
+
+            return decorated
 
     return origin
 
@@ -103,7 +111,7 @@ def decorate(origin, needs_origin=True):
     origin = _check_decoratable(origin)
 
     def decorator(fn):
-        origin._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=needs_origin)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=needs_origin)
         
     return decorator
 
@@ -112,7 +120,7 @@ def _decorate_params(origin):
     origin = _check_decoratable(origin)
 
     def decorator(fn):
-        origin._decorate(fn, DecoratableObject.MODE_PARAMS)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_PARAMS)
 
     return decorator
 
@@ -122,7 +130,7 @@ def _decorate_result(origin, needs_params=False):
     origin = _check_decoratable(origin)
 
     def decorator(fn):
-        origin._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
 
     return decorator
 
@@ -131,7 +139,7 @@ decorate.result = _decorate_result
 def _decorate_with(fn):
     def decorator(origin):
         origin = _check_decoratable(origin)
-        origin._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=True)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_OVERRIDE, needs_origin=True)
         return origin
     return decorator
 
@@ -140,7 +148,7 @@ decorate.withfn = _decorate_with
 def _decorate_result_with(fn, needs_params=False):
     def decorator(origin):
         origin = _check_decoratable(origin)
-        origin._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_RESULT, needs_params=needs_params)
         return origin
     return decorator
 
@@ -149,7 +157,7 @@ decorate.result.withfn = _decorate_result_with
 def _decorate_params_with(fn):
     def decorator(origin):
         origin = _check_decoratable(origin)
-        origin._decorate(fn, DecoratableObject.MODE_PARAMS)
+        origin._decoratable_obj._decorate(fn, DecoratableObject.MODE_PARAMS)
         return origin
     return decorator
 
