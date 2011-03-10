@@ -595,3 +595,5 @@ def award_points(request, user_id, answer_id):
         raise AnonymousNotAllowedException(_('award'))
 
     return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
+    # Display the template
+    return render_to_response('node/permanent_link.html', { 'url' : url, })

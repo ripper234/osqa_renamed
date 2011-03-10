@@ -87,6 +87,7 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/$' % _('answer_link/'), app.commands.answer_permanent_link, name="answer_permanent_link"),
                         url(r'^%s(?P<id>\d+)/$' % _('mark_favorite/'), app.commands.mark_favorite, name="mark_favorite"),
                         url(r'^%s%s(?P<user_id>\d+)/%s(?P<answer_id>\d+)/$' % (_('award_points/'), _('user/'), _('answer/')), app.commands.award_points, name="award_points"),
+
                         url(r'^%s(?P<id>\d+)/' % _('flag/'), app.commands.flag_post, name='flag_post'),
                         url(r'^%s(?P<id>\d+)/' % _('delete/'), app.commands.delete_post, name='delete_post'),
                         url(r'^%s(?P<id>\d+)/(?P<user>\d+)?$' % _('subscribe/'), app.commands.subscribe, name="subscribe"),
