@@ -32,6 +32,7 @@ TEMPLATE_CONTEXT_PROCESSORS = [
 ]
 
 ROOT_URLCONF = 'urls'
+APPEND_SLASH = True
 
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__),'forum','skins').replace('\\','/'),
