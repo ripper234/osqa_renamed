@@ -425,6 +425,7 @@ def postimport(dump, uidmap, tagmap):
         post.save()
 
         all.append(int(post.id))
+        create_and_activate_revision(post)
 
         del post
 
@@ -472,6 +473,8 @@ def comment_import(dump, uidmap, posts):
                 action_date = oc.added_at
                 )
 
+        create_and_activate_revision(oc)
+
         create_action.save()
         oc.save()
 
@@ -486,7 +489,6 @@ def add_tags_to_post(post, tagmap):
     tags = [tag for tag in [tagmap.get(name.strip()) for name in post.tagnames.split(u' ') if name] if tag]
     post.tagnames = " ".join([t.name for t in tags]).strip()
     post.tags = tags
-    create_and_activate_revision(post)
 
 
 def create_and_activate_revision(post):
@@ -770,6 +772,8 @@ def pages_import(dump, currid):
                 }),
                 author_id = 1
                 )
+
+        create_and_activate_revision(page)
 
         page.save()
         registry[sxp['url'][1:]] = page.id

@@ -13,6 +13,7 @@ from forum.settings.base import Setting
 from forum.forms import MaintenanceModeForm, PageForm, CreateUserForm
 from forum.settings.forms import SettingsSetForm
 from forum.utils import pagination, html
+from forum.utils.mail import send_template_email
 
 from forum.models import Question, Answer, User, Node, Action, Page, NodeState, Tag
 from forum.models.node import NodeMetaClass
@@ -548,7 +549,14 @@ def node_management(request):
     'hide_menu': True
     }))
 
+@super_user_required
+def test_email_settings(request):
+    user = request.user
 
+    send_template_email([user,], 'osqaadmin/mail_test.html', { 'user' : user })
 
-
-
+    return render_to_response(
+        'osqaadmin/test_email_settings.html',
+        { 'user': user, },
+        RequestContext(request)
+    )
