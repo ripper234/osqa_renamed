@@ -26,13 +26,6 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
         #'birthdate': 'http://axschema.org/birthDate',
     }
 
-    sreg_attributes = {
-        "required": {
-            "email": "email",
-            "nickname": "username"
-        }
-    }
-
     def get_user_url(self, request):
         try:
             return request.POST['openid_identifier']
@@ -57,26 +50,23 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
         except DiscoveryFailure:
             raise InvalidAuthentication(_('Sorry, but your input is not a valid OpenId'))
 
-        sreg = getattr(self, 'sreg_attributes', False)
+        #sreg = getattr(settings, 'OPENID_SREG', False)
 
-        if sreg:
-            s = SRegRequest()
+        #if sreg:
+        #    s = SRegRequest()
+        #    for sarg in sreg:
+        #        if sarg.lower().lstrip() == "policy_url":
+        #            s.policy_url = sreg[sarg]
+        #        else:
+        #            for v in sreg[sarg].split(','):
+        #                s.requestField(field_name=v.lower().lstrip(), required=(sarg.lower().lstrip() == "required"))
+        #    auth_request.addExtension(s)
 
-            for k, attr_dic in sreg.items():
-                if k == "policy_url":
-                    s.policy_url = attr_dic
-                    continue
+        #auth_request.addExtension(SRegRequest(required=['email']))
 
-                for attr_name in attr_dic.keys():
-                    s.requestField(field_name=attr_name, required=(k == "required"))
-
-            auth_request.addExtension(s)
-
-        ax_schema = getattr(self, 'dataype2ax_schema', False)
-
-        if ax_schema and request.session.get('force_email_request', True):
+        if request.session.get('force_email_request', True):
             axr = AXFetchRequest()
-            for data_type, schema in ax_schema.items():
+            for data_type, schema in self.dataype2ax_schema.items():
                 if isinstance(schema, tuple):
                     axr.add(AttrInfo(schema[0], 1, True, schema[1]))
                 else:
@@ -104,41 +94,31 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
         openid_response = consumer.complete(query_dict, url)
 
         if openid_response.status == SUCCESS:
+            if request.session.get('force_email_request', True):
+                try:
+                    ax = AXFetchResponse.fromSuccessResponse(openid_response)
 
-            consumer_data = {}
+                    axargs = ax.getExtensionArgs()
 
-            sreg_attrs = getattr(self, 'sreg_attributes', False)
+                    ax_schema2data_type = dict([(s, t) for t, s in self.dataype2ax_schema.items()])
 
-            if sreg_attrs:
-                sreg_response = SRegResponse.fromSuccessResponse(openid_response)
+                    available_types = dict([
+                        (ax_schema2data_type[s], re.sub('^type\.', '', n))
+                        for n, s in axargs.items() if s in ax_schema2data_type
+                    ])
 
-                all_attrs = {}
-                [all_attrs.update(d) for k,d in sreg_attrs.items() if k != "policy_url"]
-
-                for attr_name, local_name in all_attrs.items():
-                    if attr_name in sreg_response:
-                        consumer_data[local_name] = sreg_response[attr_name]
-
-            ax_schema = getattr(self, 'dataype2ax_schema', False)
-
-            if ax_schema:
-                ax = AXFetchResponse.fromSuccessResponse(openid_response)
-
-                axargs = ax.getExtensionArgs()
-
-                ax_schema2data_type = dict([(s, t) for t, s in ax_schema.items()])
-
-                available_types = dict([
-                    (ax_schema2data_type[s], re.sub('^type\.', '', n))
-                    for n, s in axargs.items() if s in ax_schema2data_type
-                ])
-
-                for t, s in available_types.items():
-                    if not t in consumer_data:
-                        consumer_data[t] = axargs["value.%s.1" % s]
+                    available_data = dict([
+                        (t, axargs["value.%s.1" % s]) for t, s in available_types.items()
+                    ])
                     
-            request.session['auth_consumer_data'] = consumer_data
+                    request.session['auth_consumer_data'] = {
+                        'email': available_data.get('email', None),
+                    }
 
+                except Exception, e:
+                    pass
+                    #import sys, traceback
+                    #traceback.print_exc(file=sys.stdout)
 
             return request.GET['openid.identity']
         elif openid_response.status == CANCEL:

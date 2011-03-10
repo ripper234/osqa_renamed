@@ -15,13 +15,12 @@ from django.db.models import Count
 from forum.forms import get_next_url
 from forum.models import Badge, Award, User, Page
 from forum.badges.base import BadgesMeta
-from forum.http_responses import HttpResponseNotFound, HttpResponseIntServerError
 from forum import settings
 from forum.utils.mail import send_template_email
 from django.utils.safestring import mark_safe
 from forum.templatetags.extra_filters import or_preview
 import decorators
-import re, sys, logging, traceback
+import re
 
 def favicon(request):
     return HttpResponseRedirect(str(settings.APP_FAVICON))
@@ -114,19 +113,17 @@ def badge(request, id, slug):
     'badge' : badge,
     }, context_instance=RequestContext(request))
 
-def page(request):
-    path = request.path[1:]
-
+def page(request, path):
     if path in settings.STATIC_PAGE_REGISTRY:
         try:
             page = Page.objects.get(id=settings.STATIC_PAGE_REGISTRY[path])
 
             if (not page.published) and (not request.user.is_superuser):
-                return HttpResponseNotFound(request)
+                raise Http404
         except:
-            return HttpResponseNotFound(request)
+            raise Http404
     else:
-        return HttpResponseNotFound(request)
+        raise Http404
 
     template = page.extra.get('template', 'default')
     sidebar = page.extra.get('sidebar', '')
@@ -163,39 +160,3 @@ def page(request):
     }, context_instance=RequestContext(request))
 
 
-def error_handler(request):
-
-    stacktrace = "".join(["\t\t%s\n" % l for l in traceback.format_exc().split("\n")])
-
-    try:
-        log_msg = """
-        error executing request:
-        PATH: %(path)s
-        USER: %(user)s
-        METHOD: %(method)s
-        POST PARAMETERS:
-        %(post)s
-        GET PARAMETERS:
-        %(get)s
-        HTTP HEADERS:
-        %(headers)s
-        COOKIES:
-        %(cookies)s
-        EXCEPTION INFO:
-        %(stacktrace)s
-        """ % {
-            'path': request.path,
-            'user': request.user.is_authenticated() and ("%s (%s)" % (request.user.username, request.user.id)) or "<anonymous>",
-            'method': request.method,
-            'post': request.POST and "".join(["\t\t%s: %s\n" % (k, v) for k, v in request.POST.items()]) or "None",
-            'get': request.GET and "".join(["\t\t%s: %s\n" % (k, v) for k, v in request.GET.items()]) or "None",
-            'cookies': request.COOKIES and "".join(["\t\t%s: %s\n" % (k, v) for k, v in request.COOKIES.items()]) or "None",
-            'headers': request.META and "".join(["\t\t%s: %s\n" % (k, v) for k, v in request.META.items()]) or "None",
-            'stacktrace': stacktrace
-        }
-    except:
-        log_msg = "error executing request:\n%s" % stacktrace
-
-
-    logging.error(log_msg)
-    return HttpResponseIntServerError(request)

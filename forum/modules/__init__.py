@@ -1,32 +1,29 @@
 import os
 import types
+import re
 import logging
+
+from django.template import Template, TemplateDoesNotExist
+from django.conf import settings
 
 MODULES_PACKAGE = 'forum_modules'
 
-MODULES_FOLDER = None
-MODULE_LIST = []
+MODULES_FOLDER = os.path.join(os.path.dirname(__file__), '../../' + MODULES_PACKAGE)
 
+DISABLED_MODULES = getattr(settings, 'DISABLED_MODULES', [])
 
-def init_modules_engine(site_src_root, disabled_modules):
-    MODULES_FOLDER = os.path.join(site_src_root, MODULES_PACKAGE)
-
-    MODULE_LIST.extend(filter(lambda m: getattr(m, 'CAN_USE', True), [
-            __import__('forum_modules.%s' % f, globals(), locals(), ['forum_modules'])
-            for f in os.listdir(MODULES_FOLDER)
-            if os.path.isdir(os.path.join(MODULES_FOLDER, f)) and
-               os.path.exists(os.path.join(MODULES_FOLDER, "%s/__init__.py" % f)) and
-               not f in disabled_modules
-    ]))
+MODULE_LIST = filter(lambda m: getattr(m, 'CAN_USE', True), [
+        __import__('forum_modules.%s' % f, globals(), locals(), ['forum_modules'])
+        for f in os.listdir(MODULES_FOLDER)
+        if os.path.isdir(os.path.join(MODULES_FOLDER, f)) and
+           os.path.exists(os.path.join(MODULES_FOLDER, "%s/__init__.py" % f)) and
+           not f in DISABLED_MODULES
+])
 
 def get_modules_script(script_name):
     all = []
 
     for m in MODULE_LIST:
-        if hasattr(m, script_name):
-            all.append(getattr(m, script_name))
-            continue
-
         try:
             all.append(__import__('%s.%s' % (m.__name__, script_name), globals(), locals(), [m.__name__]))
         except ImportError, e:
@@ -35,7 +32,7 @@ def get_modules_script(script_name):
         except:
             import traceback
             msg = "Error importing %s from module %s: \n %s" % (
-                script_name, m, traceback.format_exc()
+                script_name, m.__name__, traceback.format_exc()
             )
             logging.error(msg)
 
@@ -90,5 +87,26 @@ def call_all_handlers(name, *args, **kwargs):
 def get_handler(name, default):
     all = get_all_handlers(name)
     return len(all) and all[0] or default
+
+module_template_re = re.compile('^modules\/(\w+)\/(.*)$')
+
+def module_templates_loader(name, dirs=None):
+    result = module_template_re.search(name)
+
+    if result is not None:
+        file_name = os.path.join(MODULES_FOLDER, result.group(1), 'templates', result.group(2))
+
+        if os.path.exists(file_name):
+            try:
+                f = open(file_name, 'r')
+                source = f.read()
+                f.close()
+                return (source, file_name)
+            except:
+                pass
+
+    raise TemplateDoesNotExist, name 
+
+module_templates_loader.is_usable = True
 
 from decorators import decorate, ReturnImediatelyException

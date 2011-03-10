@@ -31,8 +31,6 @@ def auto_user_link(node, content):
             question = node.question
         elif node.answer:
             question = node.answer.question
-    else:
-        return content
     
     # Now we've got the root question. Let's get the list of active users.
     active_users = question.get_active_users()

@@ -8,8 +8,7 @@ class ConsumerAndContext:
         self.id = id
         self._consumer = consumer
 
-        if context:
-            context.id = id
+        context.id = id
         self.context = context
 
     @property
@@ -28,7 +27,7 @@ contexts = dict([
         ])
 
 AUTH_PROVIDERS = dict([
-            (name, ConsumerAndContext(name, consumers[name], contexts.get(name, None))) for name in consumers.keys()
+            (name, ConsumerAndContext(name, consumers[name], contexts[name])) for name in consumers.keys()
+            if name in contexts
         ])
-
 
