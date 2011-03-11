@@ -58,12 +58,22 @@ $(function() {
         $input.keyup(rewrite_anchor);
         rewrite_anchor();        
     });
+
+    $('#test_email_settings a.test_button').click(function() {
+        $('div.test_status').hide('slow')
+        $('div.ajax_indicator').show('fast')
+        $.post($(this).attr('href'), function(data) {
+            $('div.ajax_indicator').hide('fast')
+            $('div.test_status').html(data)
+            $('div.test_status').show('slow')
+        })
+    })
 });
 
 /*
  * Autocomplete - jQuery plugin 1.0.3
  *
- * Copyright (c) 2007 Dylan Verheul, Dan G. Switzer, Anjesh Tuladhar, Jörn Zaefferer
+ * Copyright (c) 2007 Dylan Verheul, Dan G. Switzer, Anjesh Tuladhar, Jï¿½rn Zaefferer
  *
  * Dual licensed under the MIT and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php

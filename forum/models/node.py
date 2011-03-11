@@ -7,6 +7,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
+from forum.settings import SUMMARY_LENGTH
 from utils import PickledObjectField
 
 class NodeContent(models.Model):
@@ -304,7 +305,7 @@ class Node(BaseModel, NodeContent):
 
     @property
     def summary(self):
-        return strip_tags(self.html)[:300]
+        return strip_tags(self.html)[:SUMMARY_LENGTH]
 
     @models.permalink
     def get_revisions_url(self):

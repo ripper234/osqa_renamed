@@ -17,8 +17,8 @@ class TitleField(forms.CharField):
     def __init__(self, *args, **kwargs):
         super(TitleField, self).__init__(*args, **kwargs)
         self.required = True
-        self.widget = forms.TextInput(attrs={'size' : 70, 'autocomplete' : 'off'})
         self.max_length = 255
+        self.widget = forms.TextInput(attrs={'size' : 70, 'autocomplete' : 'off', 'maxlength' : self.max_length})
         self.label  = _('title')
         self.help_text = _('please enter a descriptive title for your question')
         self.initial = ''
