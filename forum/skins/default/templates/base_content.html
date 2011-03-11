@@ -16,13 +16,9 @@
         {% if settings.USE_CUSTOM_CSS|or_preview:request %}
         <link href="{% url custom_css %}" rel="stylesheet" type="text/css" />
         {% endif %}
-        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1/themes/base/jquery-ui.css" />
         {% block forestyle %}{% endblock %}
         <script src="http://www.google.com/jsapi" type="text/javascript"></script>
-        <script type="text/javascript">
-            google.load("jquery", "1.4.2");
-            google.load("jqueryui", "1", {autoload:true});
-        </script>
+        <script type="text/javascript">google.load("jquery", "1.4.2");</script>
         <script type="text/javascript">
         /* <![CDATA[ */
             var i18nLang = '{{settings.LANGUAGE_CODE}}';

@@ -82,27 +82,21 @@ def post_control(text, url, command=False, withprompt=False, confirm=False, titl
 def post_controls(post, user):
     controls = []
     menu = []
-    post_type = post.node_type
 
-    # We show the link tool if the post is an Answer. It is visible to Guests too.
-    if post_type == "answer":
-        # Answer permanent link tool
-        controls.append(post_control(_('permanent link'), reverse('answer_permanent_link', kwargs={'id' : post.id}),
-                                     title=_("answer permanent link"), command=True, withprompt=True))
-
-        # Users should be able to award points for an answer. Users cannot award their own answers
-        if user != post.author and user.is_authenticated():
-            controls.append(post_control(_("award points"), reverse('award_points', kwargs={'user_id' : post.author.id,
-                                         'answer_id' : post.id}), title=_("award points to %s") % post.author,
-                                         command=True, withprompt=True))
-
-    # The other controls are visible only to authenticated users.
     if user.is_authenticated():
-        edit_url = reverse('edit_' + post_type, kwargs={'id': post.id})
-        if user.can_edit_post(post):
-            controls.append(post_control(_('edit'), edit_url))
-        elif post_type == 'question' and user.can_retag_questions():
-            controls.append(post_control(_('retag'), edit_url))
+        post_type = post.node_type
+
+        if post_type == "answer":
+            controls.append(post_control(_('permanent link'), post.get_absolute_url(), title=_("answer permanent link")))
+
+        try:
+            edit_url = reverse('edit_' + post_type, kwargs={'id': post.id})
+            if user.can_edit_post(post):
+                controls.append(post_control(_('edit'), edit_url))
+            elif post_type == 'question' and user.can_retag_questions():
+                controls.append(post_control(_('retag'), edit_url))
+        except:
+            pass
 
         if post_type == 'question':
             if post.nis.closed and user.can_reopen_question(post):

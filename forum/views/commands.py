@@ -570,30 +570,9 @@ def related_questions(request):
     else:
         raise Http404()
 
-@decorate.withfn(command)
-def answer_permanent_link(request, id):
-    # Getting the current answer object
-    answer = get_object_or_404(Answer, id=id)
 
-    # Getting the current object URL -- the Application URL + the object relative URL
-    url = '%s%s' % (settings.APP_BASE_URL, answer.get_absolute_url())
 
-    # Display the template
-    return render_to_response('node/permanent_link.html', { 'url' : url, })
 
-@decorate.withfn(command)
-def award_points(request, user_id, answer_id):
-    user = request.user
-    awarded_user = get_object_or_404(User, id=user_id)
 
-    # Users shouldn't be able to award themselves
-    if awarded_user.id == user.id:
-        raise CannotDoOnOwnException(_("award"))
 
-    # Anonymous users cannot award  points, they just don't have such
-    if not user.is_authenticated():
-        raise AnonymousNotAllowedException(_('award'))
 
-    return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
-    # Display the template
-    return render_to_response('node/permanent_link.html', { 'url' : url, })

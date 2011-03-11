@@ -2,7 +2,6 @@ from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _
 from forum.models.action import ActionProxy
 from forum.models import Comment, Question, Answer, NodeRevision
-import logging
 
 class NodeEditAction(ActionProxy):
     def create_revision_data(self, initial=False, **data):
@@ -202,8 +201,6 @@ class AnswerToQuestionAction(ActionProxy):
     def process_data(self, title):
         self.node.node_type = "question"
         self.node.title = title
-        self.node.active_revision.title = title
-        self.node.active_revision.save()
         self.node.last_edited = self
         self.node.update_last_activity(self.user, save=True)
 
