@@ -8,6 +8,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
 from forum.settings import SUMMARY_LENGTH
+from forum.modules import MODULES_PACKAGE
 from utils import PickledObjectField
 
 class NodeContent(models.Model):
@@ -142,12 +143,30 @@ class NodeManager(CachedManager):
     use_for_related_fields = True
 
     def get_query_set(self):
+        CurrentUserHolder = None
+
+        moderation_import = 'from %s.moderation.startup import CurrentUserHolder' % MODULES_PACKAGE
+        exec moderation_import
+
         qs = NodeQuerySet(self.model)
 
         if self.model is not Node:
-            return qs.filter(node_type=self.model.get_type())
-        else:
-            return qs
+            qs = qs.filter(node_type=self.model.get_type())
+
+        if CurrentUserHolder is not None:
+            user = CurrentUserHolder.user
+
+            try:
+                filter_content = not user.is_staff and not user.is_superuser
+            except:
+                filter_content = True
+
+            if filter_content:
+                qs = qs.exclude(state_string__contains="(in_moderation)").exclude(state_string__contains="(deleted)").exclude(
+                    state_string__contains="(rejected)"
+                )
+
+        return qs
 
     def get_for_types(self, types, *args, **kwargs):
         kwargs['node_type__in'] = [t.get_type() for t in types]

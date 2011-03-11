@@ -29,7 +29,7 @@ from forum.authentication import AUTH_PROVIDERS
 from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answer
 from forum.actions import UserJoinsAction
 
-
+from forum.settings import REP_GAIN_BY_EMAIL_VALIDATION
 from vars import ON_SIGNIN_SESSION_ATTR, PENDING_SUBMISSION_SESSION_ATTR
 
 def signin_page(request):

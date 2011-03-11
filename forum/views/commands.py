@@ -580,3 +580,20 @@ def answer_permanent_link(request, id):
 
     # Display the template
     return render_to_response('node/permanent_link.html', { 'url' : url, })
+
+@decorate.withfn(command)
+def award_points(request, user_id, answer_id):
+    user = request.user
+    awarded_user = get_object_or_404(User, id=user_id)
+
+    # Users shouldn't be able to award themselves
+    if awarded_user.id == user.id:
+        raise CannotDoOnOwnException(_("award"))
+
+    # Anonymous users cannot award  points, they just don't have such
+    if not user.is_authenticated():
+        raise AnonymousNotAllowedException(_('award'))
+
+    return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
+    # Display the template
+    return render_to_response('node/permanent_link.html', { 'url' : url, })

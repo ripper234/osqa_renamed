@@ -21,6 +21,7 @@ MIDDLEWARE_CLASSES = [
     'forum.middleware.anon_user.ConnectToSessionMessagesMiddleware',
     'forum.middleware.request_utils.RequestUtils',
     'forum.middleware.cancel.CancelActionMiddleware',
+    'forum.middleware.admin_messages.AdminMessagesMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
 ]
 
