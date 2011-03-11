@@ -1,26 +1,119 @@
 from django.conf import settings
-from django.template import loader
-from django.template.loaders import filesystem 
-from django.http import HttpResponse
+from django.template.loaders import filesystem
+from django.template import TemplateDoesNotExist, Template as DJTemplate
+from django.conf import settings as djsettings
 import os.path
 import logging
 
-#module for skinning osqa
-#at this point skin can be changed only in settings file
-#via OSQA_DEFAULT_SKIN variable
+UNEXISTENT_TEMPLATE = object()
 
-#note - Django template loaders use method django.utils._os.safe_join
-#to work on unicode file paths
-#here it is ignored because it is assumed that we won't use unicode paths
+SKINS_FOLDER = os.path.dirname(__file__)
+SKIN_TEMPLATES_FOLDER = 'templates'
+DEFAULT_SKIN_NAME = 'default'
+FORCE_DEFAULT_PREFIX = "%s/" % DEFAULT_SKIN_NAME
 
-def load_template_source(name, dirs=None):
-    try:
-        tname = os.path.join(settings.OSQA_DEFAULT_SKIN,'templates',name)
-        return filesystem.load_template_source(tname,dirs)
-    except:
-        tname = os.path.join('default','templates',name)
-        return filesystem.load_template_source(tname,dirs)
-load_template_source.is_usable = True
+
+class Template(object):
+
+    def __init__(self, file_name):
+        self._file_name = file_name
+        self._loaded = False
+
+    def _get_mtime(self):
+        return os.path.getmtime(self._file_name)
+
+    def _check_mtime(self):
+        if self._last_mtime is None:
+            return False
+
+        return self._last_mtime == self._get_mtime()
+
+    def _load(self):
+        try:
+            f = open(self._file_name, 'r')
+            self._source = f.read()
+            f.close()
+            self._loaded = True
+
+            self._last_mtime = self._get_mtime()
+        except:
+            self._loaded = False
+            self._last_mtime = None
+
+            raise
+
+    def return_tuple(self):
+        if not (self._loaded and self._check_mtime()):
+            try:
+                self._load()
+            except:
+                raise TemplateDoesNotExist, self._file_name
+
+        return self._source, self._file_name
+
+class BaseTemplateLoader(object):
+    is_usable = True
+
+    def __init__(self):
+        self.cache = {}
+
+    def __call__(self, name=None, dirs=None):
+        if name is None:
+            return self
+
+        return self.load_template(name, dirs)
+
+    def load_template(self, name, dirs=None):
+        if not djsettings.TEMPLATE_DEBUG:
+            if name in self.cache:
+                if self.cache[name] is UNEXISTENT_TEMPLATE:
+                    raise TemplateDoesNotExist, name
+
+                try:
+                    return self.cache[name].return_tuple()
+                except:
+                    del self.cache[name]
+
+        template = self.load_template_source(name, dirs)
+
+        if template is not None:
+            if not djsettings.DEBUG:
+                self.cache[name] = template
+
+            return template.return_tuple()
+        else:
+            if not djsettings.DEBUG:
+                self.cache[name] = UNEXISTENT_TEMPLATE
+
+            raise TemplateDoesNotExist, name
+
+    def load_template_source(self, name, dirs=None):
+        raise NotImplementedError
+
+
+class SkinsTemplateLoader(BaseTemplateLoader):
+
+    def load_template_source(self, name, dirs=None):
+
+        if name.startswith(FORCE_DEFAULT_PREFIX):
+
+            file_name = os.path.join(SKINS_FOLDER, DEFAULT_SKIN_NAME, SKIN_TEMPLATES_FOLDER, name[len(FORCE_DEFAULT_PREFIX):])
+
+            if os.path.exists(file_name):
+                return Template(file_name)
+            else:
+                return None
+
+        for skin in (settings.OSQA_DEFAULT_SKIN, DEFAULT_SKIN_NAME):
+            file_name = os.path.join(SKINS_FOLDER, skin, SKIN_TEMPLATES_FOLDER, name)
+
+            if os.path.exists(file_name):
+                return Template(file_name)
+
+        return None
+
+load_template_source = SkinsTemplateLoader()
+
 
 def find_media_source(url):
     """returns url prefixed with the skin name
@@ -55,6 +148,4 @@ def find_media_source(url):
                 use_skin = ''
                 return None
     return use_skin + '/' + url
-
-
 

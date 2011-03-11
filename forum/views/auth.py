@@ -30,7 +30,9 @@ from forum.models import AuthKeyUserAssociation, ValidationHash, Question, Answe
 from forum.actions import UserJoinsAction, EmailValidationAction
 from forum.models.action import ActionRepute
 
+
 from forum.settings import REP_GAIN_BY_EMAIL_VALIDATION
+from vars import ON_SIGNIN_SESSION_ATTR, PENDING_SUBMISSION_SESSION_ATTR
 
 def signin_page(request):
     referer = request.META.get('HTTP_REFERER', '/')
@@ -38,9 +40,9 @@ def signin_page(request):
     # If the referer is equal to the sign up page, e. g. if the previous login attempt was not successful we do not
     # change the sign in URL. The user should go to the same page.
     if not referer.replace(settings.APP_URL, '') == reverse('auth_signin'):
-        request.session['on_signin_url'] = referer
+        request.session[ON_SIGNIN_SESSION_ATTR] = referer
 
-    all_providers = [provider.context for provider in AUTH_PROVIDERS.values()]
+    all_providers = [provider.context for provider in AUTH_PROVIDERS.values() if provider.context]
 
     sort = lambda c1, c2: c1.weight - c2.weight
     can_show = lambda c: not request.user.is_authenticated() or c.show_to_logged_in_user
@@ -146,7 +148,7 @@ def process_provider_signin(request, provider):
             assoc = AuthKeyUserAssociation.objects.get(key=assoc_key)
             user_ = assoc.user
             return login_and_forward(request, user_)
-        except:
+        except AuthKeyUserAssociation.DoesNotExist:
             request.session['assoc_key'] = assoc_key
             request.session['auth_provider'] = provider
             return HttpResponseRedirect(reverse('auth_external_register'))
@@ -225,7 +227,7 @@ def external_register(request):
     return render_to_response('auth/complete.html', {
     'form1': form1,
     'email_feeds_form': email_feeds_form,
-    'provider':mark_safe(provider_context.human_name),
+    'provider':provider_context and mark_safe(provider_context.human_name) or _('unknown'),
     'login_type':provider_context.id,
     'gravatar_faq_url':reverse('faq') + '#gravatar',
     }, context_instance=RequestContext(request))
@@ -391,14 +393,14 @@ def login_and_forward(request, user, forward=None, message=None):
     request.user.message_set.create(message=message)
 
     if not forward:
-        forward = request.session.get('on_signin_url', reverse('index'))
+        forward = request.session.get(ON_SIGNIN_SESSION_ATTR, reverse('index'))
 
-    pending_data = request.session.get('pending_submission_data', None)
+    pending_data = request.session.get(PENDING_SUBMISSION_SESSION_ATTR, None)
 
     if pending_data and (user.email_isvalid or pending_data['type'] not in settings.REQUIRE_EMAIL_VALIDATION_TO):
         submission_time = pending_data['time']
         if submission_time < datetime.datetime.now() - datetime.timedelta(minutes=int(settings.HOLD_PENDING_POSTS_MINUTES)):
-            del request.session['pending_submission_data']
+            del request.session[PENDING_SUBMISSION_SESSION_ATTR]
         elif submission_time < datetime.datetime.now() - datetime.timedelta(minutes=int(settings.WARN_PENDING_POSTS_MINUTES)):
             user.message_set.create(message=(_("You have a %s pending submission.") % pending_data['data_name']) + " %s, %s, %s" % (
                 html.hyperlink(reverse('manage_pending_data', kwargs={'action': _('save')}), _("save it")),

@@ -215,5 +215,6 @@ urlpatterns += patterns('',
 
                         url(r'^feeds/rss[/]?$', app.readers.feed, name="latest_questions_feed"),
 
-                        url(r'^(?P<path>.+)$', app.meta.page, name="static_page"),
+                        #url(r'^.+$', app.meta.page, name="static_page"),
                         )
+

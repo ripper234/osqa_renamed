@@ -2,8 +2,6 @@ from base import *
 from tag import Tag
 from django.utils.translation import ugettext as _
 
-question_view = django.dispatch.Signal(providing_args=['instance', 'user'])
-
 class QuestionManager(NodeManager):
     def search(self, keywords):
         return False, self.filter(models.Q(title__icontains=keywords) | models.Q(body__icontains=keywords))
@@ -77,12 +75,6 @@ class Question(Node):
             active_users.add(comment.author)
         
         return active_users
-
-def question_viewed(instance, **kwargs):
-    instance.extra_count += 1
-    instance.save()
-
-question_view.connect(question_viewed)
 
 
 class QuestionSubscription(models.Model):

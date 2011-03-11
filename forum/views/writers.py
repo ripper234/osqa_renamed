@@ -18,6 +18,7 @@ from forum.models import *
 from forum.forms import get_next_url
 from forum.utils import html
 
+from vars import PENDING_SUBMISSION_SESSION_ATTR
 
 def upload(request):#ajax upload file to a question or answer
     class FileTypeNotAllow(Exception):
@@ -84,7 +85,7 @@ def ask(request):
 
                     return HttpResponseRedirect(question.get_absolute_url())
                 else:
-                    request.session['pending_submission_data'] = {
+                    request.session[PENDING_SUBMISSION_SESSION_ATTR] = {
                         'POST': request.POST,
                         'data_name': _("question"),
                         'type': 'ask',
@@ -233,7 +234,7 @@ def answer(request, id):
 
             return HttpResponseRedirect(answer.get_absolute_url())
         else:
-            request.session['pending_submission_data'] = {
+            request.session[PENDING_SUBMISSION_SESSION_ATTR] = {
                 'POST': request.POST,
                 'data_name': _("answer"),
                 'type': 'answer',
@@ -253,7 +254,7 @@ def answer(request, id):
 
 
 def manage_pending_data(request, action, forward=None):
-    pending_data = request.session.pop('pending_submission_data', None)
+    pending_data = request.session.pop(PENDING_SUBMISSION_SESSION_ATTR, None)
 
     if not pending_data:
         raise Http404
