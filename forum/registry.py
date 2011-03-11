@@ -1,11 +1,18 @@
-from forum.modules import ui
+from forum.modules import ui, get_modules_script
 from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
+from django.template import get_templatetags_modules
 from forum.templatetags.extra_tags import get_score_badge
 from forum.utils.html import cleanup_urls
 from forum import settings
 
+
+modules_template_tags = get_modules_script('templatetags')
+django_template_tags = get_templatetags_modules()
+
+for m in modules_template_tags:
+    django_template_tags.append(m.__name__)
 
 ui.register(ui.HEADER_LINKS,
             ui.Link(_('faq'), ui.Url('faq'), weight=400),

@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from xml.dom import minidom
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
 import re
 import os
 import gc
 from django.utils.translation import ugettext as _
-from django.template.defaultfilters import slugify
-from forum.models.utils import dbsafe_encode
 from orm import orm
 
 from django.utils.encoding import force_unicode
@@ -167,13 +164,12 @@ class IdIncrementer():
 
 openidre = re.compile('^https?\:\/\/')
 def userimport(path, options):
-#users = readTable(dump, "Users")
 
     usernames = []
     openids = set()
     uidmapper = IdMapper()
-    #merged_users = []
 
+    authenticated_user = options.get('authenticated_user', None)
     owneruid = options.get('owneruid', None)
     #check for empty values
     if not owneruid:
@@ -185,14 +181,29 @@ def userimport(path, options):
         if sxu.get('id') == '-1':
             return
         #print "\n".join(["%s : %s" % i for i in sxu.items()])
+
         if int(sxu.get('id')) == int(owneruid):
-            osqau = orm.User.objects.get(id=1)
-            for assoc in orm.AuthKeyUserAssociation.objects.filter(user=osqau):
-                openids.add(assoc.key)
-            uidmapper[owneruid] = 1
-            uidmapper[-1] = 1
-            create = False
-        else:
+            if authenticated_user:
+                osqau = orm.User.objects.get(id=authenticated_user.id)
+
+                for assoc in orm.AuthKeyUserAssociation.objects.filter(user=osqau):
+                    openids.add(assoc.key)
+
+                uidmapper[owneruid] = osqau.id
+                uidmapper[-1] = osqau.id
+                create = False
+            else:
+                uidmapper[owneruid] = int(owneruid)
+                uidmapper[-1] = int(owneruid)
+
+
+        sxbadges = sxu.get('badgesummary', None)
+        badges = {'1':'0', '2':'0', '3':'0'}
+
+        if sxbadges:
+            badges.update(dict([b.split('=') for b in sxbadges.split()]))
+
+        if create:
             username = unicode(sxu.get('displayname',
                                sxu.get('displaynamecleaned', sxu.get('realname', final_username_attempt(sxu)))))[:30]
 
@@ -210,15 +221,8 @@ def userimport(path, options):
 
                     if not totest in usernames:
                         username = totest
-                        break          
+                        break
 
-        sxbadges = sxu.get('badgesummary', None)
-        badges = {'1':'0', '2':'0', '3':'0'}
-
-        if sxbadges:
-            badges.update(dict([b.split('=') for b in sxbadges.split()]))
-
-        if create:
             osqau = orm.User(
                     id           = sxu.get('id'),
                     username     = username,
@@ -312,7 +316,6 @@ def userimport(path, options):
     return uidmapper
 
 def tagsimport(dump, uidmap):
-#tags = readTable(dump, "Tags")
 
     tagmap = {}
 
@@ -354,17 +357,7 @@ def remove_post_state(name, post):
     post.state_string = "".join("(%s)" % s for s in re.findall('\w+', post.state_string) if s != name)
 
 def postimport(dump, uidmap, tagmap):
-#history = {}
-#accepted = {}
     all = []
-
-    #for h in readTable(dump, "PostHistory"):
-    #    if not history.get(h.get('postid'), None):
-    #        history[h.get('postid')] = []
-    #
-    #    history[h.get('postid')].append(h)
-
-    #posts = readTable(dump, "Posts")
 
     def callback(sxpost):
         nodetype = (sxpost.get('posttypeid') == '1') and "nodetype" or "answer"
@@ -441,7 +434,6 @@ def postimport(dump, uidmap, tagmap):
     return all
 
 def comment_import(dump, uidmap, posts):
-#comments = readTable(dump, "PostComments")
     currid = IdIncrementer(max(posts))
     mapping = {}
 
@@ -516,7 +508,6 @@ def create_and_activate_revision(post):
     post.save()
 
 def post_vote_import(dump, uidmap, posts):
-#votes = readTable(dump, "Posts2Votes")
     close_reasons = {}
 
     def close_callback(r):
@@ -646,7 +637,6 @@ def post_vote_import(dump, uidmap, posts):
 
 
 def comment_vote_import(dump, uidmap, comments):
-#votes = readTable(dump, "Comments2Votes")
     user2vote = []
     comments2score = {}
 
@@ -688,7 +678,6 @@ def comment_vote_import(dump, uidmap, comments):
 
 
 def badges_import(dump, uidmap, post_list):
-#node_ctype = orm['contenttypes.contenttype'].objects.get(name='node')
 
     sxbadges = {}
 
@@ -750,10 +739,19 @@ def badges_import(dump, uidmap, post_list):
     for badge in obadges.values():
         badge.save()
 
+def save_setting(k, v):
+    try:
+        kv = orm.KeyValue.objects.get(key=k)
+        kv.value = v
+    except:
+        kv = orm.KeyValue(key = k, value = v)
+
+    kv.save()
+
+
 def pages_import(dump, currid):
     currid = IdIncrementer(currid)
     registry = {}
-    #sx_pages = readTable(dump, "FlatPages")
 
     def callback(sxp):
         currid.inc()
@@ -800,8 +798,7 @@ def pages_import(dump, currid):
 
     readTable(dump, "FlatPages", callback)
 
-    kv = orm.KeyValue(key='STATIC_PAGE_REGISTRY', value=dbsafe_encode(registry))
-    kv.save()
+    save_setting('STATIC_PAGE_REGISTRY', dbsafe_encode(registry))
 
 sx2osqa_set_map = {
 u'theme.html.name': 'APP_TITLE',
@@ -832,28 +829,17 @@ def html_decode(html):
 
 
 def static_import(dump):
-#sx_sets = readTable(dump, "ThemeTextResources")
     sx_unknown = {}
 
     def callback(set):
         if unicode(set['name']) in sx2osqa_set_map:
-            try:
-                kv = orm.KeyValue.objects.get(key=sx2osqa_set_map[set['name']])
-                kv.value = dbsafe_encode(html_decode(set['value']))
-            except:
-                kv = orm.KeyValue(
-                        key = sx2osqa_set_map[set['name']],
-                        value = dbsafe_encode(html_decode(set['value']))
-                        )
-
-            kv.save()
+            save_setting(sx2osqa_set_map[set['name']], dbsafe_encode(html_decode(set['value'])))
         else:
             sx_unknown[set['name']] = html_decode(set['value'])
 
     readTable(dump, "ThemeTextResources", callback)
 
-    unknown = orm.KeyValue(key='SXIMPORT_UNKNOWN_SETS', value=dbsafe_encode(sx_unknown))
-    unknown.save()
+    save_setting('SXIMPORT_UNKNOWN_SETS', dbsafe_encode(sx_unknown))
 
 def disable_triggers():
     from south.db import db

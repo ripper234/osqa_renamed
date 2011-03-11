@@ -11,3 +11,7 @@ if 'rosetta' in settings.INSTALLED_APPS:
         url(r'^rosetta/', include('rosetta.urls')),
     )
 
+handler404 = 'forum.views.meta.page'
+handler500 = 'forum.views.meta.error_handler'
+
+
