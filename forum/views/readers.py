@@ -6,7 +6,6 @@ from forum import settings as django_settings
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404, HttpResponsePermanentRedirect
 from django.core.paginator import Paginator, EmptyPage, InvalidPage
-from django.core.exceptions import ObjectDoesNotExist
 from django.template import RequestContext
 from django import template
 from django.utils.html import *
@@ -102,12 +101,10 @@ def questions(request):
 
 @decorators.render('questions.html')
 def tag(request, tag):
-
     try:
         tag = Tag.active.get(name=unquote(tag))
     except Tag.DoesNotExist:
         raise Http404
-
 
     return question_list(request,
                          Question.objects.filter(tags=tag),
