@@ -97,7 +97,7 @@ urlpatterns += patterns('',
                         url(r'^%s(?P<id>\d+)/' % _('node_markdown/'), app.commands.node_markdown, name='node_markdown'),
                         url(r'^%s(?P<id>\d+)/' % _('convert/'), app.commands.convert_to_comment,
                             name='convert_to_comment'),
-                        url(r'^%s(?P<id>\d+)/' % _('convert_to_question/'), app.commands.convert_to_question,
+                        url(r'^%s(?P<id>\d+)/' % _('convert_to_question/'), app.writers.convert_to_question,
                             name='convert_to_question'),
                         url(r'^%s(?P<id>\d+)/' % _('wikify/'), app.commands.wikify, name='wikify'),
 

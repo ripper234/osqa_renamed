@@ -8,29 +8,7 @@ import django.dispatch
 
 class ActiveTagManager(models.Manager):
     def get_query_set(self):
-        qs = super(ActiveTagManager, self).get_query_set().exclude(used_count__lt=1)
-
-        CurrentUserHolder = None
-
-        moderation_import = 'from %s.moderation.startup import CurrentUserHolder' % MODULES_PACKAGE
-        exec moderation_import
-
-        if CurrentUserHolder is not None:
-            user = CurrentUserHolder.user
-
-            try:
-                filter_content = not user.is_staff and not user.is_superuser
-            except:
-                filter_content = True
-
-            if filter_content:
-                moderation_import = 'from %s.moderation.hooks import get_tag_ids' % MODULES_PACKAGE
-                exec moderation_import
-                qs = qs.exclude(id__in=get_tag_ids('deleted')).exclude(id__in=get_tag_ids('rejected')).exclude(
-                    id__in=get_tag_ids('in_moderation')
-                )
-
-        return qs
+        return super(ActiveTagManager, self).get_query_set().exclude(used_count__lt=1)
 
 class Tag(BaseModel):
     name            = models.CharField(max_length=255, unique=True)

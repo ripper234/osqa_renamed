@@ -88,11 +88,11 @@
         
 {% block content %}
 <div id="main-bar" class="headNormal">
-    {% trans "Edit question" %} [<a href="{{ question.get_absolute_url }}">{% trans "back" %}</a>]
+    {% block edittype %}{% trans "Edit question" %}{% endblock %} [<a href="{{ question.get_absolute_url }}">{% trans "back" %}</a>]
 </div>
 <div id="main-body" class="ask-body">
     <div id="askform">
-        <form id="fmedit" action="{% url edit_question question.id %}" method="post" >
+        <form id="fmedit" action="" method="post" >
             <label for="id_revision" ><strong>{% trans "revision" %}:</strong></label> <br/> 
             {% if revision_form.revision.errors %}{{ revision_form.revision.errors.as_ul }}{% endif %}
             <div style="vertical-align:middle">

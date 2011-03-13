@@ -196,21 +196,29 @@ class CommentToAnswerAction(ActionProxy):
             'question': self.describe_node(viewer, self.node.abs_parent),
         }
 
-class AnswerToQuestionAction(ActionProxy):
+class AnswerToQuestionAction(NodeEditAction):
     verb = _("converted to question")
 
-    def process_data(self, title):
-        self.node.node_type = "question"
-        self.node.title = title
-        self.node.active_revision.title = title
-        self.node.active_revision.save()
-        self.node.last_edited = self
-        self.node.update_last_activity(self.user, save=True)
+    def process_data(self,  **data):
+        revision_data = self.create_revision_data(**data)
+        revision = self.node.create_revision(self.user, **revision_data)
 
-        try:
-            self.node.abs_parent.reset_answer_count_cache()
-        except AttributeError:
-            pass
+        original_question = self.node.question
+
+        self.extra = {
+            'covert_revision': revision.revision,
+            'original_question': original_question
+        }
+
+        self.node.node_type = "question"
+        self.node.parent = None
+        self.node.abs_parent = None
+
+        original_question.reset_answer_count_cache()
+
+    def process_action(self):
+        self.node.last_edited = self
+        self.node.save()
 
 
     def describe(self, viewer=None):

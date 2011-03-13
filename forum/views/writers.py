@@ -12,11 +12,12 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 
-from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction
+from forum.actions import AskAction, AnswerAction, ReviseAction, RollbackAction, RetagAction, AnswerToQuestionAction
 from forum.forms import *
 from forum.models import *
 from forum.forms import get_next_url
 from forum.utils import html
+from forum.http_responses import HttpResponseUnauthorized
 
 from vars import PENDING_SUBMISSION_SESSION_ATTR
 
@@ -111,6 +112,16 @@ def ask(request):
         'tab' : 'ask'
         }, context_instance=RequestContext(request))
 
+def convert_to_question(request, id):
+    user = request.user
+    answer = get_object_or_404(Answer, id=id)
+
+    if not user.can_convert_to_question(answer):
+        return HttpResponseUnauthorized(request)
+
+    return _edit_question(request, answer, template='node/convert_to_question.html', summary=_("Converted to question"),
+                           action_class=AnswerToQuestionAction, allow_rollback=False, url_getter=lambda a: Question.objects.get(id=a.id).get_absolute_url())
+
 def edit_question(request, id):
     question = get_object_or_404(Question, id=id)
     if question.nis.deleted and not request.user.can_view_deleted_post(question):
@@ -138,7 +149,7 @@ def _retag_question(request, question):
         #'tags' : _get_tags_cache_json(),
     }, context_instance=RequestContext(request))
 
-def _edit_question(request, question):
+def _edit_question(request, question, template='question_edit.html', summary='', action_class=ReviseAction, allow_rollback=True, url_getter=lambda q: q.get_absolute_url()):
     if request.method == 'POST':
         revision_form = RevisionForm(question, data=request.POST)
         revision_form.is_valid()
@@ -151,7 +162,7 @@ def _edit_question(request, question):
 
         if not 'select_revision' in request.POST and form.is_valid():
             if form.has_changed():
-                action = ReviseAction(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
+                action = action_class(user=request.user, node=question, ip=request.META['REMOTE_ADDR']).save(data=form.cleaned_data)
 
                 if settings.WIKI_ON:
                     if request.POST.get('wiki', False) and not question.nis.wiki:
@@ -160,19 +171,22 @@ def _edit_question(request, question):
                         question.nstate.wiki = None
             else:
                 if not revision == question.active_revision:
-                    RollbackAction(user=request.user, node=question).save(data=dict(activate=revision))
+                    if allow_rollback:
+                        RollbackAction(user=request.user, node=question).save(data=dict(activate=revision))
+                    else:
+                        pass
 
-            return HttpResponseRedirect(question.get_absolute_url())
+            return HttpResponseRedirect(url_getter(question))
     else:
         revision_form = RevisionForm(question)
-        form = EditQuestionForm(question, request.user)
+        form = EditQuestionForm(question, request.user, initial={'summary': summary})
 
-    return render_to_response('question_edit.html', {
+    return render_to_response(template, {
         'question': question,
         'revision_form': revision_form,
         'form' : form,
-        #'tags' : _get_tags_cache_json()
     }, context_instance=RequestContext(request))
+
 
 def edit_answer(request, id):
     answer = get_object_or_404(Answer, id=id)

@@ -457,36 +457,6 @@ def convert_comment_to_answer(request, id):
     return RefreshPageCommand()
 
 @decorate.withfn(command)
-def convert_to_question(request, id):
-    user = request.user
-    answer = get_object_or_404(Answer, id=id)
-    question = answer.question
-
-    if not request.POST:
-        description = lambda a: _("Answer by %(uname)s: %(snippet)s...") % {'uname': a.author.username,
-                                                                            'snippet': a.summary[:10]}
-        nodes = [(question.id, _("Question"))]
-        [nodes.append((a.id, description(a))) for a in
-         question.answers.filter_state(deleted=False).exclude(id=answer.id)]
-
-        return render_to_response('node/convert_to_question.html', {'answer': answer})
-
-    if not user.is_authenticated():
-        raise AnonymousNotAllowedException(_("convert answers to questions"))
-
-    if not user.can_convert_to_question(answer):
-        raise NotEnoughRepPointsException(_("convert answers to questions"))
-
-    try:
-        title = request.POST.get('title', None)
-    except:
-        raise CommandException(_("You haven't specified the title of the new question"))
-
-    AnswerToQuestionAction(user=user, node=answer, ip=request.META['REMOTE_ADDR']).save(data=dict(title=title))
-
-    return RefreshPageCommand()
-
-@decorate.withfn(command)
 def subscribe(request, id, user=None):
     if user:
         try:
