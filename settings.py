@@ -72,7 +72,6 @@ if FORCE_SCRIPT_NAME.endswith('/'):
     FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME[:-1]
 
 from forum import modules
-
 modules.init_modules_engine(SITE_SRC_ROOT, DISABLED_MODULES)
 
 [MIDDLEWARE_CLASSES.extend(

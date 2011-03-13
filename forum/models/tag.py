@@ -11,7 +11,6 @@ class ActiveTagManager(models.Manager):
         qs = super(ActiveTagManager, self).get_query_set().exclude(used_count__lt=1)
 
         CurrentUserHolder = None
-
         moderation_import = 'from %s.moderation.startup import CurrentUserHolder' % MODULES_PACKAGE
         exec moderation_import
 

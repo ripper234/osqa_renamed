@@ -1,7 +1,4 @@
+{% extends "question_edit.html" %}
 {% load i18n %}
-<div>
-    <p>{% trans "Title of the new question:" %}</p>
-
-    <input type="text" name="title" />
-</div>
-
+{% block title %}{% trans "Convert to question" %}{% endblock %}
+{% block edittype %}{% trans "Convert to question" %}{% endblock %}
