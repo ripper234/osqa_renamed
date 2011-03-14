@@ -9,8 +9,15 @@
     </div>      
 	<div id="completetxt" >
         <div class="message">
-            <b>{% trans "You are here for the first time with " %}{{ provider }}</b>
-            {% trans "Please create your screen name and save your email address. Saved email address will let you subscribe for the updates on the most interesting questions and will be used to create and retrieve your unique avatar image. " %}
+            {# Only display the OpenID greeting if a provider is detected. #}
+            {% if provider %}
+                <p>
+                    <b>{% trans "You are here for the first time with " %}{{ provider }}</b>
+                </p>
+            {% endif %}
+            <p>
+                {% trans "Please choose your screen name and confirm your email address. A valid email address is necessary to receive notifications about activity in the areas of this community you're most interested in, and will help you become an involved participant in this community." %}
+            </p>
         </div>
     	<p style="display:none">{% trans "This account already exists, please use another." %}</p>
 	</div>
