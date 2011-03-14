@@ -2,8 +2,6 @@ import os
 import types
 import logging
 
-from forum.utils.mixed import Proxy
-
 MODULES_PACKAGE = 'forum_modules'
 
 MODULE_LIST = []
