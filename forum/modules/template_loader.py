@@ -22,7 +22,7 @@ class ModulesTemplateLoader(BaseTemplateLoader):
 
         if name.startswith(MODULES_TEMPLATE_PREFIX):
             match = self.modules_re.search(name)
-            file_name = os.path.join(modules.MODULES_FOLDER, match.group(1), MODULES_TEMPLATE_FOLDER, match.group(2))
+            file_name = os.path.join(modules.get_modules_folder(), match.group(1), MODULES_TEMPLATE_FOLDER, match.group(2))
 
             if os.path.exists(file_name):
                 template = Template(file_name)

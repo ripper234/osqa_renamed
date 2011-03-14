@@ -18,7 +18,7 @@ from store import OsqaOpenIDStore
 class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
 
     dataype2ax_schema = {
-        #'username': 'http://axschema.org/namePerson/friendly',
+        'username': 'http://axschema.org/namePerson/friendly',
         'email': 'http://axschema.org/contact/email',
         #'web': 'http://axschema.org/contact/web/default',
         #'firstname': 'http://axschema.org/namePerson/first',
@@ -112,30 +112,32 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
             if sreg_attrs:
                 sreg_response = SRegResponse.fromSuccessResponse(openid_response)
 
-                all_attrs = {}
-                [all_attrs.update(d) for k,d in sreg_attrs.items() if k != "policy_url"]
+                if sreg_response:
+                    all_attrs = {}
+                    [all_attrs.update(d) for k,d in sreg_attrs.items() if k != "policy_url"]
 
-                for attr_name, local_name in all_attrs.items():
-                    if attr_name in sreg_response:
-                        consumer_data[local_name] = sreg_response[attr_name]
+                    for attr_name, local_name in all_attrs.items():
+                        if attr_name in sreg_response:
+                            consumer_data[local_name] = sreg_response[attr_name]
 
             ax_schema = getattr(self, 'dataype2ax_schema', False)
 
             if ax_schema:
                 ax = AXFetchResponse.fromSuccessResponse(openid_response)
 
-                axargs = ax.getExtensionArgs()
+                if ax:
+                    axargs = ax.getExtensionArgs()
 
-                ax_schema2data_type = dict([(s, t) for t, s in ax_schema.items()])
+                    ax_schema2data_type = dict([(s, t) for t, s in ax_schema.items()])
 
-                available_types = dict([
-                    (ax_schema2data_type[s], re.sub('^type\.', '', n))
-                    for n, s in axargs.items() if s in ax_schema2data_type
-                ])
+                    available_types = dict([
+                        (ax_schema2data_type[s], re.sub('^type\.', '', n))
+                        for n, s in axargs.items() if s in ax_schema2data_type
+                    ])
 
-                for t, s in available_types.items():
-                    if not t in consumer_data:
-                        consumer_data[t] = axargs["value.%s.1" % s]
+                    for t, s in available_types.items():
+                        if not t in consumer_data:
+                            consumer_data[t] = axargs["value.%s.1" % s]
                     
             request.session['auth_consumer_data'] = consumer_data
 

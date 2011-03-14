@@ -2,22 +2,28 @@ import os
 import types
 import logging
 
+from forum.utils.mixed import Proxy
+
 MODULES_PACKAGE = 'forum_modules'
 
-MODULES_FOLDER = None
 MODULE_LIST = []
 
 
 def init_modules_engine(site_src_root, disabled_modules):
-    MODULES_FOLDER = os.path.join(site_src_root, MODULES_PACKAGE)
+    modules_folder = os.path.join(site_src_root, MODULES_PACKAGE)
 
     MODULE_LIST.extend(filter(lambda m: getattr(m, 'CAN_USE', True), [
             __import__('forum_modules.%s' % f, globals(), locals(), ['forum_modules'])
-            for f in os.listdir(MODULES_FOLDER)
-            if os.path.isdir(os.path.join(MODULES_FOLDER, f)) and
-               os.path.exists(os.path.join(MODULES_FOLDER, "%s/__init__.py" % f)) and
+            for f in os.listdir(modules_folder)
+            if os.path.isdir(os.path.join(modules_folder, f)) and
+               os.path.exists(os.path.join(modules_folder, "%s/__init__.py" % f)) and
                not f in disabled_modules
     ]))
+
+    get_modules_folder.value = modules_folder
+
+def get_modules_folder():
+    return get_modules_folder.value
 
 def get_modules_script(script_name):
     all = []
