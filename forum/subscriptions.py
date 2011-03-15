@@ -38,9 +38,8 @@ def question_posted(action, new):
 
     send_template_email(subscribers, "notifications/newquestion.html", {'question': question})
 
-    if question.author.subscription_settings.questions_asked:
-        subscription = QuestionSubscription(question=question, user=question.author)
-        subscription.save()
+    subscription = QuestionSubscription(question=question, user=question.author)
+    subscription.save()
 
     new_subscribers = User.objects.filter(
             Q(subscription_settings__all_questions=True) |
@@ -68,8 +67,7 @@ def answer_posted(action, new):
 
     send_template_email(subscribers, "notifications/newanswer.html", {'answer': answer})
 
-    if answer.author.subscription_settings.questions_answered:
-        create_subscription_if_not_exists(question, answer.author)
+    create_subscription_if_not_exists(question, answer.author)
 
 AnswerAction.hook(answer_posted)
 
@@ -100,8 +98,7 @@ def comment_posted(action, new):
 
     send_template_email(subscribers, "notifications/newcomment.html", {'comment': comment})
 
-    if comment.user.subscription_settings.questions_commented:
-        create_subscription_if_not_exists(question, comment.user)
+    create_subscription_if_not_exists(question, comment.user)
 
 CommentAction.hook(comment_posted)
 
