@@ -79,7 +79,7 @@
                 <tr>
                     <td>{% trans "email" %}</td>
                     <td>
-                        <a href="mailto: {{ view_user.email }}">{{ view_user.email }}</a>
+                        <a href="mailto:{{ view_user.email }}">{{ view_user.email }}</a>
                         {% if not view_user.email_isvalid %}
                             ({% trans "not validated" %})
                             {% ifequal request.user view_user %}
