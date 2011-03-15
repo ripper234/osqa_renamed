@@ -555,6 +555,7 @@ def answer_permanent_link(request, id):
 def award_points(request, user_id, answer_id):
     user = request.user
     awarded_user = get_object_or_404(User, id=user_id)
+    answer = get_object_or_404(Answer, id=answer_id)
 
     # Users shouldn't be able to award themselves
     if awarded_user.id == user.id:
@@ -568,4 +569,13 @@ def award_points(request, user_id, answer_id):
         return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
     else:
         points = int(request.POST['points'])
+
+        extra = dict(message=request.POST.get('message', ''), awarding_user=request.user.id, value=points)
+
+        # We take points from the awarding user
+        BonusRepAction(user=request.user, extra=extra).save(data=dict(value=-points, affected=user))
+
+        # And give them to the awarded one
+        BonusRepAction(user=request.user, extra=extra).save(data=dict(value=points, affected=awarded_user))
+
         return { 'message' : _("You have awarded %s with %d points") % (awarded_user, points) }
