@@ -71,6 +71,10 @@ var response_commands = {
         });
     },
 
+    award_points: function(id) {
+        alert('ok');
+    },
+
     insert_comment: function(post_id, comment_id, comment, username, profile_url, delete_url, edit_url, convert_url) {
         var $container = $('#comments-container-' + post_id);
         var skeleton = $('#new-comment-skeleton-' + post_id).html().toString();

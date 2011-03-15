@@ -564,6 +564,8 @@ def award_points(request, user_id, answer_id):
     if not user.is_authenticated():
         raise AnonymousNotAllowedException(_('award'))
 
-    return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
-    # Display the template
-    return render_to_response('node/permanent_link.html', { 'url' : url, })
+    if not request.POST:
+        return render_to_response("node/award_points.html", { 'user' : user, 'awarded_user' : awarded_user, })
+    else:
+        points = int(request.POST['points'])
+        return { 'message' : _("You have awarded %s with %d points") % (awarded_user, points) }
