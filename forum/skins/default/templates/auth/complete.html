@@ -74,14 +74,6 @@
                 {{ form1.recaptcha }}
                 </div>
             {% endif %}
-            <p>{% trans "receive updates motivational blurb" %}</p>
-            <div class='simple-subscribe-options'>
-            {{email_feeds_form.subscribe}}
-            {% if email_feeds_form.errors %}
-            <p class="error">{% trans "please select one of the options above" %}</p>
-            {% endif %}
-            </div>
-            <p class='space-above'>{% trans "Tag filter tool will be your right panel, once you log in." %}</p>
             <div class="submit-row"><input type="submit" class="submit" name="bnewaccount" id="bnewaccount" value="{% trans "create account" %}"/></div>
 		</form>
 	</div>
@@ -95,9 +87,6 @@
 				<div class="form-row"><label for="id_username">{% trans "user name" %}</label><br/>{{ form2.username }}</div>
 				<div class="form-row"><label for="id_passwordl">{% trans "password" %}</label><br/>{{ form2.password }}</div>
                 <p><span class='big strong'>(Optional) receive updates by email</span> - only sent when there are any.</p>
-                <div class='simple-subscribe-options'>
-                {{email_feeds_form.subscribe}}
-                </div>
 				<!--todo double check translation from chinese 确认 = "Register" -->
 				<div class="submit-row">
 					<input type="submit" class="submit" name="bverify" value="{% trans "Register" %}"/> 

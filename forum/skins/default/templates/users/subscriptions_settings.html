@@ -7,15 +7,6 @@
     {% blocktrans %}
     Here you can decide which types of notifications you wish to receive, and their frequency.<br />
     {% endblocktrans %}
-    {% if notificatons_on %}
-    {% blocktrans %}
-    Currently you have notifications enabled. You can always stop all notifications without losing your settings and restart them afterwards.<br />
-    {% endblocktrans %}
-    {% else %}
-    {% blocktrans %}
-    Currently you have notifications disabled. You can enable them by clicking on the <strong>Start notifications</strong> button below.<br />
-    {% endblocktrans %}
-    {% endif %}
 </p>
 <div class='inline-block'>
 <form method="POST">
@@ -48,17 +39,6 @@
         <tr>
             <td colspan="3">
                 <strong>{% trans "Auto subscribe me to:" %}</strong>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                {{ form.questions_asked }}{% trans "Questions I ask" %}
-            </td>
-            <td>
-                {{ form.questions_answered }}{% trans "Questions I answer" %}
-            </td>
-            <td>
-                {{ form.questions_commented }}{% trans "Questions I comment" %}
             </td>
         </tr>
         <tr>
@@ -101,12 +81,7 @@
     <table class="form-as-table check-table">
         <tr>
             <td>
-                <strong>{% trans "More:" %}</strong>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                {{ form.notify_reply_to_comments }}{% trans "Notify me when someone replies to one of my comments on any post using the <pre>@username</pre> notation" %}
+                <strong>{% trans "Daily Digest:" %}</strong>
             </td>
         </tr>
         <tr>
@@ -114,14 +89,19 @@
                 {{ form.send_digest }}{% trans "Send me the daily digest with information about the site activity" %}
             </td>
         </tr>
+        <tr>
+            <td>
+                <strong>{% trans "Notify When I'm Discussed:" %}</strong>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                {{ form.notify_reply_to_comments }}{% trans "Notify me when someone replies to one of my comments on any post using the <pre>@username</pre> notation" %}
+            </td>
+        </tr>
     </table>
     <div class="submit-row">
         <input type="submit" class="submit" name="save" value="{% trans "Update" %}"/>
-        {% if notificatons_on %}
-        <input type="submit" class="submit" name="notswitch" value="{% trans "Stop notifications" %}"/>
-        {% else %}
-        <input type="submit" class="submit" name="notswitch" value="{% trans "Start notifications" %}"/>
-        {% endif %}
     </div>
 </form>
 </div>

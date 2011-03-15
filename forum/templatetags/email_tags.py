@@ -2,6 +2,7 @@ from django import template
 from forum import settings
 from forum.utils.mail import create_and_send_mail_messages
 from django.template.defaulttags import url as default_url
+import logging
 
 register = template.Library()
 
