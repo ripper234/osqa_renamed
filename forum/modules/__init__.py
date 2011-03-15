@@ -1,24 +1,7 @@
-import os
 import types
 import logging
 
-MODULES_PACKAGE = 'forum_modules'
-
-MODULE_LIST = []
-
-
-def init_modules_engine(site_src_root, disabled_modules):
-    modules_folder = os.path.join(site_src_root, MODULES_PACKAGE)
-
-    MODULE_LIST.extend(filter(lambda m: getattr(m, 'CAN_USE', True), [
-            __import__('forum_modules.%s' % f, globals(), locals(), ['forum_modules'])
-            for f in os.listdir(modules_folder)
-            if os.path.isdir(os.path.join(modules_folder, f)) and
-               os.path.exists(os.path.join(modules_folder, "%s/__init__.py" % f)) and
-               not f in disabled_modules
-    ]))
-
-    get_modules_folder.value = modules_folder
+from django.conf import settings
 
 def get_modules_folder():
     return get_modules_folder.value
@@ -26,7 +9,7 @@ def get_modules_folder():
 def get_modules_script(script_name):
     all = []
 
-    for m in MODULE_LIST:
+    for m in settings.MODULE_LIST:
         if hasattr(m, script_name):
             all.append(getattr(m, script_name))
             continue

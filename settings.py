@@ -71,16 +71,25 @@ for path in app_url_split[1].split('/')[1:]:
 if FORCE_SCRIPT_NAME.endswith('/'):
     FORCE_SCRIPT_NAME = FORCE_SCRIPT_NAME[:-1]
 
-from forum import modules
-modules.init_modules_engine(SITE_SRC_ROOT, DISABLED_MODULES)
+#Module system initialization
+MODULES_PACKAGE = 'forum_modules'
+MODULES_FOLDER = os.path.join(SITE_SRC_ROOT, MODULES_PACKAGE)
+
+MODULE_LIST = filter(lambda m: getattr(m, 'CAN_USE', True), [
+        __import__('forum_modules.%s' % f, globals(), locals(), ['forum_modules'])
+        for f in os.listdir(MODULES_FOLDER)
+        if os.path.isdir(os.path.join(MODULES_FOLDER, f)) and
+           os.path.exists(os.path.join(MODULES_FOLDER, "%s/__init__.py" % f)) and
+           not f in DISABLED_MODULES
+])
 
 [MIDDLEWARE_CLASSES.extend(
         ["%s.%s" % (m.__name__, mc) for mc in getattr(m, 'MIDDLEWARE_CLASSES', [])]
-                          ) for m in modules.MODULE_LIST]
+                          ) for m in MODULE_LIST]
 
 [TEMPLATE_LOADERS.extend(
         ["%s.%s" % (m.__name__, tl) for tl in getattr(m, 'TEMPLATE_LOADERS', [])]
-                          ) for m in modules.MODULE_LIST]
+                          ) for m in MODULE_LIST]
 
 
 INSTALLED_APPS = [

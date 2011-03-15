@@ -1,10 +1,7 @@
 import datetime
 from base import *
 
-from forum.modules import MODULES_PACKAGE
-
 from django.utils.translation import ugettext as _
-import django.dispatch
 
 class ActiveTagManager(models.Manager):
     def get_query_set(self):

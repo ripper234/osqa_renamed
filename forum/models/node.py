@@ -8,7 +8,6 @@ from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
 from forum.settings import SUMMARY_LENGTH
-from forum.modules import MODULES_PACKAGE
 from utils import PickledObjectField
 
 class NodeContent(models.Model):
