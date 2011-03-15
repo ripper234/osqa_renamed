@@ -474,9 +474,6 @@ class SubscriptionSettings(models.Model):
     #auto_subscribe_to
     all_questions = models.BooleanField(default=False)
     all_questions_watched_tags = models.BooleanField(default=False)
-    questions_asked = models.BooleanField(default=True)
-    questions_answered = models.BooleanField(default=True)
-    questions_commented = models.BooleanField(default=False)
     questions_viewed = models.BooleanField(default=False)
 
     #notify activity on subscribed
