@@ -174,9 +174,13 @@ class UnknownYahooUser(UnknownUser):
 
 
 class IdMapper(dict):
+
+    def __init__(self):
+        self.default = 1
+
     def __getitem__(self, key):
         key = int(key)
-        return super(IdMapper, self).get(key, 1)
+        return super(IdMapper, self).get(key, self.default)
 
     def __setitem__(self, key, value):
         super(IdMapper, self).__setitem__(int(key), int(value))
@@ -200,15 +204,22 @@ def userimport(path, options):
     #check for empty values
     if not owneruid:
         owneruid = None
+    else:
+        owneruid = int(owneruid)
 
     def callback(sxu):
         create = True
+        set_mapper_defaults = False
 
         if sxu.get('id') == '-1':
             return
         #print "\n".join(["%s : %s" % i for i in sxu.items()])
 
-        if int(sxu.get('id')) == int(owneruid):
+        if (owneruid and (int(sxu.get('id')) == owneruid)) or (
+            (not owneruid) and len(uidmapper)):
+
+            set_mapper_defaults = True
+
             if authenticated_user:
                 osqau = orm.User.objects.get(id=authenticated_user.id)
 
@@ -216,12 +227,7 @@ def userimport(path, options):
                     openids.add(assoc.key)
 
                 uidmapper[owneruid] = osqau.id
-                uidmapper[-1] = osqau.id
                 create = False
-            else:
-                uidmapper[owneruid] = int(owneruid)
-                uidmapper[-1] = int(owneruid)
-
 
         sxbadges = sxu.get('badgesummary', None)
         badges = {'1':'0', '2':'0', '3':'0'}
@@ -320,6 +326,10 @@ def userimport(path, options):
             #merged_users.append(osqau.id)
             osqau.save()
 
+        if set_mapper_defaults:
+            uidmapper[-1] = osqau.id
+            uidmapper.default = osqau.id
+
         usernames.append(osqau.username)
 
         openid = sxu.get('openid', None)
@@ -336,8 +346,8 @@ def userimport(path, options):
 
     readTable(path, "Users", callback)
 
-    if uidmapper[-1] == -1:
-        uidmapper[-1] = 1
+    #if uidmapper[-1] == -1:
+    #    uidmapper[-1] = 1
 
     return uidmapper
 
