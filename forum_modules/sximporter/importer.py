@@ -768,6 +768,10 @@ def badges_import(dump, uidmap, post_list):
 
         osqaa.save()
         badge.awarded_count += 1
+
+        # After the update of the badge awarded count property we should save the model.
+        badge.save()
+
         user_badge_count[user_id] += 1
 
     readTable(dump, "Users2Badges", callback)
