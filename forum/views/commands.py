@@ -570,6 +570,10 @@ def award_points(request, user_id, answer_id):
     else:
         points = int(request.POST['points'])
 
+        # We should check if the user has enough reputation points, otherwise we raise an exception.
+        if user.reputation < points:
+            raise NotEnoughRepPointsException(_("award"))
+
         extra = dict(message=request.POST.get('message', ''), awarding_user=request.user.id, value=points)
 
         # We take points from the awarding user
