@@ -368,7 +368,7 @@ def user_favorites(request, user):
 
 @user_view('users/subscriptions.html', 'subscriptions', _('subscription'), _('subscriptions'), True, tabbed=False)
 def user_subscriptions(request, user):
-    enabled = user.subscription_settings.enable_notifications
+    enabled = True
 
     tab = request.GET.get('tab', "settings")
 
@@ -381,14 +381,6 @@ def user_subscriptions(request, user):
             if form.is_valid():
                 form.save()
                 message = _('New subscription settings are now saved')
-
-                if 'notswitch' in request.POST:
-                    enabled = not enabled
-
-                    if enabled:
-                        message = _('Notifications are now enabled')
-                    else:
-                        message = _('Notifications are now disabled')
 
                 user.subscription_settings.enable_notifications = enabled
                 user.subscription_settings.save()

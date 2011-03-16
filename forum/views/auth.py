@@ -19,8 +19,8 @@ import types
 import datetime
 import logging
 
-from forum.forms import SimpleRegistrationForm, SimpleEmailSubscribeForm, \
-        TemporaryLoginRequestForm, ChangePasswordForm, SetPasswordForm
+from forum.forms import SimpleRegistrationForm, TemporaryLoginRequestForm, \
+        ChangePasswordForm, SetPasswordForm
 from forum.utils.mail import send_template_email
 
 from forum.authentication.base import InvalidAuthentication
@@ -156,9 +156,8 @@ def process_provider_signin(request, provider):
 def external_register(request):
     if request.method == 'POST' and 'bnewaccount' in request.POST:
         form1 = SimpleRegistrationForm(request.POST)
-        email_feeds_form = SimpleEmailSubscribeForm(request.POST)
 
-        if (form1.is_valid() and email_feeds_form.is_valid()):
+        if form1.is_valid():
             user_ = User(username=form1.cleaned_data['username'], email=form1.cleaned_data['email'])
             user_.email_isvalid = request.session.get('auth_validated_email', '') == form1.cleaned_data['email']
             user_.set_unusable_password()
@@ -183,10 +182,6 @@ def external_register(request):
 
             uassoc = AuthKeyUserAssociation(user=user_, key=assoc_key, provider=auth_provider)
             uassoc.save()
-
-            if email_feeds_form.cleaned_data['subscribe'] == 'n':
-                user_.subscription_settings.enable_notifications = False
-                user_.subscription_settings.save()
 
             del request.session['assoc_key']
             del request.session['auth_provider']
@@ -218,13 +213,11 @@ def external_register(request):
         'username': username,
         'email': email,
         })
-        email_feeds_form = SimpleEmailSubscribeForm()
 
     provider_context = AUTH_PROVIDERS[request.session['auth_provider']].context
 
     return render_to_response('auth/complete.html', {
     'form1': form1,
-    'email_feeds_form': email_feeds_form,
     'provider':provider_context and mark_safe(provider_context.human_name) or _('unknown'),
     'login_type':provider_context.id,
     'gravatar_faq_url':reverse('faq') + '#gravatar',
