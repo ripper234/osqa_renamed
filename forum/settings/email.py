@@ -6,18 +6,6 @@ from forms import TestEmailSettingsWidget
 
 EMAIL_SET = SettingSet('email', _('Email settings'), _("Email server and other email related settings."), 50)
 
-EMAIL_SUBSCRIBE_CHOICES = (
-    ('y', _('Users are subscribed by default')),
-    ('n', _('Users are not subscribed by default')),
-)
-
-INITIAL_EMAIL_SUBSCRIBE_OPTION = Setting('INITIAL_EMAIL_SUBSCRIBE_OPTION', 'y', EMAIL_SET, dict(
-label = _("Default email subscription"),
-widget=RadioSelect,
-choices=EMAIL_SUBSCRIBE_CHOICES,
-help_text = _("Choose what should be the default email subscription status while registering."),
-required=False))
-
 TEST_EMAIL_SETTINGS = Setting('TEST_EMAIL_SETTINGS', '', EMAIL_SET, dict(
 label = _("E-Mail settings test"),
 help_text = _("Test the current E-Mail configuration."),
