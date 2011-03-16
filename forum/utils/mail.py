@@ -1,6 +1,7 @@
 import email
 import socket
 import os
+import logging
 
 try:
     from email.mime.multipart import MIMEMultipart
@@ -78,11 +79,11 @@ def create_and_send_mail_messages(messages):
             try:
                 connection.sendmail(sender, [recipient.email], msgRoot.as_string())
             except Exception, e:
-                pass
+                logging.error("Couldn't send mail using the sendmail method: %s" % e)
 
         try:
             connection.quit()
         except socket.sslerror:
             connection.close()
     except Exception, e:
-        pass
+        logging.error('Email sending has failed: %s' % e)
