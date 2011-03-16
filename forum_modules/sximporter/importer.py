@@ -6,7 +6,6 @@ import re
 import os
 import gc
 from django.utils.translation import ugettext as _
-from orm import orm
 
 from django.utils.encoding import force_unicode
 
@@ -21,6 +20,33 @@ from zlib import compress, decompress
 
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+
+def create_orm():
+    from django.conf import settings
+    from south.orm import FakeORM
+
+    get_migration_number_re = re.compile(r'^((\d+)_.*)\.py$')
+
+    migrations_folder = os.path.join(settings.SITE_SRC_ROOT, 'forum/migrations')
+
+    highest_number = 0
+    highest_file = None
+
+    for f in os.listdir(migrations_folder):
+        if os.path.isfile(os.path.join(migrations_folder, f)):
+            m = get_migration_number_re.match(f)
+
+            if m:
+                found = int(m.group(2))
+
+                if found > highest_number:
+                    highest_number = found
+                    highest_file = m.group(1)
+
+    mod = __import__('forum.migrations.%s' % highest_file, globals(), locals(), ['forum.migrations'])
+    return FakeORM(getattr(mod, 'Migration'), "forum")
+
+orm = create_orm()
 
 class SXTableHandler(ContentHandler):
     def __init__(self, fname, callback):
