@@ -16,6 +16,29 @@ label = _("Application intro"),
 help_text = _("The introductory page that is visible in the sidebar for anonymous users."),
 widget=Textarea))
 
+QUESTION_TITLE_TIPS = Setting('QUESTION_TITLE_TIPS',
+u"""
+ - **ask a question relevant to the |APP_TITLE| community**
+ - the title must be in the form of a question
+ - provide enough details
+ - be clear and concise
+"""
+, SIDEBAR_SET, dict(
+label = "Question title tips",
+help_text = "Tips visible on the ask or edit questions page about the question title.",
+required=False))
+
+QUESTION_TAG_TIPS = Setting('QUESTION_TAG_TIPS',
+u"""
+ - Tags are words that will tell others what this question is about.
+ - They will help other find your question.
+ - A question can have up to |FORM_MAX_NUMBER_OF_TAGS| tags, but it must have at least |FORM_MIN_NUMBER_OF_TAGS|.
+"""
+, SIDEBAR_SET, dict(
+label = "Tagging tips",
+help_text = "Tips visible on the ask or edit questions page about good tagging.",
+required=False))
+
 
 SIDEBAR_UPPER_SHOW = Setting('SIDEBAR_UPPER_SHOW', True, SIDEBAR_SET, dict(
 label = "Show Upper Block",
