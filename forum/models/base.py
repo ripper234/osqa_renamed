@@ -20,24 +20,33 @@ import logging
 
 class LazyQueryList(object):
     def __init__(self, model, items):
-        self.model = model
         self.items = items
+        self.model = model
 
     def __getitem__(self, k):
-        return self.model.objects.get(id=self.items[k])
+        return self.model.objects.get(id=self.items[k][0])
 
     def __iter__(self):
         for id in self.items:
-            yield self.model.objects.get(id=id)
+            yield self.model.objects.get(id=id[0])
 
     def __len__(self):
         return len(self.items)
 
 class CachedQuerySet(models.query.QuerySet):
+
     def lazy(self):
-        if (not len(self.query.extra)) and (not len(self.query.aggregates)):
-            return LazyQueryList(self.model, list(self.values_list('id', flat=True)))
+        if not len(self.query.aggregates):
+            values_list = ['id']
+
+            if len(self.query.extra):
+                extra_keys = self.query.extra.keys()
+                values_list += extra_keys
+
+            return LazyQueryList(self.model, list(self.values_list(*values_list)))
         else:
+            if len(self.query.extra):
+                print self.query.extra
             return self
 
     def obj_from_datadict(self, datadict):
@@ -60,7 +69,7 @@ class CachedQuerySet(models.query.QuerySet):
 
             return obj
 
-        return super(CachedQuerySet, self).get(*args, **kwargs) 
+        return super(CachedQuerySet, self).get(*args, **kwargs)
 
 class CachedManager(models.Manager):
     use_for_related_fields = True
