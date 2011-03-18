@@ -45,7 +45,6 @@ class Tag(BaseModel):
     used_count = models.PositiveIntegerField(default=0)
 
     active = ActiveTagManager()
-    objects = ActiveTagManager()
 
     class Meta:
         ordering = ('-used_count', 'name')
