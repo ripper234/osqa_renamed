@@ -5,7 +5,6 @@ from south.v2 import DataMigration
 from django.db import models
 
 class Migration(DataMigration):
-
     def forwards(self, orm):
         for tag in orm.Tag.objects.filter(used_count__lt=1):
             # What we do is a check if there are some questions matching this tag. If there are -- the count is not 0.
