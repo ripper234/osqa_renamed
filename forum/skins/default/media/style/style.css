@@ -554,7 +554,7 @@ blockquote {
     margin-top: 0;
 }
 
-a.medal {
+.medal {
     background: none repeat scroll 0 0 #FFFFCD;
     border-color: #EEEEEE #CCCCCC #CCCCCC #EEEEEE;
     border-left: 1px solid #EEEEEE;
@@ -565,7 +565,11 @@ a.medal {
     font-weight: bold;
     line-height: 250%;
     padding: 4px 12px 4px 6px;
+}
+
+a.medal {
     text-decoration: none;
+    color: #333333;
 }
 
 a.medal:hover {
