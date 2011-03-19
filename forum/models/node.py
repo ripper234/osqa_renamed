@@ -142,35 +142,11 @@ class NodeManager(CachedManager):
     use_for_related_fields = True
 
     def get_query_set(self):
-        CurrentUserHolder = None
-
-        # We try to import from the moderation module.
-        try:
-            moderation_import = 'from %s.moderation.startup import CurrentUserHolder' % MODULES_PACKAGE
-            exec moderation_import
-
-            moderation_enabled = True
-        except:
-            moderation_enabled = False
-
         qs = NodeQuerySet(self.model)
 
+        # If the node is an answer, question or comment we filter the Node model by type
         if self.model is not Node:
             qs = qs.filter(node_type=self.model.get_type())
-
-        # If the moderation module has been enabled we make the filtration
-        if CurrentUserHolder is not None and moderation_enabled:
-            user = CurrentUserHolder.user
-
-            try:
-                filter_content = not user.is_staff and not user.is_superuser
-            except:
-                filter_content = True
-
-            if filter_content:
-                qs = qs.exclude(state_string__contains="(in_moderation)").exclude(state_string__contains="(deleted)").exclude(
-                    state_string__contains="(rejected)"
-                )
 
         return qs
 
