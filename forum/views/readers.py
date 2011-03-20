@@ -91,7 +91,7 @@ def index(request):
 def unanswered(request):
     return question_list(request,
                          Question.objects.exclude(id__in=Question.objects.filter(children__marked=True).distinct()),
-                         _('open questions without an accepted answer'),
+                         _('open questions without an accepted/upvoted answer'),
                          None,
                          _("Unanswered Questions"))
 
