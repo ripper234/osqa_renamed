@@ -87,10 +87,19 @@ def index(request):
                          feed_url=reverse('latest_questions_feed'),
                          paginator_context=paginator_context)
 
+def get_unanswered_questions():
+    # http://stackoverflow.com/questions/5369383/how-do-i-write-this-join-in-django/5369452#5369452
+    accepted = Question.objects.filter(children__marked=True).distinct()
+    upvoted = Question.objects.filter(children__score__gt=0).distinct()
+    answered = accepted | upvoted
+    unanswered = Question.objects.exclude(id__in=answered)
+    return unanswered
+
 @decorators.render('questions.html', 'unanswered', _('unanswered'), weight=400)
 def unanswered(request):
+
     return question_list(request,
-                         Question.objects.exclude(id__in=Question.objects.filter(children__marked=True).distinct()),
+                         get_unanswered_questions(),
                          _('open questions without an accepted/upvoted answer'),
                          None,
                          _("Unanswered Questions"))
