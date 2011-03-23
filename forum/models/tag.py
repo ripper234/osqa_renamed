@@ -6,6 +6,8 @@ from django.utils.translation import ugettext as _
 from forum import modules
 
 class ActiveTagManager(models.Manager):
+    use_for_related_fields = True
+
     def get_query_set(self):
         return super(ActiveTagManager, self).get_query_set().exclude(used_count__lt=1)
 
