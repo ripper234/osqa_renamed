@@ -88,6 +88,43 @@ class BonusRepAction(ActionProxy):
         except Exception, e:
             return ''
 
+class AwardPointsAction(ActionProxy):
+    verb = _("gave reputation points")
+
+    def process_data(self, value, affected):
+        self._value = value
+        self._affected = affected
+
+
+    def repute_users(self):
+        self.repute(self._affected, self._value)
+
+        if self._value > 0:
+            self._affected.message_set.create(
+                    message=_("Congratulations, you have been awarded an extra %s reputation points.") % self._value +
+                    '<br />%s' % self.extra.get('message', _('Thank you')))
+        else:
+            self._affected.message_set.create(
+                    message=_("You gave %s reputation points.") % self._value +
+                    '<br />%s' % self.extra.get('message', ''))
+
+    def describe(self, viewer=None):
+        value = self.extra.get('value', _('unknown'))
+
+        try:
+            if int(value) > 0:
+                return _("%(user)s awarded an extra %(value)s reputation points to %(users)s") % {
+                'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+                'value': value, 'users':self.affected_links(viewer),
+                }
+            else:
+                return _("%(user)s penalised %(users)s in %(value)s reputation points") % {
+                'user': self.hyperlink(self.user.get_profile_url(), self.friendly_username(viewer, self.user)),
+                'value': value, 'users':self.affected_links(viewer),
+                }
+        except Exception, e:
+            return ''
+
 class AwardAction(ActionProxy):
     verb = _("was awarded")
 
