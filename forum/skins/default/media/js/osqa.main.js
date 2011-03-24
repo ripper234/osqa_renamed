@@ -125,6 +125,10 @@ var response_commands = {
 
     set_subscription_status: function(text) {
         $('.subscription-status').html(text);
+    },
+
+    copy_url: function(url) {
+        $.copy(url);
     }
 }
 

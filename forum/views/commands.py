@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, render_to_response
 from django.utils.translation import ungettext, ugettext as _
 from django.template import RequestContext
+from django.template.loader import render_to_string
 from forum.models import *
 from forum.models.node import NodeMetaClass
 from forum.actions import *
@@ -548,8 +549,16 @@ def answer_permanent_link(request, id):
     # Getting the current object URL -- the Application URL + the object relative URL
     url = '%s%s' % (settings.APP_BASE_URL, answer.get_absolute_url())
 
-    # Display the template
-    return render_to_response('node/permanent_link.html', { 'url' : url, })
+    if not request.POST:
+        # Display the template
+        return render_to_response('node/permanent_link.html', { 'url' : url, })
+
+    return {
+        'commands' : {
+            'copy_url' : [request.POST['permanent_link_url'],],
+        },
+        'message' : _("The permanent URL to the answer has been copied to your clipboard."),
+    }
 
 @decorate.withfn(command)
 def award_points(request, user_id, answer_id):
