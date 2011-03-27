@@ -204,7 +204,7 @@ def _paginated(request, objects, context):
         if get_params:
             base_path += "?" + get_params
 
-    url_joiner = "?" in base_path and "&amp" or "?"
+    url_joiner = "?" in base_path and "&amp;" or "?"
 
 
     def get_page():
