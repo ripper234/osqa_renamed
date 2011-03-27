@@ -213,11 +213,14 @@ def question_search(request, keywords):
     else:
         paginator_context = None
 
+    feed_url = mark_safe(escape(request.path + "?type=rss&q=" + keywords))
+
     return question_list(request, initial,
                          _("questions matching '%(keywords)s'") % {'keywords': keywords},
                          None,
                          _("questions matching '%(keywords)s'") % {'keywords': keywords},
-                         paginator_context=paginator_context)
+                         paginator_context=paginator_context,
+                         feed_url=feed_url)
 
 
 @decorators.render('tags.html', 'tags', _('tags'), weight=100)
