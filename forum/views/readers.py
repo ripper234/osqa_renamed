@@ -106,8 +106,20 @@ def tag(request, tag):
     except Tag.DoesNotExist:
         raise Http404
 
+    # Getting the questions QuerySet
+    questions = Question.objects.filter(tags=tag)
+
+    if request.method == "GET":
+        user = request.GET.get('user', None)
+
+        if user is not None:
+            try:
+                questions = questions.filter(author=User.objects.get(username=user))
+            except User.DoesNotExist:
+                raise Http404
+
     return question_list(request,
-                         Question.objects.filter(tags=tag),
+                         questions,
                          mark_safe(_('questions tagged <span class="tag">%(tag)s</span>') % {'tag': tag}),
                          None,
                          mark_safe(_('Questions Tagged With %(tag)s') % {'tag': tag}),
