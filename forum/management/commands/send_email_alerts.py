@@ -98,6 +98,9 @@ class Command(NoArgsCommand):
 
         new_member_count = new_members.count()
 
+        # The number of the flagged content for the day
+        flagged_count = Flag.objects.all().count()
+
         if new_member_count >= SHOW_N_MORE_ACTIVE_NEW_MEMBERS:
             new_members = new_members[:SHOW_N_MORE_ACTIVE_NEW_MEMBERS]
             show_all_users = True

@@ -90,6 +90,17 @@
 
         {% endif %}
 
+        {% if recipient.is_superuser %}
+        {% declare %}
+            flagged_url = html.hyperlink(app_url + reverse('admin_flagged_posts'), str(flagged_count) + ' ' + _('posts'), style=a_style)
+        {% enddeclare %}
+        <p style="{{ p_style }}">
+            {% blocktrans %}
+            {{ flagged_url }} have been marked as flagged.
+            {% endblocktrans %}
+        </p>
+        {% endif %}
+
     {% endhtmlcontent %}
 
     {% textcontent notifications/base_text.html %}
