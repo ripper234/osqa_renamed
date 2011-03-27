@@ -567,8 +567,8 @@ $(function() {
         var $previewer = $('#previewer');
         var $container = $('#editor-metrics');
 
-        var initial_whitespace_rExp = /^[^A-Za-z0-9]+/gi;
-        var non_alphanumerics_rExp = rExp = /[^A-Za-z0-9]+/gi;
+        var initial_whitespace_rExp = /^[^A-Za-zА-Яа-я0-9]+/gi;
+        var non_alphanumerics_rExp = rExp = /[^A-Za-zА-Яа-я0-9]+/gi;
         var editor_interval = null;
 
         $editor.focus(function() {
