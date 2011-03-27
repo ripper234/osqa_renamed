@@ -4,8 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{% block fulltitle %}{% block title %}{% endblock %} - {{ settings.APP_SHORT_NAME }}{% endblock %}</title>
-        <meta name="description" content="{% block metadescription %}{{ settings.APP_DESCRIPTION }}{% endblock %}">
-        <meta name="keywords" content="{% block metakeywords %}{{ settings.APP_KEYWORDS }}{% endblock %}">
+        <meta name="description" content="{% block metadescription %}{{ settings.APP_DESCRIPTION }}{% endblock %}" />
+        <meta name="keywords" content="{% block metakeywords %}{{ settings.APP_KEYWORDS }}{% endblock %}" />
         {% block meta %}{% endblock %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         {% if settings.GOOGLE_SITEMAP_CODE %}
@@ -44,7 +44,7 @@
                 character: "{% trans "character" %}",
                 characters: "{% trans "characters" %}"
             }
-        /* ]] */
+        /* ]]> */
         </script>
         <script type='text/javascript' src='{% media  "/media/js/osqa.main.js" %}'></script>
         <script type='text/javascript' src='{% media  "/media/js/jquery.copy.js" %}'></script>
@@ -76,7 +76,7 @@
                     {% endfor %}
                 {% endif %}
             {% endautoescape %}
-            <a id="close-notify" onclick="notify.close(true)">&times;</a>
+            <a id="close-notify" onclick="notify.close(true)">&#215;</a>
         </div>
         {% if settings.USE_CUSTOM_HEADER|or_preview:request %}
             <div id="custom_header">

@@ -204,7 +204,7 @@ def _paginated(request, objects, context):
         if get_params:
             base_path += "?" + get_params
 
-    url_joiner = "?" in base_path and "&" or "?"
+    url_joiner = "?" in base_path and "&amp" or "?"
 
 
     def get_page():
@@ -240,7 +240,7 @@ def _paginated(request, objects, context):
             page_numbers = []
 
             if sort:
-                url_builder = lambda n: mark_safe("%s%s%s=%s&%s=%s" % (base_path, url_joiner, context.SORT, sort, context.PAGE, n))
+                url_builder = lambda n: mark_safe("%s%s%s=%s&amp;%s=%s" % (base_path, url_joiner, context.SORT, sort, context.PAGE, n))
             else:
                 url_builder = lambda n: mark_safe("%s%s%s=%s" % (base_path, url_joiner, context.PAGE, n))
 
@@ -273,7 +273,7 @@ def _paginated(request, objects, context):
     if pagesize:
         def page_sizes():
             if sort:
-                url_builder = lambda s: mark_safe("%s%s%s=%s&%s=%s" % (escape(base_path), url_joiner, context.SORT, sort, context.PAGESIZE, s))
+                url_builder = lambda s: mark_safe("%s%s%s=%s&amp;%s=%s" % (escape(base_path), url_joiner, context.SORT, sort, context.PAGESIZE, s))
             else:
                 url_builder = lambda s: mark_safe("%s%s%s=%s" % (escape(base_path), url_joiner, context.PAGESIZE, s))
 
