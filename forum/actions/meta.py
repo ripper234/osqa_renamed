@@ -97,10 +97,10 @@ class FlagAction(ActionProxy):
         flag.save()
         self.node.reset_flag_count_cache()
 
-        if self.node.flag_count == int(settings.FLAG_COUNT_TO_HIDE_POST):
+        if self.node.flag_count >= int(settings.FLAG_COUNT_TO_HIDE_POST):
             self.repute(self.node.author, -int(settings.REP_LOST_BY_FLAGGED_3_TIMES))
 
-        if self.node.flag_count == int(settings.FLAG_COUNT_TO_DELETE_POST):
+        if self.node.flag_count >= int(settings.FLAG_COUNT_TO_DELETE_POST):
             self.repute(self.node.author, -int(settings.REP_LOST_BY_FLAGGED_5_TIMES))
             if not self.node.nis.deleted:
                 DeleteAction(node=self.node, user=self.user, extra="BYFLAGGED").save()
