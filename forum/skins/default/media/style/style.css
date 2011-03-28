@@ -886,6 +886,7 @@ span.form-error {
     min-height: 20px;
     padding: 6px;
     width: 98%;
+    overflow: hidden;
 }
 
 .preview-toggle {
