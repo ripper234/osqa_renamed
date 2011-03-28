@@ -909,9 +909,12 @@ span.form-error {
     width: 100%;
 }
 
+.revision .rev-arrow {
+    cursor: pointer;
+}
+
 .revision .header {
     background-color: #EEEEEE;
-    cursor: pointer;
     padding: 5px;
 }
 
