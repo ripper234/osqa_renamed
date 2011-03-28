@@ -1318,6 +1318,10 @@ ul.form-horizontal-rows li input {
     margin: 0 0 16px 0;
 }
 
+#question-tags {
+    margin-top: 15px;
+}
+
 .post-controls {
     float: left;
 }
