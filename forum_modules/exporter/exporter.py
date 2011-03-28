@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os, tarfile, datetime, logging, re, ConfigParser, shutil, zipfile
 
 from django.core.cache import cache
@@ -11,12 +13,6 @@ from xml.etree.ElementTree import Comment, _encode, ProcessingInstruction, QName
 from forum import settings
 from django.conf import settings as djsettings
 import settings as selfsettings
-
-# Try to import the with statement
-try:
-    from __future__ import with_statement
-except:
-    pass
 
 CACHE_KEY = "%s_exporter_state" % APP_URL
 EXPORT_STEPS = []

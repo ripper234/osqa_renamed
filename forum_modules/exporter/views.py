@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os, tarfile, ConfigParser, datetime
 
 from StringIO import StringIO
@@ -15,13 +17,6 @@ from forum import settings
 
 from exporter import export, CACHE_KEY, EXPORT_STEPS, DATE_AND_AUTHOR_INF_SECTION, DATETIME_FORMAT
 from importer import start_import
-
-# Try to import the with statement
-try:
-    from __future__ import with_statement
-except:
-    pass
-
 
 @admin_tools_page(_('exporter'), _('XML data export'))
 def exporter(request):

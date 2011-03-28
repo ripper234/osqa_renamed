@@ -1,3 +1,5 @@
+from __future__ import with_statement
+
 import os, tarfile, datetime, ConfigParser, logging
 
 from django.utils.translation import ugettext as _
@@ -13,12 +15,6 @@ from forum.templatetags.extra_tags import diff_date
 from exporter import TMP_FOLDER, DATETIME_FORMAT, DATE_FORMAT, META_INF_SECTION, CACHE_KEY
 from orm import orm
 import commands, settings
-
-# Try to import the with statement
-try:
-    from __future__ import with_statement
-except:
-    pass
 
 NO_DEFAULT = object()
 
