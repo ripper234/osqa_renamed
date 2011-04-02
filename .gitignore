@@ -1,0 +1,6 @@
+.idea
+*.patch
+cache
+*.pyc
+settings_local.py
+log/django.osqa.log
