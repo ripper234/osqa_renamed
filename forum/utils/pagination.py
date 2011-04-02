@@ -210,8 +210,8 @@ def _paginated(request, objects, context):
     def get_page():
         object_list = page_obj.object_list
 
-        if hasattr(object_list, 'lazy'):
-            return object_list.lazy()
+        #if hasattr(object_list, 'lazy'):
+        #    return object_list.lazy()
         return object_list
     paginator.page = get_page()
 

@@ -1,5 +1,9 @@
 import datetime
 import re
+try:
+    from hashlib import md5
+except:
+    from md5 import new as md5
 from urllib import quote_plus, urlencode
 from django.db import models, IntegrityError, connection, transaction
 from django.utils.http import urlquote  as django_urlquote
@@ -18,6 +22,10 @@ from forum import settings
 import logging
 
 
+if not hasattr(cache, 'get_many'):
+    #put django 1.2 code here
+    pass
+
 class LazyQueryList(object):
     def __init__(self, model, items):
         self.items = items
@@ -33,6 +41,9 @@ class LazyQueryList(object):
     def __len__(self):
         return len(self.items)
 
+class ToFetch(str):
+    pass
+
 class CachedQuerySet(models.query.QuerySet):
 
     def lazy(self):
@@ -45,14 +56,19 @@ class CachedQuerySet(models.query.QuerySet):
 
             return LazyQueryList(self.model, list(self.values_list(*values_list)))
         else:
-            if len(self.query.extra):
-                print self.query.extra
             return self
 
     def obj_from_datadict(self, datadict):
         obj = self.model()
         obj.__dict__.update(datadict)
+
+        if hasattr(obj, '_state'):
+            obj._state.db = 'default'
+
         return obj
+
+    def _base_clone(self):
+        return self._clone(klass=models.query.QuerySet)
 
     def get(self, *args, **kwargs):
         key = self.model.infer_cache_key(kwargs)
@@ -61,7 +77,7 @@ class CachedQuerySet(models.query.QuerySet):
             obj = cache.get(key)
 
             if obj is None:
-                obj = super(CachedQuerySet, self).get(*args, **kwargs)
+                obj = self._base_clone().get(*args, **kwargs)
                 obj.cache()
             else:
                 obj = self.obj_from_datadict(obj)
@@ -69,7 +85,85 @@ class CachedQuerySet(models.query.QuerySet):
 
             return obj
 
-        return super(CachedQuerySet, self).get(*args, **kwargs)
+        return self._base_clone().get(*args, **kwargs)
+
+    def _fetch_from_query_cache(self, key):
+        invalidation_key = self.model._get_cache_query_invalidation_key()
+        cached_result = cache.get_many([invalidation_key, key])
+
+        if not invalidation_key in cached_result:
+            self.model._set_query_cache_invalidation_timestamp()
+            return None
+
+        if (key in cached_result) and(cached_result[invalidation_key] < cached_result[key][0]):
+            return cached_result[key][1]
+
+        return None
+
+    def count(self):
+        cache_key = self.model._generate_cache_key("CNT:%s" % self._get_query_hash())
+        result = self._fetch_from_query_cache(cache_key)
+
+        if result is not None:
+            return result
+
+        result = super(CachedQuerySet, self).count()
+        cache.set(cache_key, (datetime.datetime.now(), result), 60 * 60)
+        return result
+
+    def iterator(self):
+        cache_key = self.model._generate_cache_key("QUERY:%s" % self._get_query_hash())
+        on_cache_query_attr = self.model.value_to_list_on_cache_query()
+
+        to_return = None
+        to_cache = {}
+
+        key_list = self._fetch_from_query_cache(cache_key)
+
+        if key_list is None:
+            if not len(self.query.aggregates):
+                values_list = [on_cache_query_attr]
+
+                if len(self.query.extra):
+                    values_list += self.query.extra.keys()
+
+                key_list = [v[0] for v in self.values_list(*values_list)]
+                to_cache[cache_key] = (datetime.datetime.now(), key_list)
+            else:
+                to_return = list(super(CachedQuerySet, self).iterator())
+                to_cache[cache_key] = (datetime.datetime.now(), [row.__dict__[on_cache_query_attr] for row in to_return])
+
+        if (not to_return) and key_list:
+            row_keys = [self.model.infer_cache_key({on_cache_query_attr: attr}) for attr in key_list]
+            cached = cache.get_many(row_keys)
+
+            to_return = [
+                (ck in cached) and self.obj_from_datadict(cached[ck]) or ToFetch(key_list[i]) for i, ck in enumerate(row_keys)
+            ]
+
+            if len(cached) != len(row_keys):
+                to_fetch = [str(tr) for tr in to_return if isinstance(tr, ToFetch)]
+
+                fetched = dict([(str(r.__dict__[on_cache_query_attr]), r) for r in
+                              models.query.QuerySet(self.model).filter(**{"%s__in" % on_cache_query_attr: to_fetch})])
+
+                to_return = [(isinstance(tr, ToFetch) and fetched[str(tr)] or tr) for tr in to_return]
+                to_cache.update(dict([(self.model.infer_cache_key({on_cache_query_attr: attr}), r._as_dict()) for attr, r in fetched.items()]))
+
+        if len(to_cache):
+            cache.set_many(to_cache, 60 * 60)
+
+        if to_return:
+            for row in to_return:
+                if hasattr(row, 'leaf'):
+                    yield row.leaf
+                else:
+                    yield row
+
+    def _get_query_hash(self):
+        return md5(str(self.query)).hexdigest()
+
+
 
 class CachedManager(models.Manager):
     use_for_related_fields = True
@@ -178,7 +272,19 @@ class BaseModel(models.Model):
                 self.uncache()
 
         self.reset_original_state()
+        self._set_query_cache_invalidation_timestamp()
         self.cache()
+
+    @classmethod
+    def _get_cache_query_invalidation_key(cls):
+        return cls._generate_cache_key("INV_TS")
+
+    @classmethod
+    def _set_query_cache_invalidation_timestamp(cls):
+        cache.set(cls._get_cache_query_invalidation_key(), datetime.datetime.now(), 60 * 60 * 24)
+
+        for base in filter(lambda c: issubclass(c, BaseModel) and (not c is BaseModel), cls.__bases__):
+            base._set_query_cache_invalidation_timestamp()
 
     @classmethod
     def _generate_cache_key(cls, key, group=None):
@@ -189,6 +295,10 @@ class BaseModel(models.Model):
 
     def cache_key(self):
         return self._generate_cache_key(self.id)
+
+    @classmethod
+    def value_to_list_on_cache_query(cls):
+        return 'id'
 
     @classmethod
     def infer_cache_key(cls, querydict):
@@ -208,6 +318,7 @@ class BaseModel(models.Model):
 
     def delete(self):
         self.uncache()
+        self._set_query_cache_invalidation_timestamp()
         super(BaseModel, self).delete()
 
 

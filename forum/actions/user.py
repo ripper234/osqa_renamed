@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext, ugettext as _
 from django.db.models import F
 from forum.models.action import ActionProxy
 from forum.models import Award, Badge, ValidationHash, User
@@ -98,15 +98,15 @@ class AwardPointsAction(ActionProxy):
 
     def repute_users(self):
         self.repute(self._affected, self._value)
+        self.repute(self.user, -self._value)
 
-        if self._value > 0:
-            self._affected.message_set.create(
-                    message=_("Congratulations, you have been awarded an extra %s reputation points.") % self._value +
-                    '<br />%s' % self.extra.get('message', _('Thank you')))
-        else:
-            self._affected.message_set.create(
-                    message=_("You gave %s reputation points.") % self._value +
-                    '<br />%s' % self.extra.get('message', ''))
+
+        self._affected.message_set.create(
+                message=_("Congratulations, you have been awarded an extra %(points)s reputation %(points_label)s on <a href=\"%(answer_url)s\">this</a> answer.") % {
+                        'points': self._value,
+                        'points_label': ungettext('point', 'points', self._value),
+                        'answer_url': self.node.get_absolute_url()
+                    })
 
     def describe(self, viewer=None):
         value = self.extra.get('value', _('unknown'))

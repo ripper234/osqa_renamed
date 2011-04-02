@@ -93,8 +93,13 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
     if content:
         try:
             tag.text = unicode(content)
-        except:
-            tag.text = u''
+        except Exception, e:
+            logging.error('error converting unicode characters')
+            import traceback
+            logging.error(traceback.print_exc())
+
+            import string
+            tag.text = unicode("".join([c for c in content if c in string.printable]))
 
     for k, v in attrs.items():
         tag.set(k, unicode(v))

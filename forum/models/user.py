@@ -4,10 +4,6 @@ from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User as DjangoUser, AnonymousUser as DjangoAnonymousUser
 from django.db.models import Q
-try:
-    from hashlib import md5
-except:
-    from md5 import new as md5
 
 import string
 from random import Random

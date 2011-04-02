@@ -60,21 +60,7 @@ class Question(Node):
 
         return [Question.objects.get(id=r['id']) for r in related_list]
     
-    def get_active_users(self):
-        active_users = set()
-        
-        active_users.add(self.author)
-        
-        for answer in self.answers:
-            active_users.add(answer.author)
-            
-            for comment in answer.comments:
-                active_users.add(comment.author)
-                        
-        for comment in self.comments:
-            active_users.add(comment.author)
-        
-        return active_users
+
 
 
 class QuestionSubscription(models.Model):

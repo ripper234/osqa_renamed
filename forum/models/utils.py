@@ -122,3 +122,7 @@ class KeyValue(BaseModel):
         except:
             return None
 
+    @classmethod
+    def value_to_list_on_cache_query(cls):
+        return 'key'
+

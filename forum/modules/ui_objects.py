@@ -7,7 +7,7 @@ from ui import Registry
 from copy import copy
 
 class Visibility(object):
-    def __init__(self, level='public'):
+    def __init__(self, level='public', negated=False):
         if level not in ['public', 'authenticated', 'staff', 'superuser', 'owner']:
             try:
                 int(level)
@@ -18,7 +18,7 @@ class Visibility(object):
             self.by_reputation = False
 
         self.level = level
-        self.negated = False
+        self.negated = negated
 
     def show_to(self, user):
         if self.by_reputation:
@@ -36,8 +36,7 @@ class Visibility(object):
             return res
 
     def __invert__(self):
-        inverted = copy(self)
-        inverted.negated = True
+        return Visibility(self.level, not self.negated)
         
 
 Visibility.PUBLIC = Visibility('public')
@@ -68,9 +67,10 @@ class ObjectBase(object):
             else:
                 return self.argument
 
-    def __init__(self, visibility=None, weight=500):
+    def __init__(self, visibility=None, weight=500, name=''):
         self.visibility = visibility
         self.weight = weight
+        self.name = name
 
     def _visible_to(self, user):
         return (not self.visibility) or (self.visibility and self.visibility.show_to(user))
@@ -94,8 +94,8 @@ class LoopBase(ObjectBase):
 
 
 class Link(ObjectBase):
-    def __init__(self, text, url, attrs=None, pre_code='', post_code='', visibility=None, weight=500):
-        super(Link, self).__init__(visibility, weight)
+    def __init__(self, text, url, attrs=None, pre_code='', post_code='', visibility=None, weight=500, name=''):
+        super(Link, self).__init__(visibility, weight, name)
         self.text = self.Argument(text)
         self.url = self.Argument(url)
         self.attrs = self.Argument(attrs or {})
@@ -108,8 +108,8 @@ class Link(ObjectBase):
             self.post_code(context))
 
 class Include(ObjectBase):
-    def __init__(self, tpl, visibility=None, weight=500):
-        super(Include, self).__init__(visibility, weight)
+    def __init__(self, tpl, visibility=None, weight=500, name=''):
+        super(Include, self).__init__(visibility, weight, name)
         self.template = template.loader.get_template(tpl)
 
     def render(self, context):
@@ -119,8 +119,8 @@ class Include(ObjectBase):
         
 
 class LoopContext(LoopBase):
-    def __init__(self, loop_context, visibility=None, weight=500):
-        super(LoopContext, self).__init__(visibility, weight)
+    def __init__(self, loop_context, visibility=None, weight=500, name=''):
+        super(LoopContext, self).__init__(visibility, weight, name)
         self.loop_context = self.Argument(loop_context)
 
     def update_context(self, context):
@@ -128,8 +128,8 @@ class LoopContext(LoopBase):
 
 
 class PageTab(LoopBase):
-    def __init__(self, tab_name, tab_title, url_getter, weight):
-        super(PageTab, self).__init__(weight=weight)
+    def __init__(self, tab_name, tab_title, url_getter, weight, name=''):
+        super(PageTab, self).__init__(weight=weight, name=name)
         self.tab_name = tab_name
         self.tab_title = tab_title
         self.url_getter = url_getter
@@ -144,7 +144,7 @@ class PageTab(LoopBase):
 
 class ProfileTab(LoopBase):
     def __init__(self, name, title, description, url_getter, private=False, render_to=None, weight=500):
-        super(ProfileTab, self).__init__(weight=weight)
+        super(ProfileTab, self).__init__(weight=weight, name=name)
         self.name = name
         self.title = title
         self.description = description
@@ -167,8 +167,8 @@ class ProfileTab(LoopBase):
 
 
 class AjaxMenuItem(ObjectBase):
-    def __init__(self, label, url, a_attrs=None, span_label='', span_attrs=None, visibility=None, weight=500):
-        super(AjaxMenuItem, self).__init__(visibility, weight)
+    def __init__(self, label, url, a_attrs=None, span_label='', span_attrs=None, visibility=None, weight=500, name=''):
+        super(AjaxMenuItem, self).__init__(visibility, weight, name)
         self.label = self.Argument(label)
         self.url = self.Argument(url)
         self.a_attrs = self.Argument(a_attrs or {})
@@ -182,8 +182,8 @@ class AjaxMenuItem(ObjectBase):
             **{'class': 'item'})
 
 class AjaxMenuGroup(ObjectBase, Registry):
-    def __init__(self, label, items, visibility=None, weight=500):
-        super(AjaxMenuGroup, self).__init__(visibility, weight)
+    def __init__(self, label, items, visibility=None, weight=500, name=''):
+        super(AjaxMenuGroup, self).__init__(visibility, weight, name)
         self.label = label
 
         for item in items:

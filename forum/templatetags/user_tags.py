@@ -37,13 +37,16 @@ class ActivityNode(template.Node):
 
     def render(self, context):
         try:
-            action = self.activity.resolve(context).leaf()
+            action = self.activity.resolve(context).leaf
             viewer = self.viewer.resolve(context)
             describe = mark_safe(action.describe(viewer))
             return self.template.render(template.Context(dict(action=action, describe=describe)))
         except Exception, e:
-            #return action.action_type + ":" + str(e)
-            logging.error("Error in %s action describe: %s" % (action.action_type, str(e)))
+            import traceback
+            msg = "Error in action describe: \n %s" % (
+                traceback.format_exc()
+            )
+            logging.error(msg)
 
 @register.tag
 def activity_item(parser, token):

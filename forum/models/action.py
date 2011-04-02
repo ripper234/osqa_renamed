@@ -16,7 +16,7 @@ class ActionQuerySet(CachedQuerySet):
             return super(ActionQuerySet, self).obj_from_datadict(datadict)
 
     def get(self, *args, **kwargs):            
-        action = super(ActionQuerySet, self).get(*args, **kwargs).leaf()
+        action = super(ActionQuerySet, self).get(*args, **kwargs).leaf
 
         if not isinstance(action, self.model):
             raise self.model.DoesNotExist()
@@ -101,6 +101,7 @@ class Action(BaseModel):
             cancel = ActionRepute(action=self, user=repute.user, value=(-repute.value), by_canceled=True)
             cancel.save()
 
+    @property
     def leaf(self):
         leaf_cls = ActionProxyMetaClass.types.get(self.action_type, None)
 

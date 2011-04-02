@@ -24,27 +24,8 @@ class Flag(models.Model):
         app_label = 'forum'
         unique_together = ('user', 'node')
 
-class BadgesQuerySet(models.query.QuerySet):
-    def get(self, *args, **kwargs):
-        try:
-            pk = [v for (k,v) in kwargs.items() if k in ('pk', 'pk__exact', 'id', 'id__exact')][0]
-        except:
-            return super(BadgesQuerySet, self).get(*args, **kwargs)
 
-        from forum.badges.base import BadgesMeta
-        badge = BadgesMeta.by_id.get(int(pk), None)
-        if not badge:
-            return super(BadgesQuerySet, self).get(*args, **kwargs)
-        return badge.ondb
-
-
-class BadgeManager(models.Manager):
-    use_for_related_fields = True
-
-    def get_query_set(self):
-        return BadgesQuerySet(self.model)
-
-class Badge(models.Model):
+class Badge(BaseModel):
     GOLD = 1
     SILVER = 2
     BRONZE = 3
@@ -55,16 +36,18 @@ class Badge(models.Model):
     
     awarded_to    = models.ManyToManyField(User, through='Award', related_name='badges')
 
-    objects = BadgeManager()
+    def get_handler(self):
+        from forum.badges import BadgesMeta
+        return BadgesMeta.by_id.get(self.id, None)
 
     @property
     def name(self):
-        cls = self.__dict__.get('_class', None)
+        cls = self.get_handler()
         return cls and cls.name or _("Unknown")
 
     @property
     def description(self):
-        cls = self.__dict__.get('_class', None)
+        cls = self.get_handler()
         return cls and cls.description or _("No description available")
 
     @models.permalink

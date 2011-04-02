@@ -7,6 +7,7 @@ from django.utils.translation import ugettext as _
 from django.utils.safestring import mark_safe
 from django.utils.html import strip_tags
 from forum.utils.html import sanitize_html
+from forum.utils.userlinking import auto_user_link
 from forum.settings import SUMMARY_LENGTH
 from utils import PickledObjectField
 
@@ -23,6 +24,9 @@ class NodeContent(models.Model):
     @property
     def html(self):
         return self.body
+
+    def rendered(self, content):
+        return auto_user_link(self, self._as_markdown(content, *['auto_linker']))
 
     @classmethod
     def _as_markdown(cls, content, *extensions):
@@ -43,7 +47,6 @@ class NodeContent(models.Model):
 
     def tagname_list(self):
         if self.tagnames:
-            t = [name.strip() for name in self.tagnames.split(u' ') if name]
             return [name.strip() for name in self.tagnames.split(u' ') if name]
         else:
             return []
@@ -333,21 +336,31 @@ class Node(BaseModel, NodeContent):
     def create_revision(self, user, **kwargs):
         number = self.revisions.aggregate(last=models.Max('revision'))['last'] + 1
         revision = self._create_revision(user, number, **kwargs)
-        self.activate_revision(user, revision, extensions=['urlize'])
+        self.activate_revision(user, revision)
         return revision
 
-    def activate_revision(self, user, revision, extensions=['urlize']):
+    def activate_revision(self, user, revision):
         self.title = revision.title
         self.tagnames = revision.tagnames
-        
-        from forum.utils.userlinking import auto_user_link
-        
-        self.body = auto_user_link(self, self._as_markdown(revision.body, *extensions))
+
+        self.body = self.rendered(revision.body)
 
         self.active_revision = revision
         self.update_last_activity(user)
 
         self.save()
+
+    def get_active_users(self, active_users = None):
+        if not active_users:
+            active_users = set()
+
+        active_users.add(self.author)
+
+        for node in self.children.all():
+            if not node.nis.deleted:
+                node.get_active_users(active_users)
+
+        return active_users
 
     def _list_changes_in_tags(self):
         dirty = self.get_dirty_fields()
@@ -377,7 +390,7 @@ class Node(BaseModel, NodeContent):
             for name in tag_changes['added']:
                 try:
                     tag = Tag.objects.get(name=name)
-                except:
+                except Tag.DoesNotExist:
                     tag = Tag.objects.create(name=name, created_by=self._last_active_user())
 
                 if not self.nis.deleted:
@@ -437,7 +450,6 @@ class Node(BaseModel, NodeContent):
         tags_changed = self._process_changes_in_tags()
         
         super(Node, self).save(*args, **kwargs)
-        
         if tags_changed: self.tags = list(Tag.objects.filter(name__in=self.tagname_list()))
 
     class Meta:

@@ -19,6 +19,7 @@ $(function() {
     var $input = $('#id_title');
     var $box = $('#ask-related-questions');
     var template = $('#question-summary-template').html();
+    var $editor = $('#editor');
 
     var results_cache = {};
 
@@ -80,7 +81,14 @@ $(function() {
 
     $input.keyup(reload_suggestions_box);
     $input.focus(reload_suggestions_box);
-    $input.blur(close_suggestions_box);
+
+    $editor.change(function() {
+        if ($editor.html().length > 10) {
+            close_suggestions_box();
+        }
+    });
+
+
 
     // for chrome
     $input.keydown(focus_on_question);

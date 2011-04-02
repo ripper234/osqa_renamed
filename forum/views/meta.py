@@ -88,7 +88,7 @@ def logout(request):
 
 @decorators.render('badges.html', 'badges', _('badges'), weight=300)
 def badges(request):
-    badges = [b.ondb for b in sorted(BadgesMeta.by_id.values(), lambda b1, b2: cmp(b1.name, b2.name))]
+    badges = sorted([Badge.objects.get(id=id) for id in BadgesMeta.by_id.keys()], lambda b1, b2: cmp(b1.name, b2.name))
 
     if request.user.is_authenticated():
         my_badges = Award.objects.filter(user=request.user).values('badge_id').distinct()

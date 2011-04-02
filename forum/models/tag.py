@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 
 from forum import modules
 
-class ActiveTagManager(models.Manager):
+class ActiveTagManager(CachedManager):
     use_for_related_fields = True
 
     def get_query_set(self):
@@ -33,6 +33,20 @@ class Tag(BaseModel):
             self.used_count = 0
         else:
             self.used_count = models.F('used_count') + value
+
+    def cache_key(self):
+        return self._generate_cache_key(self.name)
+
+    @classmethod
+    def infer_cache_key(cls, querydict):
+        if 'name' in querydict:
+            return cls._generate_cache_key(querydict['name'])
+
+        return BaseModel.infer_cache_key(querydict)
+
+    @classmethod
+    def value_to_list_on_cache_query(cls):
+        return 'name'
 
     @models.permalink
     def get_absolute_url(self):

@@ -1,6 +1,6 @@
 import re
 
-from forum.models import User,  Question,  Answer,  Comment
+from forum.models.user import User
 
 def find_best_match_in_name(content,  uname,  fullname,  start_index):      
     end_index = start_index + len(fullname)    
@@ -20,22 +20,8 @@ def find_best_match_in_name(content,  uname,  fullname,  start_index):
 APPEAL_PATTERN = re.compile(r'(?<!\w)@\w+')
 
 def auto_user_link(node, content):
-    
-    # We should find the root of the node tree (question) the current node belongs to.
-    if isinstance(node,  Question):
-        question = node
-    elif isinstance(node,  Answer):
-        question = node.question
-    elif isinstance(node,  Comment):
-        if node.question:
-            question = node.question
-        elif node.answer:
-            question = node.answer.question
-    else:
-        return content
-    
-    # Now we've got the root question. Let's get the list of active users.
-    active_users = question.get_active_users()
+
+    active_users = node.absolute_parent.get_active_users()
     
     appeals = APPEAL_PATTERN.finditer(content)
 

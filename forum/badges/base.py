@@ -20,10 +20,12 @@ class BadgesMeta(type):
 
         if not dic.get('abstract', False):
             if not name in installed:
-                badge.ondb = Badge(cls=name, type=dic.get('type', Badge.BRONZE))
-                badge.ondb.save()
+                ondb = Badge(cls=name, type=dic.get('type', Badge.BRONZE))
+                ondb.save()
             else:
-                badge.ondb = installed[name]
+                ondb = installed[name]
+
+            badge.ondb = ondb.id
 
             inst = badge()
 
@@ -36,9 +38,8 @@ class BadgesMeta(type):
             for action in badge.listen_to:
                 action.hook(hook)
 
-            BadgesMeta.by_class[name] = badge
-            badge.ondb.__dict__['_class'] = inst
-            BadgesMeta.by_id[badge.ondb.id] = badge
+            BadgesMeta.by_class[name] = inst
+            BadgesMeta.by_id[ondb.id] = inst
 
         return badge
 
@@ -58,18 +59,19 @@ class AbstractBadge(object):
 
     @classmethod
     def award(cls, user, action, once=False):
+        db_object = Badge.objects.get(id=cls.ondb)
         try:
             if once:
                 node = None
-                awarded = AwardAction.get_for(user, cls.ondb)
+                awarded = AwardAction.get_for(user, db_object)
             else:
                 node = action.node
-                awarded = AwardAction.get_for(user, cls.ondb, node)
+                awarded = AwardAction.get_for(user, db_object, node)
 
             trigger = isinstance(action, Action) and action or None
 
             if not awarded:
-                AwardAction(user=user, node=node).save(data=dict(badge=cls.ondb, trigger=trigger))
+                AwardAction(user=user, node=node).save(data=dict(badge=db_object, trigger=trigger))
         except MultipleObjectsReturned:
             if node:
                 logging.error('Found multiple %s badges awarded for user %s (%s)' % (self.name, user.username, user.id))

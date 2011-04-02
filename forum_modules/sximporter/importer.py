@@ -393,7 +393,7 @@ def remove_post_state(name, post):
     post.state_string = "".join("(%s)" % s for s in re.findall('\w+', post.state_string) if s != name)
 
 def postimport(dump, uidmap, tagmap):
-    all = []
+    all = {}
 
     def callback(sxpost):
         nodetype = (sxpost.get('posttypeid') == '1') and "nodetype" or "answer"
@@ -454,13 +454,15 @@ def postimport(dump, uidmap, tagmap):
             post.extra_count = sxpost.get('viewcount', 0)
 
             add_tags_to_post(post, tagmap)
+            all[int(post.id)] = int(post.id)
 
         else:
             post.parent_id = sxpost['parentid']
+            post.abs_parent_id = sxpost['parentid']
+            all[int(post.id)] = int(sxpost['parentid'])
 
         post.save()
 
-        all.append(int(post.id))
         create_and_activate_revision(post)
 
         del post
@@ -469,7 +471,9 @@ def postimport(dump, uidmap, tagmap):
 
     return all
 
-def comment_import(dump, uidmap, posts):
+def comment_import(dump, uidmap, absparent_map):
+    posts = absparent_map.keys()
+
     currid = IdIncrementer(max(posts))
     mapping = {}
 
@@ -482,6 +486,7 @@ def comment_import(dump, uidmap, posts):
                 author_id = uidmap[sxc.get('userid', 1)],
                 body = sxc['text'],
                 parent_id = sxc.get('postid'),
+                abs_parent_id = absparent_map.get(int(sxc.get('postid')), sxc.get('postid'))
                 )
 
         if sxc.get('deletiondate', None):
@@ -786,7 +791,7 @@ def save_setting(k, v):
     kv.save()
 
 
-def pages_import(dump, currid):
+def pages_import(dump, currid, owner):
     currid = IdIncrementer(currid)
     registry = {}
 
@@ -807,7 +812,7 @@ def pages_import(dump, currid):
                 'sidebar_render': "html",
                 'comments': False
                 }),
-                author_id = 1
+                author_id = owner
                 )
 
         create_and_activate_revision(page)
@@ -932,7 +937,7 @@ def sximport(dump, options):
 
     badges_import(dump, uidmap, posts)
 
-    pages_import(dump, max(posts))
+    pages_import(dump, max(posts), uidmap.default)
     static_import(dump)
     gc.collect()
 

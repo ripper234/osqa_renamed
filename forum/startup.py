@@ -11,6 +11,7 @@ get_modules_script('startup')
 import forum.badges
 import forum.subscriptions
 import forum.registry
+get_modules_script('registry')
 
 
 

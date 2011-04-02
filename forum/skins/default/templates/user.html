@@ -22,11 +22,15 @@
                 $('#user-reputation').animate({ backgroundColor: "transparent" }, 1000);
             }
         </script>
-
         <link rel="stylesheet" href="http://jquery-ui.googlecode.com/svn/tags/latest/themes/base/jquery-ui.css" type="text/css" media="all" />
         <link rel="stylesheet" href="http://static.jquery.com/ui/css/demo-docs-theme/ui.theme.css" type="text/css" media="all" />
         <link rel="stylesheet" type="text/css" media="screen" href="{% media "/media/style/user.css" %}"/>
     {% endif %}
+    <style type="text/css">
+        #room {
+            border: 0;
+        }
+    </style>
     {% block userjs %}{% endblock %}
 {% endblock %}
 {% block content %}

@@ -26,7 +26,8 @@ u"""
 , SIDEBAR_SET, dict(
 label = "Question title tips",
 help_text = "Tips visible on the ask or edit questions page about the question title.",
-required=False))
+required=False,
+widget=Textarea(attrs={'rows': '10'})))
 
 QUESTION_TAG_TIPS = Setting('QUESTION_TAG_TIPS',
 u"""
@@ -37,7 +38,8 @@ u"""
 , SIDEBAR_SET, dict(
 label = "Tagging tips",
 help_text = "Tips visible on the ask or edit questions page about good tagging.",
-required=False))
+required=False,
+widget=Textarea(attrs={'rows': '10'})))
 
 
 SIDEBAR_UPPER_SHOW = Setting('SIDEBAR_UPPER_SHOW', True, SIDEBAR_SET, dict(

@@ -137,7 +137,8 @@ class OpenIdAbstractAuthConsumer(AuthenticationConsumer):
 
                     for t, s in available_types.items():
                         if not t in consumer_data:
-                            consumer_data[t] = axargs["value.%s.1" % s]
+                            if axargs.get("value.%s.1" % s, None):
+                                consumer_data[t] = axargs["value.%s.1" % s]
                     
             request.session['auth_consumer_data'] = consumer_data
 
