@@ -23,6 +23,6 @@
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 2.7.1 (C:/python/Python27/python.exe)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_3" assert-keyword="false" jdk-15="false" project-jdk-name="Python 2.7.1 (C:/python/Python27/python.exe)" project-jdk-type="Python SDK" />
 </project>
 
