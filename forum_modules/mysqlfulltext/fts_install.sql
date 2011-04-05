@@ -14,7 +14,7 @@ delimiter |
 CREATE TRIGGER fts_on_insert AFTER INSERT ON forum_node
   FOR EACH ROW
   BEGIN
-    INSERT INTO forum_mysqlftsindex (node_id, body) VALUES (NEW.id, CONCAT_WS('\n', NEW.title, NEW.body, NEW.tagnames));
+    INSERT INTO forum_mysqlftsindex (node_id, body) VALUES (NEW.id, UPPER(CONCAT_WS('\n', NEW.title, NEW.body, NEW.tagnames)));
   END;
 |
 
@@ -23,9 +23,9 @@ delimiter |
 CREATE TRIGGER fts_on_update AFTER UPDATE ON forum_node
   FOR EACH ROW
   BEGIN
-    UPDATE forum_mysqlftsindex SET body = CONCAT_WS('\n', NEW.title, NEW.body, NEW.tagnames) WHERE node_id = NEW.id;
+    UPDATE forum_mysqlftsindex SET body = UPPER(CONCAT_WS('\n', NEW.title, NEW.body, NEW.tagnames)) WHERE node_id = NEW.id;
   END;
 
 |
 
-INSERT INTO forum_mysqlftsindex (node_id, body) SELECT id, CONCAT_WS('\n', title, body, tagnames) FROM forum_node;
+INSERT INTO forum_mysqlftsindex (node_id, body) SELECT id, UPPER(CONCAT_WS('\n', title, body, tagnames)) FROM forum_node;
