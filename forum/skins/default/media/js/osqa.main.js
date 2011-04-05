@@ -100,12 +100,12 @@ var response_commands = {
     },
 
     mark_deleted: function(post_type, post_id) {
-        if (post_type == 'answer') {
-            var $answer = $('#answer-container-' + post_id);
-            $answer.addClass('deleted');
-        } else {
+        if (post_type == 'question') {
             var $container = $('#question-table');
             $container.addClass('deleted');
+        } else {
+            var $el = $('#' + post_type + '-container-' + post_id);
+            $el.addClass('deleted');
         }
     },
 

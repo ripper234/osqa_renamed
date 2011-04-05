@@ -182,10 +182,6 @@ class DeleteAction(ActionProxy):
         if self.node.node_type == "answer":
             self.node.question.reset_answer_count_cache()
 
-        # We should notify the current user that the node has been successfully deleted
-        message = _("The <a href=\"%s\">%s</a> has been sucessfully deleted") % (self.node.get_absolute_url(), self.node.node_type)
-        self.user.message_set.create(message=message)
-
     def cancel_action(self):
         self.node.mark_deleted(None)
 

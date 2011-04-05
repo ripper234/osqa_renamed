@@ -94,9 +94,9 @@ def ET_Element_add_tag(el, tag_name, content = None, **attrs):
         try:
             tag.text = unicode(content)
         except Exception, e:
-            logging.error('error converting unicode characters')
-            import traceback
-            logging.error(traceback.print_exc())
+            #logging.error('error converting unicode characters')
+            #import traceback
+            #logging.error(traceback.print_exc())
 
             import string
             tag.text = unicode("".join([c for c in content if c in string.printable]))
@@ -415,7 +415,7 @@ def export_nodes(n, el, anon_data):
         el.add('author', n.author.id)
     el.add('date', make_date(n.added_at))
     el.add('parent', n.parent and n.parent.id or "")
-    el.add('absparent', n.abs_parent and n.abs_parent or "")
+    el.add('absparent', n.abs_parent and n.abs_parent.id or "")
 
     act = el.add('lastactivity')
     act.add('by', n.last_activity_by and n.last_activity_by.id or "")
@@ -451,6 +451,7 @@ def export_nodes(n, el, anon_data):
         rev.add('tags', ", ".join(r.tagname_list()))
 
     el.add('marked', n.marked and 'true' or 'false')
+    el.add('wiki', n.nis.wiki and 'true' or 'false')
     el.add('extraRef', n.extra_ref and n.extra_ref.id or "")
     make_extra(el.add('extraData'), n.extra)
     el.add('extraCount', n.extra_count and n.extra_count or "")

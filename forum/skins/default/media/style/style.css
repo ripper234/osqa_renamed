@@ -149,6 +149,11 @@ blockquote {
     max-width: 650px;
 }
 
+blockquote blockquote {
+    margin: 0;
+    padding: 0;
+}
+
 #wrapper, #announcement {
     margin: auto;
     padding: 0;
