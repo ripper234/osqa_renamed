@@ -5,6 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User as DjangoUser, AnonymousUser as DjangoAnonymousUser
 from django.db.models import Q
 
+from forum.settings import TRUNCATE_LONG_USERNAMES, TRUNCATE_USERNAMES_LONGER_THAN
+
 import string
 from random import Random
 
@@ -146,12 +148,17 @@ class User(BaseModel, DjangoUser):
 
     @property
     def decorated_name(self):
+        username = self.username
+
+        if len(username) > TRUNCATE_USERNAMES_LONGER_THAN and TRUNCATE_LONG_USERNAMES:
+            username = '%s...' % username[:TRUNCATE_USERNAMES_LONGER_THAN-3]
+
         if settings.SHOW_STATUS_DIAMONDS:
             if self.is_superuser:
-                return u"%s \u2666\u2666" % self.username
+                return u"%s \u2666\u2666" % username
 
             if self.is_staff:
-                return u"%s \u2666" % self.username
+                return u"%s \u2666" % username
 
         return self.username
 

@@ -22,6 +22,16 @@ label = _("Disabled usernames"),
 help_text = _("A comma separated list of disabled usernames (usernames not allowed during a new user registration)."),
 widget=CommaStringListWidget))
 
+TRUNCATE_LONG_USERNAMES = Setting('TRUNCATE_LONG_USERNAMES', True, USERS_SET, dict(
+label=_("Truncate long usernames"),
+help_text = _("The long usernames will be truncated.."),
+required=False,
+))
+
+TRUNCATE_USERNAMES_LONGER_THAN = Setting('TRUNCATE_USERNAMES_LONGER_THAN', 15, USERS_SET, dict(
+label = _("Truncate usernames longer than"),
+help_text = _("The usernames that are longer than this will be truncated and ... will be appended.")))
+
 SHOW_STATUS_DIAMONDS = Setting('SHOW_STATUS_DIAMONDS', True, USERS_SET, dict(
 label=_("Show status diamonds"),
 help_text = _("Show status \"diamonds\" next to moderators or superusers usernames."),
