@@ -43,7 +43,12 @@ class NodeContent(models.Model):
 
     @property
     def headline(self):
-        return self.title
+        title = self.title
+
+        # Replaces multiple spaces with single ones.
+        title = re.sub(' +',' ', title)
+
+        return title
 
     def tagname_list(self):
         if self.tagnames:
@@ -309,7 +314,15 @@ class Node(BaseModel, NodeContent):
 
     @property
     def summary(self):
-        return strip_tags(self.html)[:SUMMARY_LENGTH]
+        content = strip_tags(self.html)[:SUMMARY_LENGTH]
+
+        # Remove multiple spaces.
+        content = re.sub(' +',' ', content)
+
+        # Remove line breaks. We don't need them at all.
+        content = content.replace("\n", '')
+
+        return content
 
     @models.permalink
     def get_revisions_url(self):
