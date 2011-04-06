@@ -8,7 +8,7 @@
             <li>
             <a href="{% url badges %}{{award.badge.id}}/{{award.badge.name|slugify}}" title="{{ award.badge.description }}" class="medal">
             <span class="badge{{ award.badge.type }}">&#9679;</span>&nbsp;{{ award.badge.name }}</a>
-            <a href="{{ award.user.get_profile_url }}">{{ award.user.username }}</a>
+            <a href="{{ award.user.get_profile_url }}">{{ award.user.decorated_name }}</a>
             </li>
         {% endfor %}
         </ul>
