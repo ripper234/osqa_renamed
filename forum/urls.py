@@ -18,9 +18,13 @@ sitemaps = {
 
 APP_PATH = os.path.dirname(__file__)
 
+try:
+    admin_url = url(r'^%s(.*)' % _('nimda/'), admin.site.root)
+except ImportError:
+    admin_url = url(r'^%s(.*)' % _('nimda/'), admin.site.urls)
+
 core_urls = (
-    url(r'^$', app.readers.index, name='index'),
-    url(r'^%s(.*)' % _('nimda/'), admin.site.root),
+    url(r'^$', app.readers.index, name='index'), admin_url,
                         
     url(r'^sitemap.xml$', 'forum.sitemap.index', {'sitemaps': sitemaps}),
     url(r'^sitemap-(?P<section>.+)\.xml$', 'forum.sitemap.sitemap', {'sitemaps': sitemaps}),
