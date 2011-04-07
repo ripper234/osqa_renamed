@@ -20,7 +20,7 @@ APP_PATH = os.path.dirname(__file__)
 
 try:
     admin_url = url(r'^%s(.*)' % _('nimda/'), admin.site.root)
-except ImportError:
+except AttributeError:
     admin_url = url(r'^%s(.*)' % _('nimda/'), admin.site.urls)
 
 core_urls = (
