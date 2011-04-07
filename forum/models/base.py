@@ -150,6 +150,7 @@ class CachedQuerySet(models.query.QuerySet):
                 to_return = [(isinstance(tr, ToFetch) and fetched[str(tr)] or tr) for tr in to_return]
                 to_cache.update(dict([(self.model.infer_cache_key({on_cache_query_attr: attr}), r._as_dict()) for attr, r in fetched.items()]))
 
+
         if len(to_cache):
             cache.set_many(to_cache, 60 * 60)
 
@@ -256,6 +257,9 @@ class BaseModel(models.Model):
 
     def save(self, full_save=False, *args, **kwargs):
         put_back = [k for k, v in self.__dict__.items() if isinstance(v, models.expressions.ExpressionNode)]
+
+        if hasattr(self, '_state'):
+            self._state.db = 'default'
 
         if self.id and not full_save:
             self.__class__.objects.filter(id=self.id).update(**self._get_update_kwargs())

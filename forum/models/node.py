@@ -437,6 +437,10 @@ class Node(BaseModel, NodeContent):
                 tag.save()
 
     def delete(self, *args, **kwargs):
+        for tag in self.tags.all():
+            tag.add_to_usage_count(-1)
+            tag.save()
+
         self.active_revision = None
         self.save()
 
@@ -463,7 +467,8 @@ class Node(BaseModel, NodeContent):
         tags_changed = self._process_changes_in_tags()
         
         super(Node, self).save(*args, **kwargs)
-        if tags_changed: self.tags = list(Tag.objects.filter(name__in=self.tagname_list()))
+        if tags_changed:
+            self.tags = list(Tag.objects.filter(name__in=self.tagname_list()))
 
     class Meta:
         app_label = 'forum'

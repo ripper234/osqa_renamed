@@ -26,7 +26,7 @@ class Tag(BaseModel):
         app_label = 'forum'
 
     def __unicode__(self):
-        return u'%s' % self.name
+        return self.name
 
     def add_to_usage_count(self, value):
         if self.used_count + value < 0:
@@ -35,14 +35,18 @@ class Tag(BaseModel):
             self.used_count = models.F('used_count') + value
 
     def cache_key(self):
-        return self._generate_cache_key(self.name)
+        return self._generate_cache_key(Tag.safe_cache_name(self.name))
+
+    @classmethod
+    def safe_cache_name(cls, name):
+        return "".join([str(ord(c)) for c in name])
 
     @classmethod
     def infer_cache_key(cls, querydict):
         if 'name' in querydict:
-            return cls._generate_cache_key(querydict['name'])
+            return cls._generate_cache_key(cls.safe_cache_name(querydict['name']))
 
-        return BaseModel.infer_cache_key(querydict)
+        return None
 
     @classmethod
     def value_to_list_on_cache_query(cls):
