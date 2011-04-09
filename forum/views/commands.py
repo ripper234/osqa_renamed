@@ -588,4 +588,4 @@ def award_points(request, user_id, answer_id):
         # We take points from the awarding user
         AwardPointsAction(user=request.user, node=answer, extra=extra).save(data=dict(value=points, affected=awarded_user))
 
-        return { 'message' : _("You have awarded %s with %d points") % (awarded_user, points) }
+        return { 'message' : _("You have awarded %(awarded_user)s with %(points)d points") % {'awarded_user' : awarded_user, 'points' : points} }
