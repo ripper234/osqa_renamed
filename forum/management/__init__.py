@@ -29,7 +29,7 @@ def post_syncdb_callback(sender, **kwargs):
 
         # Update each column in turn.
         for table_name, column_name in updatable_table_columns.iteritems():
-            alter_table_statement = "ALTER TABLE %(table_name)s MODIFY %(column_name)s varchar(255) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL;" % {
+            alter_table_statement = "ALTER TABLE %(table_name)s MODIFY %(column_name)s varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;" % {
                 "table_name": table_name, "column_name": column_name}
             log_status(verbosity,"Updating MySQL column with this statement: " + alter_table_statement)
             cursor.execute(alter_table_statement)
