@@ -5,6 +5,7 @@ import datetime
 import math
 import re
 import logging
+import random
 from django import template
 from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
@@ -249,3 +250,27 @@ def do_declare(parser, token):
     nodelist = parser.parse(('enddeclare',))
     parser.delete_first_token()
     return DeclareNode(nodelist)
+
+# Usage: {% random 1 999 %}
+# Generates random number in the template
+class RandomNumberNode(template.Node):
+    # We get the limiting numbers
+    def __init__(self, int_from, int_to):
+        self.int_from = int(int_from)
+        self.int_to = int(int_to)
+
+    # We generate the random number using the standard python interface
+    def render(self, context):
+        return str(random.randint(self.int_from, self.int_to))
+
+@register.tag(name="random")
+def random_number(parser, token):
+    # Try to get the limiting numbers from the token
+    try:
+        tag_name, int_from, int_to = token.split_contents()
+    except ValueError:
+        # If we had no success -- raise an exception
+        raise template.TemplateSyntaxError, "%r tag requires exactly two arguments" % token.contents.split()[0]
+
+    # Call the random Node
+    return RandomNumberNode(int_from, int_to)
