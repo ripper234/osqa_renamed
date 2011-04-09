@@ -51,8 +51,8 @@
             }
         /* ]]> */
         </script>
-        <script type='text/javascript' src='{% media  "/media/js/osqa.main.js" %}'></script>
-        <script type='text/javascript' src='{% media  "/media/js/jquery.copy.js" %}'></script>
+        <script type="text/javascript" src="{% media  "/media/js/osqa.main.js" %}?{% random 1 1000000 %}"></script>
+        <script type="text/javascript" src="{% media  "/media/js/jquery.copy.js" %}?{% random 1 1000000 %}"></script>
         {% if user_messages %}
         <style type="text/css">
             body { margin-top:2.4em; }
