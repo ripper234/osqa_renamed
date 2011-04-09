@@ -189,6 +189,8 @@ class CommentToAnswerAction(ActionProxy):
         self.node.last_edited = self
         self.node.update_last_activity(self.user, save=True)
 
+        # Now updated the cached data
+        question.reset_answer_count_cache()
 
     def describe(self, viewer=None):
         return _("%(user)s converted comment on %(question)s into an answer") % {
