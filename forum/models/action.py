@@ -300,7 +300,7 @@ class ActionRepute(models.Model):
         return 0
 
     def _add_to_rep(self, value):
-        if self.user.reputation + value < 0:
+        if self.user.reputation + value < 1:
             return 0
         else:
             return models.F('reputation') + value
