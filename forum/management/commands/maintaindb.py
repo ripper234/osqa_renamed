@@ -64,3 +64,12 @@ class Command(BaseCommand):
                     activate_latest_revision(node)
 
                     #print rev.node
+
+            if node.node_type == "question":
+                # Reset the answer count cache
+                node.reset_answer_count_cache()
+                print "Question #%(question_id)d: Answer count cache has been reset" % { 'question_id' : node.id }
+
+                # Reset the accepted count cache
+                node.reset_accepted_count_cache()
+                print "Question #%(question_id)d: Resetting the accepted count cache" % { 'question_id' : node.id }
