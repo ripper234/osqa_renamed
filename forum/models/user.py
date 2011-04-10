@@ -5,6 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User as DjangoUser, AnonymousUser as DjangoAnonymousUser
 from django.db.models import Q
 
+from django.utils.encoding import smart_unicode
+
 from forum.settings import TRUNCATE_LONG_USERNAMES, TRUNCATE_USERNAMES_LONGER_THAN
 
 import string
@@ -129,7 +131,7 @@ class User(BaseModel, DjangoUser):
     vote_down_count = DenormalizedField("actions", canceled=False, action_type="votedown")
 
     def __unicode__(self):
-        return self.username
+        return smart_unicode(self.username)
 
     @property
     def prop(self):
@@ -148,7 +150,7 @@ class User(BaseModel, DjangoUser):
 
     @property
     def decorated_name(self):
-        username = self.username
+        username = smart_unicode(self.username)
 
         if len(username) > TRUNCATE_USERNAMES_LONGER_THAN and TRUNCATE_LONG_USERNAMES:
             username = '%s...' % username[:TRUNCATE_USERNAMES_LONGER_THAN-3]
@@ -196,7 +198,7 @@ class User(BaseModel, DjangoUser):
 
     @models.permalink
     def get_profile_url(self):
-        return ('user_profile', (), {'id': self.id, 'slug': slugify(self.username)})
+        return ('user_profile', (), {'id': self.id, 'slug': slugify(smart_unicode(self.username))})
 
     def get_absolute_url(self):
         return self.get_profile_url()

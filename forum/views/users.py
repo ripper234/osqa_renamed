@@ -11,6 +11,7 @@ from forum.http_responses import HttpResponseUnauthorized
 from django.utils.translation import ugettext as _
 from django.utils.http import urlquote_plus
 from django.utils.html import strip_tags
+from django.utils.encoding import smart_unicode
 from django.utils import simplejson
 from django.core.urlresolvers import reverse, NoReverseMatch
 from forum.forms import *
@@ -269,7 +270,7 @@ def user_view(template, tab_name, tab_title, tab_description, private=False, tab
         decorated = decorate.params.withfn(params)(fn)
 
         def result(context, request, user):
-            rev_page_title = user.username + " - " + tab_description
+            rev_page_title = smart_unicode(user.username) + " - " + tab_description
 
             context.update({
                 "tab": "users",

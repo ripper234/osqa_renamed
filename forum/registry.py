@@ -1,5 +1,6 @@
 from forum.modules import ui, get_modules_script
 from django.utils.translation import ugettext as _
+from django.utils.encoding import smart_unicode
 from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 
@@ -29,7 +30,7 @@ ui.register(ui.HEADER_LINKS,
 
             ui.Link(
                     visibility=ui.Visibility.AUTHENTICATED,
-                    text=lambda u, c: u.username,
+                    text=lambda u, c: smart_unicode(u.username),
                     url=lambda u, c: u.get_profile_url(),
                     post_code=lambda u, c: get_score_badge(u),
                     weight=100, name='ACCOUNT'),
