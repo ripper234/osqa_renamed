@@ -1,4 +1,4 @@
-{% load extra_tags %}
+{% load extra_tags i18n %}
 <div class='post-update-info post-update-info-user'>
     <p style="line-height:12px;">
         {{ node_verb }}
@@ -6,7 +6,8 @@
     </p>
     {% gravatar node.author 32 %}
     <p><a {% if node.author.is_suspended %}class="suspended-user" {% endif %}href="{{ node.author.get_profile_url }}">{{ node.author.decorated_name }}</a><br/>
-    {% get_score_badge node.author %}</p>
+    {% get_score_badge node.author %}<br />
+    {% get_accept_rate node.author %}</p>
 </div>
 {% if node.last_edited %}
     <div class='post-update-info post-update-info-edited'>

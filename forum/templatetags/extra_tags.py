@@ -78,6 +78,43 @@ def get_score_badge(user):
     'reputationword' : _('reputation points'),
     })
 
+# Usage: {% get_accept_rate node.author %}
+@register.simple_tag
+def get_accept_rate(user):
+    # We get the number of all user's answers.
+    total_answers_count = Answer.objects.filter(author=user).count()
+
+    # We get the number of the user's accepted answers.
+    accepted_answers_count = Answer.objects.filter(author=user, state_string__contains="(accepted)").count()
+
+    # In order to represent the accept rate in percentages we divide the number of the accepted answers to the
+    # total answers count and make a hundred multiplication.
+    accept_rate = (float(accepted_answers_count) / float(total_answers_count) * 100)
+
+    # If the user has more than one accepted answers the rate title will be in plural.
+    if accepted_answers_count > 1:
+        accept_rate_number_title = _('%(user)s has %(count)d accepted answers') % {
+            'user' : user.username,
+            'count' : int(accepted_answers_count)
+        }
+    # If the user has one accepted answer we'll be using singular.
+    elif accepted_answers_count == 1:
+        accept_rate_number_title = _('%s has one accepted answer') % user.username
+    # This are the only options. Otherwise there are no accepted answers at all.
+    else:
+        accept_rate_number_title = _('%s has no accepted answers') % user.username
+
+    html_output = """
+    <span title="%(accept_rate_title)s" class="accept_rate">%(accept_rate_label)s:</span>
+    <span title="%(accept_rate_number_title)s">%(accept_rate)d&#37;</span>
+    """ % {
+        'accept_rate_label' : _('accept rate'),
+        'accept_rate_title' : _('Rate of the user\'s accepted answers'),
+        'accept_rate' : int(accept_rate),
+        'accept_rate_number_title' : u'%s' % accept_rate_number_title,
+    }
+
+    return mark_safe(html_output)
 
 @register.simple_tag
 def get_age(birthday):

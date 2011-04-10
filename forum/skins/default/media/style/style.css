@@ -1111,7 +1111,7 @@ ins {
     color: #CC9933;
 }
 
-.score {
+.score, .accept_rate {
     color: #333333;
     font-size: 110%;
     font-weight: bold;
