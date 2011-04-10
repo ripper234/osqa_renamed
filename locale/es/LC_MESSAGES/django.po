@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-09 20:02+0300\n"
+"POT-Creation-Date: 2011-04-10 18:29+0300\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Javier Candeira <javier@candeira.com>\n"
 "Language-Team: spanish\n"
@@ -634,26 +634,26 @@ msgstr "convertido"
 msgid "%(user)s converted an answer to %(question)s into a comment"
 msgstr "%(user)s convirtió una respuesta a %(question)s en un comentario"
 
-#: forum/actions/node.py:194
+#: forum/actions/node.py:196
 #, fuzzy, python-format
 msgid "%(user)s converted comment on %(question)s into an answer"
 msgstr "%(user)s convirtió una respuesta a %(question)s en un comentario"
 
-#: forum/actions/node.py:200
+#: forum/actions/node.py:202
 #, fuzzy
 msgid "converted to question"
 msgstr "Responde la pregunta"
 
-#: forum/actions/node.py:225
+#: forum/actions/node.py:227
 #, fuzzy, python-format
 msgid "%(user)s converted an answer to %(question)s into a separate question"
 msgstr "%(user)s convirtió una respuesta a %(question)s en un comentario"
 
-#: forum/actions/node.py:231
+#: forum/actions/node.py:233
 msgid "wikified"
 msgstr "transformado en wiki"
 
-#: forum/actions/node.py:243
+#: forum/actions/node.py:245
 #, python-format
 msgid "%(user)s marked %(node)s as community wiki."
 msgstr "%(user)s transformó %(node)s en un wiki comunitario."
@@ -740,7 +740,7 @@ msgid "You have been penalized in %s reputation points."
 msgstr "Has sido penalizado con %s puntos de karma menos."
 
 #: forum/actions/user.py:74 forum/actions/user.py:112
-#: forum/templatetags/extra_tags.py:93 forum/views/auth.py:221
+#: forum/templatetags/extra_tags.py:131 forum/views/auth.py:221
 #: forum_modules/exporter/templates/running.html:158
 msgid "unknown"
 msgstr "desconocido"
@@ -1258,8 +1258,8 @@ msgstr "en %(link)s"
 msgid "%(user)s %(node_name)s %(node_desc)s"
 msgstr "%(user)s %(node_name)s %(node_desc)s"
 
-#: forum/models/comment.py:6 forum/views/commands.py:231
-#: forum/views/commands.py:257 forum_modules/akismet/startup.py:77
+#: forum/models/comment.py:6 forum/views/commands.py:229
+#: forum/views/commands.py:255 forum_modules/akismet/startup.py:77
 msgid "comment"
 msgstr "comentar"
 
@@ -3941,12 +3941,12 @@ msgid "You are not subscribed to this question."
 msgstr "No estás suscrito a esta pregunta."
 
 #: forum/skins/default/templates/subscription_status.html:19
-#: forum/views/commands.py:486
+#: forum/views/commands.py:484
 msgid "unsubscribe me"
 msgstr "dar de baja mi suscripción"
 
 #: forum/skins/default/templates/subscription_status.html:21
-#: forum/views/commands.py:486
+#: forum/views/commands.py:484
 msgid "subscribe me"
 msgstr "suscribirme"
 
@@ -5520,7 +5520,7 @@ msgstr "Activa esta opción para hacer que la ordenación se mantenga"
 
 #: forum/skins/default/templates/question_list/item.html:11
 #: forum/views/commands.py:67 forum/views/commands.py:70
-#: forum/views/commands.py:113
+#: forum/views/commands.py:111
 msgid "vote"
 msgstr "voto"
 
@@ -5788,12 +5788,12 @@ msgstr "preguntas más votadas"
 #: forum/skins/default/templates/users/signature.html:11
 #: forum/skins/default/templates/users/signature.html:17
 #: forum/skins/default/templates/users/signature.html:23
-#: forum/templatetags/extra_tags.py:76 forum/views/meta.py:89
+#: forum/templatetags/extra_tags.py:77 forum/views/meta.py:89
 msgid "badges"
 msgstr "medallas"
 
 #: forum/skins/default/templates/users/signature.html:31
-#: forum/templatetags/extra_tags.py:49
+#: forum/templatetags/extra_tags.py:50
 msgid "(suspended)"
 msgstr "(suspendido)"
 
@@ -6085,71 +6085,96 @@ msgstr "votar positivamente"
 msgid "downvote"
 msgstr "votar negativamente"
 
-#: forum/templatetags/extra_tags.py:77
+#: forum/templatetags/extra_tags.py:78
 msgid "reputation points"
 msgstr "puntos de karma"
 
-#: forum/templatetags/extra_tags.py:103
+#: forum/templatetags/extra_tags.py:96
+#, fuzzy, python-format
+msgid "%(user)s has %(count)d accepted answers"
+msgstr "esta pregunta tiene una respuesta aceptada"
+
+#: forum/templatetags/extra_tags.py:102
+#, fuzzy, python-format
+msgid "%s has one accepted answer"
+msgstr "esta pregunta tiene una respuesta aceptada"
+
+#: forum/templatetags/extra_tags.py:105
+#, fuzzy, python-format
+msgid "%s has no accepted answers"
+msgstr "esta pregunta tiene una respuesta aceptada"
+
+#: forum/templatetags/extra_tags.py:111
+#, fuzzy
+msgid "accept rate"
+msgstr "aceptar respuestas"
+
+#: forum/templatetags/extra_tags.py:112
+#, fuzzy
+msgid "Rate of the user's accepted answers"
+msgstr "marca esta respuesta como la respuesta aceptada"
+
+#: forum/templatetags/extra_tags.py:141
 msgid "%b %d at %H:%M"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:105
+#: forum/templatetags/extra_tags.py:143
 msgid "%b %d '%y at %H:%M"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:107
+#: forum/templatetags/extra_tags.py:145
 msgid "2 days ago"
 msgstr "hace 2 días"
 
-#: forum/templatetags/extra_tags.py:109
+#: forum/templatetags/extra_tags.py:147
 msgid "yesterday"
 msgstr "ayer"
 
-#: forum/templatetags/extra_tags.py:111
+#: forum/templatetags/extra_tags.py:149
 #, fuzzy
 msgid "hour ago"
 msgstr "hace %(hr)d hora"
 
-#: forum/templatetags/extra_tags.py:111
+#: forum/templatetags/extra_tags.py:149
 #, fuzzy
 msgid "hours ago"
 msgstr "hace %(hr)d hora"
 
-#: forum/templatetags/extra_tags.py:111
+#: forum/templatetags/extra_tags.py:149
 #, fuzzy, python-format
 msgid "%(hr)d "
 msgid_plural "%(hr)d "
 msgstr[0] "hace %(hr)d hora"
 msgstr[1] "hace %(hr)d horas"
 
-#: forum/templatetags/extra_tags.py:113
+#: forum/templatetags/extra_tags.py:151
 #, fuzzy
 msgid "min ago"
 msgstr "hace %(min)d minuto"
 
-#: forum/templatetags/extra_tags.py:113
+#: forum/templatetags/extra_tags.py:151
 #, fuzzy
 msgid "mins ago"
 msgstr "hace %(min)d minuto"
 
-#: forum/templatetags/extra_tags.py:113
+#: forum/templatetags/extra_tags.py:151
 #, fuzzy, python-format
 msgid "%(min)d "
 msgid_plural "%(min)d "
 msgstr[0] "hace %(min)d minuto"
 msgstr[1] "hace %(min)d minutos"
 
-#: forum/templatetags/extra_tags.py:115
+#: forum/templatetags/extra_tags.py:153
 #, fuzzy
 msgid "sec ago"
 msgstr "ver etiquetas"
 
-#: forum/templatetags/extra_tags.py:115
+#: forum/templatetags/extra_tags.py:153
 #, fuzzy
 msgid "secs ago"
 msgstr "hace %(sec)d segundo"
 
-#: forum/templatetags/extra_tags.py:115
+#: forum/templatetags/extra_tags.py:153
 #, fuzzy, python-format
 msgid "%(sec)d "
 msgid_plural "%(sec)d "
@@ -6525,85 +6550,85 @@ msgid_plural "days"
 msgstr[0] "día"
 msgstr[1] "días"
 
-#: forum/views/commands.py:112
+#: forum/views/commands.py:110
 #, python-format
 msgid "You have %(nvotes)s %(tvotes)s left today."
 msgstr "Te quedan %(nvotes)s %(tvotes)s hoy."
 
-#: forum/views/commands.py:126 forum/views/commands.py:132
+#: forum/views/commands.py:124 forum/views/commands.py:130
 msgid "flag posts"
 msgstr "denunciar mensajes"
 
-#: forum/views/commands.py:129
+#: forum/views/commands.py:127
 msgid "flag"
 msgstr "denunciar"
 
-#: forum/views/commands.py:137
+#: forum/views/commands.py:135
 msgid "flags"
 msgstr "denuncias"
 
-#: forum/views/commands.py:142
+#: forum/views/commands.py:140
 #, python-format
 msgid "You already flagged this post with the following reason: %(reason)s"
 msgstr "Ya denunciaste este mensaje con este motivo: %(reason)s"
 
-#: forum/views/commands.py:147 forum/views/commands.py:376
+#: forum/views/commands.py:145 forum/views/commands.py:374
 msgid "Reason is empty"
 msgstr "Motivo vacío"
 
-#: forum/views/commands.py:151
+#: forum/views/commands.py:149
 msgid ""
 "Thank you for your report. A moderator will review your submission shortly."
 msgstr "Gracias por la información. Un moderador revisará tu envío pronto."
 
-#: forum/views/commands.py:159 forum/views/commands.py:165
+#: forum/views/commands.py:157 forum/views/commands.py:163
 msgid "like comments"
 msgstr ""
 
-#: forum/views/commands.py:162
+#: forum/views/commands.py:160
 msgid "like"
 msgstr ""
 
-#: forum/views/commands.py:189 forum/views/commands.py:192
+#: forum/views/commands.py:187 forum/views/commands.py:190
 msgid "delete comments"
 msgstr "borrar comentarios"
 
-#: forum/views/commands.py:208
+#: forum/views/commands.py:206
 msgid "mark a question as favorite"
 msgstr "marcar una pregunta como favorita"
 
-#: forum/views/commands.py:234 forum/views/commands.py:514
-#: forum/views/commands.py:525
+#: forum/views/commands.py:232 forum/views/commands.py:512
+#: forum/views/commands.py:523
 msgid "Invalid request"
 msgstr "Petición inválida"
 
-#: forum/views/commands.py:239
+#: forum/views/commands.py:237
 msgid "Comment is empty"
 msgstr "Comentario vacío"
 
-#: forum/views/commands.py:242
+#: forum/views/commands.py:240
 #, python-format
 msgid "At least %d characters required on comment body."
 msgstr "El comentario debe tener por lo menos %d caracteres."
 
-#: forum/views/commands.py:245
+#: forum/views/commands.py:243
 #, python-format
 msgid "No more than %d characters on comment body."
 msgstr "El comentario no puede tener más de %d caracteres."
 
-#: forum/views/commands.py:251
+#: forum/views/commands.py:249
 msgid "edit comments"
 msgstr "editar comentarios"
 
-#: forum/views/commands.py:285 forum/views/commands.py:299
+#: forum/views/commands.py:283 forum/views/commands.py:297
 msgid "accept answers"
 msgstr "aceptar respuestas"
 
-#: forum/views/commands.py:305
+#: forum/views/commands.py:303
 msgid "Sorry but you cannot accept the answer"
 msgstr "Lo sentimos pero no puedes aceptar la respuesta"
 
-#: forum/views/commands.py:314
+#: forum/views/commands.py:312
 msgid "This question already has an accepted answer."
 msgid_plural ""
 "Sorry but this question has reached the limit of accepted answers."
@@ -6611,7 +6636,7 @@ msgstr[0] "Esta pregunta ya tiene una respuesta aceptada."
 msgstr[1] ""
 "Lo sentimos pero esta pregunta ha llegado al límite de respuestas aceptadas."
 
-#: forum/views/commands.py:321
+#: forum/views/commands.py:319
 msgid ""
 "The author of this answer already has an accepted answer in this question."
 msgid_plural ""
@@ -6623,64 +6648,64 @@ msgstr[1] ""
 "Lo sentimos pero el autor de esta respuesta ha llegado al límite de "
 "respuestas aceptadas por pregunta."
 
-#: forum/views/commands.py:336 forum/views/commands.py:339
+#: forum/views/commands.py:334 forum/views/commands.py:337
 msgid "delete posts"
 msgstr "borrar mensajes"
 
-#: forum/views/commands.py:362 forum/views/commands.py:371
+#: forum/views/commands.py:360 forum/views/commands.py:369
 msgid "close questions"
 msgstr "cerrar preguntas"
 
-#: forum/views/commands.py:366
+#: forum/views/commands.py:364
 msgid "reopen questions"
 msgstr "reabrir preguntas"
 
-#: forum/views/commands.py:388 forum/views/commands.py:400
+#: forum/views/commands.py:386 forum/views/commands.py:398
 msgid "mark posts as community wiki"
 msgstr "transformar textos en wikis comunitarios"
 
-#: forum/views/commands.py:392
+#: forum/views/commands.py:390
 msgid "cancel a community wiki post"
 msgstr "cancelar un wiki comunitario"
 
-#: forum/views/commands.py:413
+#: forum/views/commands.py:411
 #, python-format
 msgid "Answer by %(uname)s: %(snippet)s..."
 msgstr "Respuesta de %(uname)s: %(snippet)s..."
 
-#: forum/views/commands.py:415
+#: forum/views/commands.py:413
 msgid "Question"
 msgstr "Pregunta"
 
-#: forum/views/commands.py:422 forum/views/commands.py:425
+#: forum/views/commands.py:420 forum/views/commands.py:423
 msgid "convert answers to comments"
 msgstr "convertir respuestas en comentarios"
 
-#: forum/views/commands.py:430 forum/views/commands.py:433
+#: forum/views/commands.py:428 forum/views/commands.py:431
 msgid "That is an invalid post to put the comment under"
 msgstr "No es posible hacer un comentario a ese texto"
 
-#: forum/views/commands.py:451 forum/views/commands.py:454
+#: forum/views/commands.py:449 forum/views/commands.py:452
 #, fuzzy
 msgid "convert comments to answers"
 msgstr "suscribirme a los comentarios y a las respuestas"
 
-#: forum/views/commands.py:469
+#: forum/views/commands.py:467
 #, fuzzy
 msgid "You do not have the correct credentials to preform this action."
 msgstr "No tienes las credenciales actuales para realizar esta acción."
 
-#: forum/views/commands.py:560
+#: forum/views/commands.py:558
 msgid "The permanent URL to the answer has been copied to your clipboard."
 msgstr ""
 
-#: forum/views/commands.py:571 forum/views/commands.py:575
-#: forum/views/commands.py:584
+#: forum/views/commands.py:569 forum/views/commands.py:573
+#: forum/views/commands.py:582
 #, fuzzy
 msgid "award"
 msgstr "medalla/"
 
-#: forum/views/commands.py:591
+#: forum/views/commands.py:589
 #, python-format
 msgid "You have awarded %(awarded_user)s with %(points)d points"
 msgstr ""
