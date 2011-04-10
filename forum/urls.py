@@ -27,8 +27,9 @@ core_urls = (
     url(r'^$', app.readers.index, name='index'), admin_url,
                         
     url(r'^sitemap.xml$', 'forum.sitemap.index', {'sitemaps': sitemaps}),
-    url(r'^sitemap-(?P<section>.+)\.xml$', 'forum.sitemap.sitemap', {'sitemaps': sitemaps}),
-    
+    url(r'^sitemap-(?P<section>.+)-(?P<page>\d+)\.xml$', 'forum.sitemap.sitemap', {'sitemaps': sitemaps}, name="sitemap_section_page"),
+    url(r'^sitemap-(?P<section>.+)\.xml$', 'forum.sitemap.sitemap_section_index', {'sitemaps': sitemaps}, name="sitemap_section_index"),
+
     url(r'^favicon\.ico$', app.meta.favicon),
     url(r'^cstyle\.css$', app.meta.custom_css, name='custom_css'),
     
