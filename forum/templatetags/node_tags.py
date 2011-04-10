@@ -4,6 +4,7 @@ import re
 from forum.models import Question, Action
 from django.utils.translation import ungettext, ugettext as _
 from django.utils.html import strip_tags
+from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
 from django import template
@@ -93,7 +94,7 @@ def post_controls(post, user):
         # Users should be able to award points for an answer. Users cannot award their own answers
         if user != post.author and user.is_authenticated():
             controls.append(post_control(_("award points"), reverse('award_points', kwargs={'user_id' : post.author.id,
-                                         'answer_id' : post.id}), title=_("award points to %s") % post.author,
+                                         'answer_id' : post.id}), title=_("award points to %s") % smart_unicode(post.author.username),
                                          command=True, withprompt=True))
 
     # The other controls are visible only to authenticated users.

@@ -89,12 +89,15 @@ def get_accept_rate(user):
 
     # In order to represent the accept rate in percentages we divide the number of the accepted answers to the
     # total answers count and make a hundred multiplication.
-    accept_rate = (float(accepted_answers_count) / float(total_answers_count) * 100)
+    try:
+        accept_rate = (float(accepted_answers_count) / float(total_answers_count) * 100)
+    except ZeroDivisionError:
+        accept_rate = 0
 
     # If the user has more than one accepted answers the rate title will be in plural.
     if accepted_answers_count > 1:
         accept_rate_number_title = _('%(user)s has %(count)d accepted answers') % {
-            'user' : user.username,
+            'user' :  user.username,
             'count' : int(accepted_answers_count)
         }
     # If the user has one accepted answer we'll be using singular.
@@ -102,7 +105,7 @@ def get_accept_rate(user):
         accept_rate_number_title = _('%s has one accepted answer') % user.username
     # This are the only options. Otherwise there are no accepted answers at all.
     else:
-        accept_rate_number_title = _('%s has no accepted answers') % user.username
+        accept_rate_number_title = _('%s has no accepted answers') % smart_unicode(user.username)
 
     html_output = """
     <span title="%(accept_rate_title)s" class="accept_rate">%(accept_rate_label)s:</span>
