@@ -61,7 +61,7 @@ def sitemap(request, sitemaps, section=None, page=1):
     return HttpResponse(xml, mimetype='application/xml')
 
 class OsqaSitemap(Sitemap):
-    limit = 250
+    limit = 2500
     changefreq = 'daily'
     priority = 0.5
     def items(self):
