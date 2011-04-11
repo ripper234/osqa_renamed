@@ -162,7 +162,7 @@ class User(BaseModel, DjangoUser):
             if self.is_staff:
                 return u"%s \u2666" % username
 
-        return self.username
+        return username
 
     @property
     def last_activity(self):
