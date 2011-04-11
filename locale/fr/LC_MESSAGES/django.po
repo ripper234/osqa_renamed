@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-10 18:30+0300\n"
+"POT-Creation-Date: 2011-04-11 22:20+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,86 +59,86 @@ msgstr ""
 msgid "question"
 msgstr ""
 
-#: forum/registry.py:22 forum/registry.py:57
+#: forum/registry.py:23 forum/registry.py:58
 #: forum/skins/default/templates/index.html:15
 #: forum/skins/default/templates/question_edit_tips.html:9
 msgid "faq"
 msgstr ""
 
-#: forum/registry.py:23 forum/registry.py:58
+#: forum/registry.py:24 forum/registry.py:59
 #: forum/skins/default/templates/index.html:14
 msgid "about"
 msgstr ""
 
-#: forum/registry.py:26
+#: forum/registry.py:27
 msgid "logout"
 msgstr ""
 
-#: forum/registry.py:26
+#: forum/registry.py:27
 msgid "login"
 msgstr ""
 
-#: forum/registry.py:39
+#: forum/registry.py:40
 msgid "administration"
 msgstr ""
 
-#: forum/registry.py:52
+#: forum/registry.py:53
 msgid "contact"
 msgstr ""
 
-#: forum/registry.py:55
+#: forum/registry.py:56
 msgid "support"
 msgstr ""
 
-#: forum/registry.py:56
+#: forum/registry.py:57
 msgid "privacy"
 msgstr ""
 
-#: forum/registry.py:71 forum/skins/default/templates/users/edit.html:33
+#: forum/registry.py:72 forum/skins/default/templates/users/edit.html:33
 msgid "edit profile"
 msgstr ""
 
-#: forum/registry.py:78
+#: forum/registry.py:79
 msgid "authentication settings"
 msgstr ""
 
-#: forum/registry.py:85
+#: forum/registry.py:86
 msgid "email notification settings"
 msgstr ""
 
-#: forum/registry.py:92
+#: forum/registry.py:93
 msgid "other preferences"
 msgstr ""
 
-#: forum/registry.py:97
+#: forum/registry.py:98
 msgid "Moderation tools"
 msgstr ""
 
-#: forum/registry.py:99
+#: forum/registry.py:100
 msgid "withdraw suspension"
 msgstr ""
 
-#: forum/registry.py:99
+#: forum/registry.py:100
 msgid "suspend this user"
 msgstr ""
 
-#: forum/registry.py:106
+#: forum/registry.py:107
 msgid "give/take karma"
 msgstr ""
 
-#: forum/registry.py:114
+#: forum/registry.py:115
 msgid "remove moderator status"
 msgstr ""
 
-#: forum/registry.py:114
+#: forum/registry.py:115
 msgid "grant moderator status"
 msgstr ""
 
-#: forum/registry.py:121
+#: forum/registry.py:122
 msgid "remove super user status"
 msgstr ""
 
-#: forum/registry.py:121
+#: forum/registry.py:122
 msgid "grant super user status"
 msgstr ""
 
@@ -146,347 +146,347 @@ msgstr ""
 msgid "nimda/"
 msgstr ""
 
-#: forum/urls.py:36
+#: forum/urls.py:37
 msgid "upfiles/"
 msgstr ""
 
-#: forum/urls.py:38
+#: forum/urls.py:39
 msgid "faq/"
 msgstr ""
 
-#: forum/urls.py:38
+#: forum/urls.py:39
 msgid "FAQ"
 msgstr ""
 
-#: forum/urls.py:39
+#: forum/urls.py:40
 msgid "about/"
 msgstr ""
 
-#: forum/urls.py:39
+#: forum/urls.py:40
 msgid "About"
 msgstr ""
 
-#: forum/urls.py:40
+#: forum/urls.py:41
 msgid "markdown_help/"
 msgstr ""
 
-#: forum/urls.py:42
+#: forum/urls.py:43
 msgid "privacy/"
 msgstr ""
 
-#: forum/urls.py:43
+#: forum/urls.py:44
 msgid "logout/"
 msgstr ""
 
-#: forum/urls.py:44
+#: forum/urls.py:45
 msgid "answers/"
 msgstr ""
 
-#: forum/urls.py:44 forum/urls.py:54 forum/urls.py:96 forum/urls.py:143
+#: forum/urls.py:45 forum/urls.py:55 forum/urls.py:97 forum/urls.py:144
 msgid "edit/"
 msgstr ""
 
-#: forum/urls.py:45
+#: forum/urls.py:46
 msgid "revisions/"
 msgstr ""
 
-#: forum/urls.py:46 forum/urls.py:47 forum/urls.py:48 forum/urls.py:50
-#: forum/urls.py:51 forum/urls.py:54 forum/urls.py:55 forum/urls.py:56
-#: forum/urls.py:57 forum/urls.py:82 forum/urls.py:83 forum/urls.py:84
+#: forum/urls.py:47 forum/urls.py:48 forum/urls.py:49 forum/urls.py:51
+#: forum/urls.py:52 forum/urls.py:55 forum/urls.py:56 forum/urls.py:57
+#: forum/urls.py:58 forum/urls.py:83 forum/urls.py:84 forum/urls.py:85
 msgid "questions/"
 msgstr ""
 
-#: forum/urls.py:47
+#: forum/urls.py:48
 msgid "ask/"
 msgstr ""
 
-#: forum/urls.py:48
+#: forum/urls.py:49
 msgid "related_questions/"
 msgstr ""
 
-#: forum/urls.py:50
+#: forum/urls.py:51
 msgid "unanswered/"
 msgstr ""
 
-#: forum/urls.py:55
+#: forum/urls.py:56
 msgid "close/"
 msgstr ""
 
-#: forum/urls.py:56
+#: forum/urls.py:57
 msgid "reopen/"
 msgstr ""
 
-#: forum/urls.py:57 forum/urls.py:68
+#: forum/urls.py:58 forum/urls.py:69
 msgid "answer/"
 msgstr ""
 
-#: forum/urls.py:58
+#: forum/urls.py:59
 msgid "pending-data/"
 msgstr ""
 
-#: forum/urls.py:60
+#: forum/urls.py:61
 msgid "vote/"
 msgstr ""
 
-#: forum/urls.py:61
+#: forum/urls.py:62
 msgid "like_comment/"
 msgstr ""
 
-#: forum/urls.py:62
+#: forum/urls.py:63
 msgid "comment/"
 msgstr ""
 
-#: forum/urls.py:63
+#: forum/urls.py:64
 msgid "delete_comment/"
 msgstr ""
 
-#: forum/urls.py:64
+#: forum/urls.py:65
 msgid "convert_comment/"
 msgstr ""
 
-#: forum/urls.py:65
+#: forum/urls.py:66
 msgid "accept_answer/"
 msgstr ""
 
-#: forum/urls.py:66
+#: forum/urls.py:67
 msgid "answer_link/"
 msgstr ""
 
-#: forum/urls.py:67
+#: forum/urls.py:68
 msgid "mark_favorite/"
 msgstr ""
 
-#: forum/urls.py:68
+#: forum/urls.py:69
 msgid "award_points/"
 msgstr ""
 
-#: forum/urls.py:68
+#: forum/urls.py:69
 msgid "user/"
 msgstr ""
 
-#: forum/urls.py:70
+#: forum/urls.py:71
 msgid "flag/"
 msgstr ""
 
-#: forum/urls.py:71
+#: forum/urls.py:72
 msgid "delete/"
 msgstr ""
 
-#: forum/urls.py:72 forum/urls.py:73
+#: forum/urls.py:73 forum/urls.py:74
 msgid "subscribe/"
 msgstr ""
 
-#: forum/urls.py:74
+#: forum/urls.py:75
 msgid "matching_tags/"
 msgstr ""
 
-#: forum/urls.py:75
+#: forum/urls.py:76
 msgid "matching_users/"
 msgstr ""
 
-#: forum/urls.py:76
+#: forum/urls.py:77
 msgid "node_markdown/"
 msgstr ""
 
-#: forum/urls.py:77
+#: forum/urls.py:78
 msgid "convert/"
 msgstr ""
 
-#: forum/urls.py:78
+#: forum/urls.py:79
 msgid "convert_to_question/"
 msgstr ""
 
-#: forum/urls.py:79
+#: forum/urls.py:80
 msgid "wikify/"
 msgstr ""
 
-#: forum/urls.py:81
+#: forum/urls.py:82
 msgid "question/"
 msgstr ""
 
-#: forum/urls.py:87 forum/urls.py:88
+#: forum/urls.py:88 forum/urls.py:89
 msgid "tags/"
 msgstr ""
 
-#: forum/urls.py:89 forum/urls.py:90
+#: forum/urls.py:90 forum/urls.py:91
 msgid "mark-tag/"
 msgstr ""
 
-#: forum/urls.py:89
+#: forum/urls.py:90
 msgid "interesting/"
 msgstr ""
 
-#: forum/urls.py:90
+#: forum/urls.py:91
 msgid "ignored/"
 msgstr ""
 
-#: forum/urls.py:91
+#: forum/urls.py:92
 msgid "unmark-tag/"
 msgstr ""
 
-#: forum/urls.py:93 forum/urls.py:96 forum/urls.py:97 forum/urls.py:98
-#: forum/urls.py:99 forum/urls.py:100 forum/urls.py:101 forum/urls.py:102
-#: forum/urls.py:103 forum/urls.py:104 forum/urls.py:105 forum/urls.py:106
+#: forum/urls.py:94 forum/urls.py:97 forum/urls.py:98 forum/urls.py:99
+#: forum/urls.py:100 forum/urls.py:101 forum/urls.py:102 forum/urls.py:103
+#: forum/urls.py:104 forum/urls.py:105 forum/urls.py:106 forum/urls.py:107
 msgid "users/"
 msgstr ""
 
-#: forum/urls.py:97
+#: forum/urls.py:98
 msgid "award/"
 msgstr ""
 
-#: forum/urls.py:98
+#: forum/urls.py:99
 msgid "suspend/"
 msgstr ""
 
-#: forum/urls.py:99
+#: forum/urls.py:100
 msgid "powers/"
 msgstr ""
 
-#: forum/urls.py:100
+#: forum/urls.py:101
 msgid "subscriptions/"
 msgstr ""
 
-#: forum/urls.py:101
+#: forum/urls.py:102
 msgid "preferences/"
 msgstr ""
 
-#: forum/urls.py:102
+#: forum/urls.py:103
 msgid "favorites/"
 msgstr ""
 
-#: forum/urls.py:103
+#: forum/urls.py:104
 msgid "reputation/"
 msgstr ""
 
-#: forum/urls.py:104
+#: forum/urls.py:105
 msgid "votes/"
 msgstr ""
 
-#: forum/urls.py:105
+#: forum/urls.py:106
 msgid "recent/"
 msgstr ""
 
-#: forum/urls.py:107 forum/urls.py:108
+#: forum/urls.py:108 forum/urls.py:109
 msgid "badges/"
 msgstr ""
 
-#: forum/urls.py:111
+#: forum/urls.py:112
 msgid "upload/"
 msgstr ""
 
-#: forum/urls.py:112
+#: forum/urls.py:113
 msgid "search/"
 msgstr ""
 
-#: forum/urls.py:113
+#: forum/urls.py:114
 msgid "contact/"
 msgstr ""
 
-#: forum/urls.py:117 forum/urls.py:118 forum/urls.py:119 forum/urls.py:120
-#: forum/urls.py:121 forum/urls.py:122 forum/urls.py:123 forum/urls.py:124
-#: forum/urls.py:125 forum/urls.py:126 forum/urls.py:127 forum/urls.py:128
+#: forum/urls.py:118 forum/urls.py:119 forum/urls.py:120 forum/urls.py:121
+#: forum/urls.py:122 forum/urls.py:123 forum/urls.py:124 forum/urls.py:125
+#: forum/urls.py:126 forum/urls.py:127 forum/urls.py:128 forum/urls.py:129
 #: forum_modules/localauth/urls.py:7
 msgid "account/"
 msgstr ""
 
-#: forum/urls.py:117 forum/urls.py:119
+#: forum/urls.py:118 forum/urls.py:120
 msgid "signin/"
 msgstr ""
 
-#: forum/urls.py:118
+#: forum/urls.py:119
 msgid "signout/"
 msgstr ""
 
-#: forum/urls.py:120
+#: forum/urls.py:121
 msgid "done/"
 msgstr ""
 
-#: forum/urls.py:121 forum_modules/localauth/urls.py:7
+#: forum/urls.py:122 forum_modules/localauth/urls.py:7
 msgid "register/"
 msgstr ""
 
-#: forum/urls.py:122
+#: forum/urls.py:123
 msgid "validate/"
 msgstr ""
 
-#: forum/urls.py:123 forum/urls.py:124
+#: forum/urls.py:124 forum/urls.py:125
 msgid "tempsignin/"
 msgstr ""
 
-#: forum/urls.py:125
+#: forum/urls.py:126
 msgid "authsettings/"
 msgstr ""
 
-#: forum/urls.py:126 forum/urls.py:127
+#: forum/urls.py:127 forum/urls.py:128
 msgid "providers/"
 msgstr ""
 
-#: forum/urls.py:126
+#: forum/urls.py:127
 msgid "remove/"
 msgstr ""
 
-#: forum/urls.py:127
+#: forum/urls.py:128
 msgid "add/"
 msgstr ""
 
-#: forum/urls.py:128
+#: forum/urls.py:129
 msgid "send-validation/"
 msgstr ""
 
-#: forum/urls.py:131 forum/urls.py:132 forum/urls.py:133 forum/urls.py:134
-#: forum/urls.py:135 forum/urls.py:136 forum/urls.py:137 forum/urls.py:138
-#: forum/urls.py:139 forum/urls.py:140 forum/urls.py:142 forum/urls.py:143
-#: forum/urls.py:145 forum/urls.py:147 forum/urls.py:149
+#: forum/urls.py:132 forum/urls.py:133 forum/urls.py:134 forum/urls.py:135
+#: forum/urls.py:136 forum/urls.py:137 forum/urls.py:138 forum/urls.py:139
+#: forum/urls.py:140 forum/urls.py:141 forum/urls.py:143 forum/urls.py:144
+#: forum/urls.py:146 forum/urls.py:148 forum/urls.py:150
 #: forum_modules/exporter/urls.py:8 forum_modules/exporter/urls.py:9
 #: forum_modules/exporter/urls.py:10 forum_modules/sximporter/urls.py:8
 msgid "admin/"
 msgstr ""
 
-#: forum/urls.py:132
+#: forum/urls.py:133
 msgid "switch_interface/"
 msgstr ""
 
-#: forum/urls.py:133
+#: forum/urls.py:134
 msgid "statistics/"
 msgstr ""
 
-#: forum/urls.py:134
+#: forum/urls.py:135
 msgid "denormalize/"
 msgstr ""
 
-#: forum/urls.py:135
+#: forum/urls.py:136
 msgid "go_bootstrap/"
 msgstr ""
 
-#: forum/urls.py:136
+#: forum/urls.py:137
 msgid "go_defaults/"
 msgstr ""
 
-#: forum/urls.py:137 forum/urls.py:147
+#: forum/urls.py:138 forum/urls.py:148
 msgid "settings/"
 msgstr ""
 
-#: forum/urls.py:138
+#: forum/urls.py:139
 msgid "maintenance/"
 msgstr ""
 
-#: forum/urls.py:139
+#: forum/urls.py:140
 msgid "flagged_posts/"
 msgstr ""
 
-#: forum/urls.py:140 forum/urls.py:142 forum/urls.py:143
+#: forum/urls.py:141 forum/urls.py:143 forum/urls.py:144
 msgid "static_pages/"
 msgstr ""
 
-#: forum/urls.py:142
+#: forum/urls.py:143
 msgid "new/"
 msgstr ""
 
-#: forum/urls.py:145
+#: forum/urls.py:146
 msgid "tools/"
 msgstr ""
 
-#: forum/urls.py:149
+#: forum/urls.py:150
 msgid "test_email_settings/"
 msgstr ""
 
@@ -549,7 +549,7 @@ msgstr ""
 msgid "Initial revision"
 msgstr ""
 
-#: forum/actions/node.py:20 forum/templatetags/node_tags.py:220
+#: forum/actions/node.py:20 forum/templatetags/node_tags.py:221
 msgid "asked"
 msgstr ""
 
@@ -558,7 +558,7 @@ msgstr ""
 msgid "%(user)s asked %(question)s"
 msgstr ""
 
-#: forum/actions/node.py:38 forum/templatetags/node_tags.py:221
+#: forum/actions/node.py:38 forum/templatetags/node_tags.py:222
 msgid "answered"
 msgstr ""
 
@@ -731,7 +731,7 @@ msgid "You have been penalized in %s reputation points."
 msgstr ""
 
 #: forum/actions/user.py:74 forum/actions/user.py:112
-#: forum/templatetags/extra_tags.py:131 forum/views/auth.py:221
+#: forum/templatetags/extra_tags.py:135 forum/views/auth.py:221
 #: forum_modules/exporter/templates/running.html:158
 msgid "unknown"
 msgstr ""
@@ -822,7 +822,7 @@ msgstr ""
 msgid "%(user)s suspended %(users)s %(suspension)s: %(msg)s"
 msgstr ""
 
-#: forum/actions/user.py:214 forum/views/users.py:241
+#: forum/actions/user.py:214 forum/views/users.py:242
 msgid "Bad behaviour"
 msgstr ""
 
@@ -1157,15 +1157,15 @@ msgstr ""
 msgid "Screen name"
 msgstr ""
 
-#: forum/forms/qanda.py:316
+#: forum/forms/qanda.py:315
 msgid "this email has already been registered, please use another one"
 msgstr ""
 
-#: forum/forms/qanda.py:321
+#: forum/forms/qanda.py:320
 msgid "Instantly"
 msgstr ""
 
-#: forum/forms/qanda.py:324
+#: forum/forms/qanda.py:323
 msgid "No notifications"
 msgstr ""
 
@@ -1245,23 +1245,23 @@ msgstr ""
 msgid "ignored"
 msgstr ""
 
-#: forum/models/user.py:206 forum/views/readers.py:132
+#: forum/models/user.py:208 forum/views/readers.py:132
 msgid "asked-by"
 msgstr ""
 
-#: forum/models/user.py:210 forum/views/readers.py:135
+#: forum/models/user.py:212 forum/views/readers.py:135
 msgid "answered-by"
 msgstr ""
 
-#: forum/models/user.py:214 forum/views/readers.py:138
+#: forum/models/user.py:216 forum/views/readers.py:138
 msgid "subscribed-by"
 msgstr ""
 
-#: forum/settings/__init__.py:45
+#: forum/settings/__init__.py:46
 msgid "Badges config"
 msgstr ""
 
-#: forum/settings/__init__.py:45
+#: forum/settings/__init__.py:46
 msgid "Configure badges on your OSQA site."
 msgstr ""
 
@@ -2014,6 +2014,32 @@ msgstr ""
 msgid "How to render your lower block code."
 msgstr ""
 
+#: forum/settings/sitemaps.py:5
+msgid "Sitemap settings"
+msgstr ""
+
+#: forum/settings/sitemaps.py:5
+msgid "Some settings connected with the Sitemaps."
+msgstr ""
+
+#: forum/settings/sitemaps.py:8
+msgid "Questions Sitemap Limit"
+msgstr ""
+
+#: forum/settings/sitemaps.py:9
+msgid "The questions limit per page for the Questions Sitemap."
+msgstr ""
+
+#: forum/settings/sitemaps.py:12
+msgid "Questions Sitemap Change Fraquence"
+msgstr ""
+
+#: forum/settings/sitemaps.py:13
+msgid ""
+"Used in the Questions Sitemap <changefreq> tag and specifies the content "
+"change frequency."
+msgstr ""
+
 #: forum/settings/static.py:17
 msgid "Use custom CSS"
 msgstr ""
@@ -2246,7 +2272,7 @@ msgstr ""
 msgid "add"
 msgstr ""
 
-#: forum/settings/users.py:19 forum/templatetags/node_tags.py:104
+#: forum/settings/users.py:19 forum/templatetags/node_tags.py:105
 msgid "edit"
 msgstr ""
 
@@ -2254,7 +2280,7 @@ msgstr ""
 msgid "save"
 msgstr ""
 
-#: forum/settings/users.py:19 forum/templatetags/node_tags.py:130
+#: forum/settings/users.py:19 forum/templatetags/node_tags.py:131
 msgid "delete"
 msgstr ""
 
@@ -2945,7 +2971,7 @@ msgid "Ok"
 msgstr ""
 
 #: forum/skins/default/templates/base_content.html:47
-#: forum/templatetags/node_tags.py:167
+#: forum/templatetags/node_tags.py:168
 #, fuzzy
 msgid "word"
 msgstr ""
@@ -2957,7 +2983,7 @@ msgid "words"
 msgstr ""
 
 #: forum/skins/default/templates/base_content.html:49
-#: forum/templatetags/node_tags.py:166
+#: forum/templatetags/node_tags.py:167
 #, fuzzy
 msgid "character"
 msgstr ""
@@ -3041,12 +3067,12 @@ msgstr ""
 #: forum/skins/default/templates/header.html:34
 #: forum/skins/default/templates/search.html:19 forum/views/readers.py:98
 #: forum/views/readers.py:100 forum/views/readers.py:156
-#: forum/views/users.py:317
+#: forum/views/users.py:318
 msgid "questions"
 msgstr ""
 
 #: forum/skins/default/templates/header.html:36
-#: forum/skins/default/templates/search.html:21 forum/views/users.py:59
+#: forum/skins/default/templates/search.html:21 forum/views/users.py:60
 msgid "users"
 msgstr ""
 
@@ -3546,7 +3572,7 @@ msgstr ""
 #: forum/skins/default/templates/question_summary_list_roll.html:13
 #: forum/skins/default/templates/question_list/count.html:15
 #: forum/skins/default/templates/question_list/item.html:15
-#: forum/views/users.py:55
+#: forum/views/users.py:56
 msgid "answers"
 msgstr ""
 
@@ -3554,7 +3580,7 @@ msgstr ""
 #: forum/skins/default/templates/question_list/item.html:11
 #: forum/views/commands.py:78 forum/views/readers.py:62
 #: forum/views/readers.py:63 forum/views/readers.py:283
-#: forum/views/users.py:54 forum/views/users.py:55 forum/views/users.py:356
+#: forum/views/users.py:55 forum/views/users.py:56 forum/views/users.py:357
 msgid "votes"
 msgstr ""
 
@@ -5094,7 +5120,7 @@ msgstr ""
 
 #: forum/skins/default/templates/question_list/sort_tabs.html:5
 #: forum/views/readers.py:45 forum/views/readers.py:61
-#: forum/views/readers.py:281 forum/views/users.py:40 forum/views/users.py:53
+#: forum/views/readers.py:281 forum/views/users.py:41 forum/views/users.py:54
 msgid "newest"
 msgstr ""
 
@@ -5232,7 +5258,7 @@ msgstr ""
 
 #: forum/skins/default/templates/users/info.html:26
 #: forum/skins/default/templates/users/signature.html:8
-#: forum/views/users.py:39
+#: forum/views/users.py:40
 msgid "reputation"
 msgstr ""
 
@@ -5327,12 +5353,12 @@ msgstr ""
 #: forum/skins/default/templates/users/signature.html:11
 #: forum/skins/default/templates/users/signature.html:17
 #: forum/skins/default/templates/users/signature.html:23
-#: forum/templatetags/extra_tags.py:77 forum/views/meta.py:89
+#: forum/templatetags/extra_tags.py:78 forum/views/meta.py:89
 msgid "badges"
 msgstr ""
 
 #: forum/skins/default/templates/users/signature.html:31
-#: forum/templatetags/extra_tags.py:50
+#: forum/templatetags/extra_tags.py:51
 msgid "(suspended)"
 msgstr ""
 
@@ -5583,157 +5609,149 @@ msgstr ""
 msgid "downvote"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:78
+#: forum/templatetags/extra_tags.py:79
 msgid "reputation points"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:96
+#: forum/templatetags/extra_tags.py:100
 #, python-format
 msgid "%(user)s has %(count)d accepted answers"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:102
+#: forum/templatetags/extra_tags.py:106
 #, python-format
 msgid "%s has one accepted answer"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:105
+#: forum/templatetags/extra_tags.py:109
 #, python-format
 msgid "%s has no accepted answers"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:111
+#: forum/templatetags/extra_tags.py:115
 msgid "accept rate"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:112
+#: forum/templatetags/extra_tags.py:116
 msgid "Rate of the user's accepted answers"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:141
-msgid "%b %d at %H:%M"
-msgstr ""
-
-#: forum/templatetags/extra_tags.py:143
-msgid "%b %d '%y at %H:%M"
-msgstr ""
-
-#: forum/templatetags/extra_tags.py:145
+#: forum/templatetags/extra_tags.py:150
 msgid "2 days ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:147
+#: forum/templatetags/extra_tags.py:152
 msgid "yesterday"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:149
+#: forum/templatetags/extra_tags.py:154
 msgid "hour ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:149
+#: forum/templatetags/extra_tags.py:154
 msgid "hours ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:149
+#: forum/templatetags/extra_tags.py:154
 #, python-format
 msgid "%(hr)d "
 msgid_plural "%(hr)d "
 msgstr[0] ""
 msgstr[1] ""
 
-#: forum/templatetags/extra_tags.py:151
+#: forum/templatetags/extra_tags.py:156
 msgid "min ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:151
+#: forum/templatetags/extra_tags.py:156
 msgid "mins ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:151
+#: forum/templatetags/extra_tags.py:156
 #, python-format
 msgid "%(min)d "
 msgid_plural "%(min)d "
 msgstr[0] ""
 msgstr[1] ""
 
-#: forum/templatetags/extra_tags.py:153
+#: forum/templatetags/extra_tags.py:158
 msgid "sec ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:153
+#: forum/templatetags/extra_tags.py:158
 msgid "secs ago"
 msgstr ""
 
-#: forum/templatetags/extra_tags.py:153
+#: forum/templatetags/extra_tags.py:158
 #, python-format
 msgid "%(sec)d "
 msgid_plural "%(sec)d "
 msgstr[0] ""
 msgstr[1] ""
 
-#: forum/templatetags/node_tags.py:90
+#: forum/templatetags/node_tags.py:91
 msgid "permanent link"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:91
+#: forum/templatetags/node_tags.py:92
 msgid "answer permanent link"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:95
+#: forum/templatetags/node_tags.py:96
 msgid "award points"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:96
+#: forum/templatetags/node_tags.py:97
 #, python-format
 msgid "award points to %s"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:106
+#: forum/templatetags/node_tags.py:107
 msgid "retag"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:112
+#: forum/templatetags/node_tags.py:113
 msgid "reopen"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:114
+#: forum/templatetags/node_tags.py:115
 msgid "close"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:117
+#: forum/templatetags/node_tags.py:118
 msgid "report"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:123
+#: forum/templatetags/node_tags.py:124
 msgid ""
 "report as offensive (i.e containing spam, advertising, malicious text, etc.)"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:127
+#: forum/templatetags/node_tags.py:128
 msgid "undelete"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:134
+#: forum/templatetags/node_tags.py:135
 msgid "see revisions"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:141
+#: forum/templatetags/node_tags.py:142
 msgid "mark as community wiki"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:145
+#: forum/templatetags/node_tags.py:146
 msgid "cancel community wiki"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:149
+#: forum/templatetags/node_tags.py:150
 msgid "convert to comment"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:153
+#: forum/templatetags/node_tags.py:154
 msgid "convert to question"
 msgstr ""
 
-#: forum/templatetags/node_tags.py:221
+#: forum/templatetags/node_tags.py:222
 msgid "posted"
 msgstr ""
 
@@ -6197,35 +6215,35 @@ msgid "most <strong>voted</strong> questions"
 msgstr ""
 
 #: forum/views/readers.py:60 forum/views/readers.py:279
-#: forum/views/users.py:41 forum/views/users.py:52
+#: forum/views/users.py:42 forum/views/users.py:53
 msgid "oldest"
 msgstr ""
 
-#: forum/views/readers.py:60 forum/views/users.py:52
+#: forum/views/readers.py:60 forum/views/users.py:53
 msgid "oldest answers"
 msgstr ""
 
-#: forum/views/readers.py:60 forum/views/users.py:52
+#: forum/views/readers.py:60 forum/views/users.py:53
 msgid "oldest answers will be shown first"
 msgstr ""
 
-#: forum/views/readers.py:61 forum/views/users.py:53
+#: forum/views/readers.py:61 forum/views/users.py:54
 msgid "newest answers"
 msgstr ""
 
-#: forum/views/readers.py:61 forum/views/users.py:53
+#: forum/views/readers.py:61 forum/views/users.py:54
 msgid "newest answers will be shown first"
 msgstr ""
 
-#: forum/views/readers.py:62 forum/views/users.py:54
+#: forum/views/readers.py:62 forum/views/users.py:55
 msgid "popular answers"
 msgstr ""
 
-#: forum/views/readers.py:62 forum/views/users.py:54
+#: forum/views/readers.py:62 forum/views/users.py:55
 msgid "most voted answers will be shown first"
 msgstr ""
 
-#: forum/views/readers.py:68 forum/views/users.py:42
+#: forum/views/readers.py:68 forum/views/users.py:43
 msgid "name"
 msgstr ""
 
@@ -6325,119 +6343,119 @@ msgstr ""
 msgid "Revision n. %(rev_number)d"
 msgstr ""
 
-#: forum/views/users.py:39
+#: forum/views/users.py:40
 msgid "sorted by reputation"
 msgstr ""
 
-#: forum/views/users.py:40
+#: forum/views/users.py:41
 msgid "recent"
 msgstr ""
 
-#: forum/views/users.py:40
+#: forum/views/users.py:41
 msgid "newest members"
 msgstr ""
 
-#: forum/views/users.py:41
+#: forum/views/users.py:42
 msgid "last"
 msgstr ""
 
-#: forum/views/users.py:41
+#: forum/views/users.py:42
 msgid "oldest members"
 msgstr ""
 
-#: forum/views/users.py:42
+#: forum/views/users.py:43
 msgid "by username"
 msgstr ""
 
-#: forum/views/users.py:42
+#: forum/views/users.py:43
 msgid "sorted by username"
 msgstr ""
 
-#: forum/views/users.py:73
+#: forum/views/users.py:74
 msgid "Online Users"
 msgstr ""
 
-#: forum/views/users.py:167
+#: forum/views/users.py:168
 msgid "Profile updated."
 msgstr ""
 
-#: forum/views/users.py:181
+#: forum/views/users.py:182
 msgid "Only superusers are allowed to alter other users permissions."
 msgstr ""
 
-#: forum/views/users.py:184
+#: forum/views/users.py:185
 msgid "Only the site owner can remove the super user status from other user."
 msgstr ""
 
-#: forum/views/users.py:206
+#: forum/views/users.py:207
 msgid "Only superusers are allowed to award reputation points"
 msgstr ""
 
-#: forum/views/users.py:211
+#: forum/views/users.py:212
 msgid "Invalid number of points to award."
 msgstr ""
 
-#: forum/views/users.py:229
+#: forum/views/users.py:230
 msgid "Only superusers can suspend other users"
 msgstr ""
 
-#: forum/views/users.py:250
+#: forum/views/users.py:251
 msgid "Invalid numeric argument for the number of days."
 msgstr ""
 
-#: forum/views/users.py:300
+#: forum/views/users.py:301
 msgid "overview"
 msgstr ""
 
-#: forum/views/users.py:300
+#: forum/views/users.py:301
 msgid "user overview"
 msgstr ""
 
-#: forum/views/users.py:332
+#: forum/views/users.py:333
 msgid "recent activity"
 msgstr ""
 
-#: forum/views/users.py:332
+#: forum/views/users.py:333
 msgid "recent user activity"
 msgstr ""
 
-#: forum/views/users.py:341
+#: forum/views/users.py:342
 msgid "reputation history"
 msgstr ""
 
-#: forum/views/users.py:341
+#: forum/views/users.py:342
 msgid "graph of user karma"
 msgstr ""
 
-#: forum/views/users.py:356
+#: forum/views/users.py:357
 msgid "user vote record"
 msgstr ""
 
-#: forum/views/users.py:363
+#: forum/views/users.py:364
 msgid "favorites"
 msgstr ""
 
-#: forum/views/users.py:363
+#: forum/views/users.py:364
 msgid "questions that user selected as his/her favorite"
 msgstr ""
 
-#: forum/views/users.py:369
+#: forum/views/users.py:370
 msgid "subscription"
 msgstr ""
 
-#: forum/views/users.py:369
+#: forum/views/users.py:370
 msgid "subscriptions"
 msgstr ""
 
-#: forum/views/users.py:383
+#: forum/views/users.py:384
 msgid "New subscription settings are now saved"
 msgstr ""
 
-#: forum/views/users.py:427
+#: forum/views/users.py:428
 msgid "preferences"
 msgstr ""
 
-#: forum/views/users.py:434
+#: forum/views/users.py:435
 msgid "New preferences saved"
 msgstr ""
 
