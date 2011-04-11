@@ -296,8 +296,7 @@ class EditUserForm(forms.Form):
 
         if user.date_of_birth is not None:
             self.fields['birthday'].initial = user.date_of_birth
-        else:
-            self.fields['birthday'].initial = '1990-01-01'
+
         self.fields['about'].initial = user.about
         self.user = user
 
