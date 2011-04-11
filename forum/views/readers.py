@@ -10,6 +10,7 @@ from django.template import RequestContext
 from django import template
 from django.utils.html import *
 from django.utils import simplejson
+from django.utils.encoding import smart_unicode
 from django.db.models import Q, Count
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import slugify
@@ -107,7 +108,7 @@ def tag(request, tag):
         raise Http404
 
     # Getting the questions QuerySet
-    questions = Question.objects.filter(tags=tag)
+    questions = Question.objects.filter(tags__name=smart_unicode(tag.name))
 
     if request.method == "GET":
         user = request.GET.get('user', None)

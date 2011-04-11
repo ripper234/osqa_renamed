@@ -2,6 +2,7 @@ import datetime
 from base import *
 
 from django.utils.translation import ugettext as _
+from django.utils.encoding import smart_unicode
 
 from forum import modules
 
@@ -26,7 +27,7 @@ class Tag(BaseModel):
         app_label = 'forum'
 
     def __unicode__(self):
-        return self.name
+        return smart_unicode(self.name)
 
     def add_to_usage_count(self, value):
         if self.used_count + value < 0:
