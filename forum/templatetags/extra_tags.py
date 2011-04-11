@@ -9,6 +9,7 @@ import random
 from django import template
 from django.utils.encoding import smart_unicode
 from django.utils.safestring import mark_safe
+from django.utils import dateformat
 from forum.models import Question, Answer, QuestionRevision, AnswerRevision, NodeRevision
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
@@ -141,9 +142,10 @@ def diff_date(date, limen=2):
 
     if days > 2:
         if date.year == now.year:
-            return date.strftime(_("%b %d at %H:%M").encode())
+            return dateformat.format(date, 'd M, H:i')
         else:
-            return date.strftime(_("%b %d '%y at %H:%M").encode())
+            return dateformat.format(date, 'd M \'y, H:i')
+
     elif days == 2:
         return _('2 days ago')
     elif days == 1:
