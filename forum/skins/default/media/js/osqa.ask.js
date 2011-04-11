@@ -1,8 +1,10 @@
 var currentSideBar = 'div#title_side_bar';
 function changeSideBar(enabled_bar) {
-    $(currentSideBar).hide();
-    currentSideBar = enabled_bar;
-    $(currentSideBar).fadeIn('slow');
+    if (enabled_bar != currentSideBar) {
+        $(currentSideBar).hide();
+        currentSideBar = enabled_bar;
+        $(currentSideBar).fadeIn('slow');
+    }
 
 }
 
