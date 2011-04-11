@@ -764,6 +764,11 @@ ul.errorlist li {
     max-width: 640px;
 }
 
+/* Fixes OSQA-143 IE8 text overflow issue */
+div.question-body p, div.answer-body p {
+    max-width: 700px;
+}
+
 .answered-by-owner {
     background: none repeat scroll 0 0 #E9E9FF;
 }
