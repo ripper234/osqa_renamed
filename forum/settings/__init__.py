@@ -41,6 +41,7 @@ from users import *
 from static import *
 from urls import *
 from accept import *
+from sitemaps import *
 
 BADGES_SET = SettingSet('badges', _('Badges config'), _("Configure badges on your OSQA site."), 500)
 

@@ -1,5 +1,6 @@
 from django.contrib.sitemaps import Sitemap
 from forum.models import Question
+from forum.settings import QUESTIONS_SITEMAP_LIMIT, QUESTIONS_SITEMAP_CHANGEFREQ
 from django.conf import settings
 from django.http import HttpResponse, Http404
 from django.template import loader
@@ -61,8 +62,8 @@ def sitemap(request, sitemaps, section=None, page=1):
     return HttpResponse(xml, mimetype='application/xml')
 
 class OsqaSitemap(Sitemap):
-    limit = 2500
-    changefreq = 'daily'
+    limit = QUESTIONS_SITEMAP_LIMIT
+    changefreq = QUESTIONS_SITEMAP_CHANGEFREQ
     priority = 0.5
     def items(self):
         return Question.objects.filter_state(deleted=False).order_by('id')
